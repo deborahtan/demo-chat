@@ -2,7 +2,8 @@ import os
 import streamlit as st
 import pandas as pd
 import numpy as np
-from openai import OpenAI
+import openai
+openai.api_key = os.getenv("OPENAI_API_KEY") or st.secrets["OPENAI_API_KEY"]
 
 # -------------------------------
 # CONFIG
