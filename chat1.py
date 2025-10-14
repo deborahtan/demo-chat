@@ -2,7 +2,7 @@ import os
 import streamlit as st
 import pandas as pd
 import numpy as np
-from openai import OpenAI
+import openai>=1.2.0 as OpenAI
 
 # -------------------------------
 # CONFIG
@@ -36,7 +36,7 @@ executive‑ready language.
 Always:
 - Focus on financial impact, risks, and opportunities.
 - Highlight trends, seasonal patterns, and anomalies.
-- Provide concise, actionable recommendations for Marketing, CRM, and Finance teams.
+- Provide concise, actionable recommendations for Marketing/Media, Creative, and Finance teams.
 - Use metrics like Revenue, ROAS, CAC, CLV, Churn, and CRM Engagement.
 - Write in a professional, boardroom‑ready tone.
 
@@ -59,7 +59,7 @@ SUGGESTIONS = {
     "🧠 Recommendations": "Give me strategic recommendations for Marketing, CRM, and Finance teams based on last year’s performance."
 }
 
-selected_suggestion = st.selectbox("💬 Executive Questions", options=[""] + list(SUGGESTIONS.values()))
+selected_suggestion = st.selectbox("💬 Questions", options=[""] + list(SUGGESTIONS.values()))
 user_question = st.text_input("Or type your own question:")
 
 if selected_suggestion:
