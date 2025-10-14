@@ -2,6 +2,7 @@ import os
 import streamlit as st
 import pandas as pd
 import numpy as np
+import altair as alt
 from openai import OpenAI
 
 # -------------------------------
@@ -9,84 +10,25 @@ from openai import OpenAI
 # -------------------------------
 st.set_page_config(
     page_title="Strategic Intelligence Assistant",
-    page_icon="https://img.icons8.com/ios11/16/000000/dashboard-gauge.png",  # professional favicon
+    page_icon="https://img.icons8.com/ios11/16/000000/dashboard-gauge.png",
     layout="wide"
 )
 
-# Custom theme using your palette
+# Custom theme
 st.markdown("""
     <style>
-        body {
-            background-color: #000000;
-            color: #fffefe;
-        }
-        h1, h2, h3, h4, h5, h6 {
-            color: #fffefe;
-            font-weight: 600;
-            border-bottom: none !important;
-        }
-        section.main > div {
-            padding-top: 1rem;
-            padding-bottom: 1rem;
-        }
+        body { background-color: #000000; color: #fffefe; }
+        h1, h2, h3, h4, h5, h6 { color: #fffefe; font-weight: 600; border-bottom: none !important; }
+        section.main > div { padding-top: 1rem; padding-bottom: 1rem; }
         .metric-card {
-            background-color: #2e2e2e;
-            border: 1px solid #7e7e7e;
-            border-radius: 12px;
-            padding: 18px;
-            margin: 8px 0;
-            text-align: center;
+            background-color: #2e2e2e; border-radius: 12px; padding: 18px; margin: 8px 0; text-align: center;
         }
-        .metric-label {
-            color: #b6b6b6;
-            font-weight: 600;
-            font-size: 13px;
-            letter-spacing: 0.3px;
-        }
-        .metric-value {
-            color: #cc1e27;
-            font-size: 22px;
-            font-weight: 700;
-        }
+        .metric-label { color: #b6b6b6; font-weight: 600; font-size: 13px; }
+        .metric-value { font-size: 22px; font-weight: 700; }
         .answer-card {
-            background-color: #0e4136;
-            border: 1px solid #15395c;
-            border-radius: 12px;
-            padding: 20px;
-            color: #f1efec;
+            background-color: #2e2e2e; border-radius: 12px; padding: 20px; color: #fffefe;
         }
-        .point-card {
-            background-color: #2e2e2e;
-            border-radius: 8px;
-            padding: 10px 14px;
-            margin: 6px 0;
-            color: #f1efec;
-            font-size: 15px;
-            line-height: 1.4;
-        }
-        .point-card.internal {
-            border-left: 4px solid #cc1e27;
-        }
-        .point-card.external {
-            border-left: 4px solid #15395c;
-        }
-        .stButton>button {
-            background-color: #cc1e27;
-            color: #fffefe;
-            border-radius: 6px;
-            border: none;
-            padding: 8px 16px;
-            font-weight: 600;
-        }
-        .stButton>button:hover {
-            background-color: #f1a4a5;
-            color: #000000;
-        }
-        a.disclaimer {
-            color: #f1a4a5;
-            text-decoration: underline;
-            font-size: 13px;
-        }
+        .stTable { color: #fffefe; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -110,80 +52,7 @@ else:
 # -------------------------------
 # SYSTEM PROMPT
 # -------------------------------
-system_prompt = """
-You are an AI Insights Assistant for C‑suite executives in Marketing, Media, Creative, CRM, Finance, and Loyalty/Product.
-Your role is to analyze enterprise‑scale performance data and deliver clear, strategic, executive‑ready insights and interactive visualizations.
-
-Core responsibilities:
-- Structure every response as Insight → Action → Recommendation → Next Steps.
-- Focus on financial impact, risks, and opportunities; quantify upside/downside where possible.
-- Highlight trends, seasonal patterns, anomalies, and diminishing returns curves.
-- Provide concise, actionable recommendations tailored to Marketing/Media, Creative, CRM/Loyalty, and Finance teams.
-- Use key metrics: Revenue, ROAS, CAC, CLV (online/offline), Churn, CRM Engagement, AOV, CPC, CPA, Conversion Rate, Retention, and Repeat Rate.
-- Identify top-performing creative messaging, targeting strategies, channels, publishers, formats, and audience segments.
-- Recommend optimizations based on what worked and what underperformed; include risk/impact and effort levels.
-- Analyze diminishing returns by channel and spend curve; flag thresholds where marginal ROI declines.
-- Compare publisher performance by audience segment; include reach, frequency, and quality (post‑click) metrics.
-- Evaluate online vs. offline CLV, attribution, and user journey paths; recommend journey‑level interventions.
-- Recommend optimal channel mixes for different investment levels ($100M, $200M, $300M), with marginal ROI and risk scenarios.
-- Identify months with highest churn; separate internal vs. external drivers; estimate revenue impact.
-- Research and contextualize external market/economic factors; distinguish controllable vs. uncontrollable.
-- Determine formats with highest ROI and CPA; balance efficiency vs. scale and creative fatigue risk.
-- Highlight channels with highest click‑to‑conversion and CLV; avoid over‑indexing on low‑quality volume.
-- Recommend what to scale, pause, or optimize for efficiency; include forecasted impact on EBITDA.
-
-Interactive visualization (Streamlit):
-- Generate Streamlit‑ready charts that are boardroom‑grade and interactive (hover tooltips show relevant metrics).
-- Prefer Altair or Plotly for interactivity, tooltips, and responsive design; include clear titles, axis labels, and annotations.
-- Provide code snippets ready to paste into a Streamlit app (st.altair_chart / st.plotly_chart); ensure hover tooltips expose metric values.
-
-Evidence and reasoning:
-- Draw from internal dataset (provided tables/fields) and enrich with external research/context (industry benchmarks, macroeconomic trends).
-- Reference experiential knowledge across Media buying, Creative testing, CRM/Lifecycle, Loyalty programs, Product assortment, and Pricing/Promo.
-- Clearly separate data‑driven findings vs. judgment calls; flag assumptions and confidence levels.
-
-Follow‑up readiness:
-- Anticipate C‑suite follow‑up questions (e.g., “What’s the ROI if we reallocate 10% from Meta to CTV?”).
-- Provide scenario‑based insights and sensitivity analysis (best/base/worst).
-- Offer next‑step instrumentation (tracking, experiments, governance) to operationalize recommendations.
-
-Tone & delivery:
-- Write in professional, boardroom‑ready language.
-- Be concise, avoid jargon, and prioritize clarity and decision‑readiness.
-
-Output structure per question:
-1) Insight: What the data and context say (with numbers).
-2) Action: Concrete moves teams can take now.
-3) Recommendation: Strategic decision and rationale (financial impact, risks).
-4) Next Steps: Implementation, owners, timeline, measurement (KPIs, guardrails).
-
-When providing charts, include:
-- Chart title, labeled axes, currency/units, and tooltip fields (e.g., Spend, Revenue, ROAS, CAC, CPA, CVR, CLV).
-- Visual aids (benchmarks lines, thresholds, annotations for inflection points and anomalies).
-- Accessibility defaults (high contrast color palette, legible fonts).
-"""
-
-
-# -------------------------------
-# EXECUTIVE QUESTIONS
-# -------------------------------
-QUESTIONS = [
-    "Show diminishing returns by channel and spend curve. Include publisher-level insights.",
-    "Which publishers performed best by audience segment?",
-    "Compare online and offline CLV. What do user journey paths suggest?",
-    "What mix of channels would you recommend for $100M, $200M, and $300M investment levels?",
-    "Which months had the most churn? What were the internal and external factors?",
-    "Research external market or economic factors that may explain churn or performance shifts.",
-    "Which format generated the highest ROI and CPA?",
-    "Which channels had the highest click-to-conversion rate?",
-    "What should we scale, pause, or optimize for efficiency?"
-]
-
-left, right = st.columns([1.6, 2.4])
-
-with left:
-    st.subheader("Executive questions")
-    selected = st.selectbox("Select a question", options=QUESTIONS, index=0)
+system_prompt = """<-- your long detailed system_prompt from above goes here -->"""
 
 # -------------------------------
 # SAMPLE DATA
@@ -199,103 +68,134 @@ def generate_data():
         "CLV ($)": np.round(np.random.uniform(500, 2000, size=12), 2),
     })
     df["ROAS"] = df["Revenue ($)"] / df["Media Spend ($)"]
+    df["Churn (%)"] = np.random.uniform(2, 8, size=len(df))
     return df
 
 df = generate_data()
 
 # -------------------------------
-# SUMMARY + VISUALS
+# EXECUTIVE SUMMARY
 # -------------------------------
-with right:
-    st.subheader("Executive summary")
-    summary = {
-        "Total Revenue": f"${df['Revenue ($)'].sum():,.0f}",
-        "Total Spend": f"${df['Media Spend ($)'].sum():,.0f}",
-        "Average ROAS": round(df["ROAS"].mean(), 2),
-        "Average CLV": f"${df['CLV ($)'].mean():,.2f}",
-        "Best Month (Revenue)": df.loc[df["Revenue ($)"].idxmax(), "Month"],
-    }
-    cols = st.columns(len(summary))
-    for col, (k, v) in zip(cols, summary.items()):
-        with col:
-            st.markdown(
-                f"<div class='metric-card'><div class='metric-label'>{k}</div><div class='metric-value'>{v}</div></div>",
-                unsafe_allow_html=True
-            )
+st.header("Executive Summary")
 
-    st.subheader("Monthly revenue & CLV")
-    st.line_chart(df.set_index("Month")[["Revenue ($)", "CLV ($)"]])
+def trend_arrow(current, previous, higher_is_better=True):
+    if current > previous:
+        return "▲", "green" if higher_is_better else "red"
+    elif current < previous:
+        return "▼", "red" if higher_is_better else "green"
+    else:
+        return "→", "white"
+
+summary = {
+    "Total Revenue": df["Revenue ($)"].sum(),
+    "Total Spend": df["Media Spend ($)"].sum(),
+    "Average ROAS": df["ROAS"].mean(),
+    "Average CLV": df["CLV ($)"].mean(),
+}
+
+cols = st.columns(len(summary))
+for i, (k, v) in enumerate(summary.items()):
+    prev = df.iloc[-2][df.columns[i+1]] if len(df) > 1 and i < len(df.columns)-1 else v
+    arrow, color = trend_arrow(v, prev, higher_is_better=True)
+    with cols[i]:
+        st.markdown(
+            f"<div class='metric-card'><div class='metric-label'>{k}</div>"
+            f"<div class='metric-value' style='color:{color}'>{v:,.2f} {arrow}</div></div>",
+            unsafe_allow_html=True
+        )
+
+# Top-level graphs
+roas_chart = alt.Chart(df).mark_line(point=True).encode(
+    x="Media Spend ($)", y="ROAS", tooltip=["Month","Media Spend ($)","ROAS"]
+).properties(title="ROAS vs Media Spend")
+st.altair_chart(roas_chart, use_container_width=True)
+
+churn_chart = alt.Chart(df).mark_line(point=True).encode(
+    x="Month", y="Churn (%)", tooltip=["Month","Churn (%)"]
+).properties(title="Monthly Churn Trend")
+st.altair_chart(churn_chart, use_container_width=True)
+
+channels = pd.DataFrame({
+    "Channel": ["Search","Social","CTV","Display"],
+    "Spend": [40,30,20,10]
+})
+pie = alt.Chart(channels).mark_arc().encode(
+    theta="Spend", color="Channel", tooltip=["Channel","Spend"]
+).properties(title="Channel Mix (Spend Share)")
+st.altair_chart(pie, use_container_width=True)
 
 # -------------------------------
-# EXECUTIVE ANSWER
+# AI OVERVIEW
 # -------------------------------
-st.divider()
-st.subheader("Executive answer")
-
-if selected and client:
-    with st.spinner("Generating executive insight..."):
+st.header("AI Overview")
+if client:
+    with st.spinner("Generating executive overview..."):
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": selected}
+                {"role": "user", "content": "Provide a concise executive overview of current performance."}
             ]
         )
-        answer = response.choices[0].message.content
-
-    bullets = [line.strip("- ").strip() for line in answer.split("\n") if line.strip()]
-    if not bullets:
-        bullets = [line.strip("- ").strip() for line in answer.split(". ") if line.strip()]
-
-    st.markdown("<div class='answer-card'>", unsafe_allow_html=True)
-    for text in bullets:
-        if "internal" in text.lower():
-            st.markdown(f"<div class='point-card internal'>✅ {text}</div>", unsafe_allow_html=True)
-        elif "external" in text.lower():
-            st.markdown(f"<div class='point-card external'>🌍 {text}</div>", unsafe_allow_html=True)
-        else:
-            st.markdown(f"<div class='point-card'>{text}</div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # Simple keyword frequency chart
-    keywords = pd.Series(" ".join(answer.split()).split()).value_counts().head(10)
-    st.subheader("AI-generated keyword frequency")
-    st.bar_chart(keywords)
+        overview = response.choices[0].message.content
+    st.markdown(f"<div class='answer-card'>{overview}</div>", unsafe_allow_html=True)
 
 # -------------------------------
-# EXPANDABLE: Dimensions & metrics dictionary
+# DETAILED ANSWER
 # -------------------------------
-st.divider()
-with st.expander("Dimensions & metrics dictionary"):
-    dims_metrics = {
-        "Dimensions": [
-            "Month", "Campaign Name", "Audience Segment", "Channel",
-            "Publisher", "Format", "Targeting Strategy", "Creative Messaging"
-        ],
-        "Core metrics": [
-            "Revenue ($)", "Media Spend ($)", "ROAS", "CLV ($)"
-        ],
-        "Additional enterprise metrics": [
-            "CAC ($)", "Churn (%)", "CRM Emails Sent", "CRM Open Rate (%)",
-            "Leads Generated", "Conversions", "Conversion Rate (%)", "CRM Engagements",
-            "Retention Rate (%)", "Repeat Purchase Rate (%)", "AOV ($)"
-        ],
-        "Definitions": {
-            "Creative Messaging": "The specific advertising message, theme, or concept shown to an audience. Examples include value‑driven offers, urgency messaging, lifestyle positioning, or brand storytelling.",
-            "CAC ($)": "Customer Acquisition Cost — total marketing spend divided by new customers acquired.",
-            "CLV ($)": "Customer Lifetime Value — projected net revenue from a customer over their relationship with the company.",
-            "ROAS": "Return on Ad Spend — Revenue divided by Media Spend.",
-            "Churn (%)": "Percentage of customers lost over a given period.",
-            "AOV ($)": "Average Order Value — total revenue divided by number of orders."
-        },
-        "Notes": [
-            "ROAS = Revenue / Media Spend",
-            "Monthly CLV shown for trend illustration; production views use cohort CLV",
-            "Extend dictionary to match your GA4/GMP/CRM schema",
-            "Include both online and offline CLV where possible",
-            "Ensure consistency of metric definitions across Finance, Marketing, and CRM teams"
-        ]
+st.header("Detailed Answer")
+QUESTIONS = [
+    "Show diminishing returns by channel and spend curve. Include publisher-level insights.",
+    "Which publishers performed best by audience segment?",
+    "Compare online and offline CLV. What do user journey paths suggest?",
+    "What mix of channels would you recommend for $100M, $200M, and $300M investment levels?",
+    "Which months had the most churn? What were the internal and external factors?",
+    "Research external market or economic factors that may explain churn or performance shifts.",
+    "Which format generated the highest ROI and CPA?",
+    "Which channels had the highest click-to-conversion rate?",
+    "What should we scale, pause, or optimize for efficiency?"
+]
+selected = st.selectbox("Select a question", options=QUESTIONS, index=0)
+
+if selected and client:
+    with st.spinner("Generating detailed structured answer..."):
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Provide a detailed structured answer (Insight → Action → Recommendation → Next Steps) for: {selected}"}
+            ]
+        )
+        detailed = response.choices[0].message.content
+    st.markdown(f"<div class='answer-card'>{detailed}</div>", unsafe_allow_html=True)
+
+# -------------------------------
+# REFERENCE DICTIONARY
+# -------------------------------
+st.header("Dimensions & Metrics Dictionary")
+dims_metrics = {
+    "Definitions": {
+        "Revenue ($)": "Total income generated from sales.",
+        "Media Spend ($)": "Total advertising expenditure.",
+        "ROAS": "Return on Ad Spend = Revenue / Media Spend.",
+        "CLV ($)": "Customer Lifetime Value.",
+        "CAC ($)": "Customer Acquisition Cost.",
+        "Churn (%)": "Percentage of customers lost.",
+        "CRM Engagement": "Interactions with CRM campaigns.",
+        "AOV ($)": "Average Order Value.",
+        "Retention Rate (%)": "Percentage of customers retained.",
+        "Repeat Purchase Rate (%)": "Percentage of customers making repeat purchases."
     }
+}
+df_dict = pd.DataFrame.from_dict(dims_metrics["Definitions"], orient="index", columns=["Definition"])
+st.table(df_dict)
 
-    # Display dictionary nicely
-    st.json(dims_metrics)
+# -------------------------------
+# LEGAL DISCLAIMER
+# -------------------------------
+st.markdown("---")
+st.markdown(
+    "⚖️ [Legal Disclaimer](https://www.example.com/legal-disclaimer) — "
+    "The insights and visualizations generated by this tool are for informational purposes only and "
+    "should not be considered financial, legal, or business advice."
+)
