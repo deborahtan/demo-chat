@@ -184,7 +184,7 @@ with st.container():
 # REFERENCE DICTIONARY
 # -------------------------------
 with st.container():
-    st.subheader("Dimensions & Metrics Dictionary")",
+    st.subheader("Dimensions & Metrics Dictionary")"
     dims_metrics = {
         "Definitions": {
             "Impressions": "Number of times an ad was displayed.",
