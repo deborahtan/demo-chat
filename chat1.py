@@ -2,7 +2,7 @@ import os
 import streamlit as st
 import pandas as pd
 import numpy as np
-import openai   # ✅ old client import
+from openai import OpenAI   # ✅ new client import
 
 # -------------------------------
 # CONFIG
@@ -23,8 +23,8 @@ if not api_key and "OPENAI_API_KEY" in st.secrets:
 if not api_key:
     st.error("❌ No API key found. Please set OPENAI_API_KEY as env var or in Streamlit secrets.")
 else:
-    # ✅ old client style: set key directly on the module
-    openai.api_key = api_key
+    # ✅ new client style: create a client instance
+    client = OpenAI(api_key=api_key)
 
 # -------------------------------
 # SYSTEM PROMPT (C-Suite framing)
@@ -40,13 +40,6 @@ Always:
 - Provide concise, actionable recommendations for Marketing/Media, Creative, and Finance teams.
 - Use metrics like Revenue, ROAS, CAC, CLV, Churn, and CRM Engagement.
 - Write in a professional, boardroom‑ready tone.
-
-Example executive questions you should be able to answer:
-- What was our total revenue last year? Break it down by month and key drivers.
-- What trends stood out across media spend, CRM engagement, and conversions? Any seasonal patterns?
-- How did our CAC and CLV evolve over the year? What does that mean for profitability?
-- Where should we focus next quarter? What are the biggest risks and opportunities?
-- Give me strategic recommendations for Media, Creative, CRM, and Finance teams based on last year’s performance.
 """
 
 # -------------------------------
@@ -159,15 +152,16 @@ st.bar_chart(df.set_index("Month")[["Conversion Rate (%)", "Customer Churn (%)"]
 # -------------------------------
 if query and api_key:
     with st.spinner("Analyzing with AI..."):
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",   # or "gpt-4" if your account has access
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",   # or "gpt-4.1" if your account has access
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query}
             ]
         )
+
         # Extract just the text answer
         answer = response.choices[0].message["content"]
 
-        st.subheader("🤖 AI-Powered Insight")
+        st.subheader("🤖 AI Executive Insight")
         st.write(answer)
