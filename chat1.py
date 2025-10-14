@@ -14,17 +14,12 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom theme
+# Sleek theme
 st.markdown("""
     <style>
         body { background-color: #000000; color: #fffefe; }
         h1, h2, h3, h4, h5, h6 { color: #fffefe; font-weight: 600; border-bottom: none !important; }
         section.main > div { padding-top: 1rem; padding-bottom: 1rem; }
-        .metric-card {
-            background-color: #2e2e2e; border-radius: 12px; padding: 18px; margin: 8px 0; text-align: center;
-        }
-        .metric-label { color: #b6b6b6; font-weight: 600; font-size: 13px; }
-        .metric-value { font-size: 22px; font-weight: 700; }
         .answer-card {
             background-color: #2e2e2e; border-radius: 12px; padding: 20px; color: #fffefe;
         }
@@ -52,7 +47,22 @@ else:
 # -------------------------------
 # SYSTEM PROMPT
 # -------------------------------
-system_prompt = """<-- your long detailed system_prompt from above goes here -->"""
+system_prompt = """
+You are an AI Insights Assistant for C‑suite executives in Marketing, Media, Creative, CRM, Finance, and Loyalty/Product.
+Your role is to analyze enterprise‑scale performance data and deliver clear, strategic, executive‑ready insights and interactive visualizations.
+
+Core responsibilities:
+- Structure every response as Insight → Action → Recommendation → Next Steps.
+- Focus on financial impact, risks, and opportunities; quantify upside/downside where possible.
+- Highlight trends, seasonal patterns, anomalies, and diminishing returns curves.
+- Provide concise, actionable recommendations tailored to Marketing/Media, Creative, CRM/Loyalty, and Finance teams.
+- Use key metrics: Revenue, ROAS, CAC, CLV (online/offline), Churn, CRM Engagement, AOV, CPC, CPA, Conversion Rate, Retention, and Repeat Rate.
+- When asked about diminishing returns, always generate a sample dataset and a Streamlit‑ready Altair chart showing the spend vs. ROI curve, with annotations for inflection points.
+
+Interactive visualization (Streamlit):
+- Generate Streamlit‑ready charts that are boardroom‑grade and interactive (hover tooltips show relevant metrics).
+- Prefer Altair or Plotly for interactivity, tooltips, and responsive design; include clear titles, axis labels, and annotations.
+"""
 
 # -------------------------------
 # SAMPLE DATA
@@ -74,55 +84,32 @@ def generate_data():
 df = generate_data()
 
 # -------------------------------
-# EXECUTIVE SUMMARY
+# EXECUTIVE SUMMARY (3 charts)
 # -------------------------------
 st.header("Executive Summary")
 
-def trend_arrow(current, previous, higher_is_better=True):
-    if current > previous:
-        return "▲", "green" if higher_is_better else "red"
-    elif current < previous:
-        return "▼", "red" if higher_is_better else "green"
-    else:
-        return "→", "white"
+col1, col2, col3 = st.columns(3)
 
-summary = {
-    "Total Revenue": df["Revenue ($)"].sum(),
-    "Total Spend": df["Media Spend ($)"].sum(),
-    "Average ROAS": df["ROAS"].mean(),
-    "Average CLV": df["CLV ($)"].mean(),
-}
+with col1:
+    roas_chart = alt.Chart(df).mark_line(point=True).encode(
+        x="Media Spend ($)", y="ROAS",
+        tooltip=["Month","Media Spend ($)","ROAS"]
+    ).properties(title="ROAS vs Media Spend")
+    st.altair_chart(roas_chart, use_container_width=True)
 
-cols = st.columns(len(summary))
-for i, (k, v) in enumerate(summary.items()):
-    prev = df.iloc[-2][df.columns[i+1]] if len(df) > 1 and i < len(df.columns)-1 else v
-    arrow, color = trend_arrow(v, prev, higher_is_better=True)
-    with cols[i]:
-        st.markdown(
-            f"<div class='metric-card'><div class='metric-label'>{k}</div>"
-            f"<div class='metric-value' style='color:{color}'>{v:,.2f} {arrow}</div></div>",
-            unsafe_allow_html=True
-        )
+with col2:
+    churn_chart = alt.Chart(df).mark_line(point=True).encode(
+        x="Month", y="Churn (%)",
+        tooltip=["Month","Churn (%)"]
+    ).properties(title="Monthly Churn Trend")
+    st.altair_chart(churn_chart, use_container_width=True)
 
-# Top-level graphs
-roas_chart = alt.Chart(df).mark_line(point=True).encode(
-    x="Media Spend ($)", y="ROAS", tooltip=["Month","Media Spend ($)","ROAS"]
-).properties(title="ROAS vs Media Spend")
-st.altair_chart(roas_chart, use_container_width=True)
-
-churn_chart = alt.Chart(df).mark_line(point=True).encode(
-    x="Month", y="Churn (%)", tooltip=["Month","Churn (%)"]
-).properties(title="Monthly Churn Trend")
-st.altair_chart(churn_chart, use_container_width=True)
-
-channels = pd.DataFrame({
-    "Channel": ["Search","Social","CTV","Display"],
-    "Spend": [40,30,20,10]
-})
-pie = alt.Chart(channels).mark_arc().encode(
-    theta="Spend", color="Channel", tooltip=["Channel","Spend"]
-).properties(title="Channel Mix (Spend Share)")
-st.altair_chart(pie, use_container_width=True)
+with col3:
+    corr_chart = alt.Chart(df).mark_circle(size=80).encode(
+        x="Revenue ($)", y="CLV ($)",
+        tooltip=["Month","Revenue ($)","CLV ($)"]
+    ).properties(title="Revenue vs CLV Correlation")
+    st.altair_chart(corr_chart, use_container_width=True)
 
 # -------------------------------
 # AI OVERVIEW
@@ -145,15 +132,14 @@ if client:
 # -------------------------------
 st.header("Detailed Answer")
 QUESTIONS = [
-    "Show diminishing returns by channel and spend curve. Include publisher-level insights.",
-    "Which publishers performed best by audience segment?",
-    "Compare online and offline CLV. What do user journey paths suggest?",
-    "What mix of channels would you recommend for $100M, $200M, and $300M investment levels?",
-    "Which months had the most churn? What were the internal and external factors?",
-    "Research external market or economic factors that may explain churn or performance shifts.",
-    "Which format generated the highest ROI and CPA?",
-    "Which channels had the highest click-to-conversion rate?",
-    "What should we scale, pause, or optimize for efficiency?"
+    "Analyze diminishing returns by channel and spend curve.",
+    "Identify top-performing publishers by audience segment.",
+    "Recommend optimal channel mixes for $100M, $200M, and $300M investment levels.",
+    "Highlight months with the highest churn and distinguish internal vs. external drivers.",
+    "Assess external market and economic factors influencing churn or performance shifts.",
+    "Determine which formats delivered the highest ROI and CPA.",
+    "Evaluate channels with the strongest click-to-conversion rates.",
+    "Advise what to scale, pause, or optimize for maximum efficiency."
 ]
 selected = st.selectbox("Select a question", options=QUESTIONS, index=0)
 
@@ -169,6 +155,42 @@ if selected and client:
         detailed = response.choices[0].message.content
     st.markdown(f"<div class='answer-card'>{detailed}</div>", unsafe_allow_html=True)
 
+    # Add relevant chart
+    if "diminishing returns" in selected.lower():
+        chart = alt.Chart(df).mark_line(point=True).encode(
+            x="Media Spend ($)", y="ROAS",
+            tooltip=["Month","Media Spend ($)","ROAS"]
+        ).properties(title="Diminishing Returns: Spend vs ROAS")
+        st.altair_chart(chart, use_container_width=True)
+
+    elif "churn" in selected.lower():
+        chart = alt.Chart(df).mark_line(point=True).encode(
+            x="Month", y="Churn (%)",
+            tooltip=["Month","Churn (%)"]
+        ).properties(title="Monthly Churn Trend")
+        st.altair_chart(chart, use_container_width=True)
+
+    elif "roi and cpa" in selected.lower():
+        formats = pd.DataFrame({
+            "Format": ["Video","Display","Social","CTV"],
+            "ROI": [3.2, 2.1, 2.8, 3.5],
+            "CPA": [55, 40, 50, 45]
+        })
+        chart = alt.Chart(formats).mark_bar().encode(
+            x="Format", y="ROI", tooltip=["Format","ROI","CPA"]
+        ).properties(title="ROI by Format")
+        st.altair_chart(chart, use_container_width=True)
+
+    elif "click-to-conversion" in selected.lower():
+        channels = pd.DataFrame({
+            "Channel": ["Search","Social","CTV","Display"],
+            "CVR (%)": [5.2, 3.8, 4.5, 2.9]
+        })
+        chart = alt.Chart(channels).mark_bar().encode(
+            x="Channel", y="CVR (%)", tooltip=["Channel","CVR (%)"]
+        ).properties(title="Click-to-Conversion Rate by Channel")
+        st.altair_chart(chart, use_container_width=True)
+
 # -------------------------------
 # REFERENCE DICTIONARY
 # -------------------------------
@@ -178,16 +200,18 @@ dims_metrics = {
         "Revenue ($)": "Total income generated from sales.",
         "Media Spend ($)": "Total advertising expenditure.",
         "ROAS": "Return on Ad Spend = Revenue / Media Spend.",
-        "CLV ($)": "Customer Lifetime Value.",
-        "CAC ($)": "Customer Acquisition Cost.",
-        "Churn (%)": "Percentage of customers lost.",
-        "CRM Engagement": "Interactions with CRM campaigns.",
-        "AOV ($)": "Average Order Value.",
-        "Retention Rate (%)": "Percentage of customers retained.",
+        "CLV ($)": "Customer Lifetime Value — projected net revenue from a customer over their relationship.",
+        "CAC ($)": "Customer Acquisition Cost — marketing spend divided by new customers acquired.",
+        "Churn (%)": "Percentage of customers lost over a given period.",
+        "CRM Engagement": "Interactions with CRM campaigns (opens, clicks, conversions).",
+        "AOV ($)": "Average Order Value — total revenue divided by number of orders.",
+        "Retention Rate (%)": "Percentage of customers retained over a given period.",
         "Repeat Purchase Rate (%)": "Percentage of customers making repeat purchases."
     }
 }
-df_dict = pd.DataFrame.from_dict(dims_metrics["Definitions"], orient="index", columns=["Definition"])
+df_dict = pd.DataFrame.from_dict(
+    dims_metrics["Definitions"], orient="index", columns=["Definition"]
+)
 st.table(df_dict)
 
 # -------------------------------
@@ -196,6 +220,6 @@ st.table(df_dict)
 st.markdown("---")
 st.markdown(
     "⚖️ [Legal Disclaimer](https://www.example.com/legal-disclaimer) — "
-    "The insights and visualizations generated by this tool are for informational purposes only and "
-    "should not be considered financial, legal, or business advice."
+    "The insights and visualizations generated by this tool are for informational purposes only "
+    "and should not be considered financial, legal, or business advice."
 )
