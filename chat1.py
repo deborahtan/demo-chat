@@ -13,17 +13,13 @@ st.title("📊 C-Suite Marketing, CRM & Financial Insights Assistant")
 # -------------------------------
 # API KEY (secure handling)
 # -------------------------------
-# Option 1: Environment variable
 api_key = os.getenv("OPENAI_API_KEY")
-
-# Option 2: Streamlit secrets (for Streamlit Cloud)
 if not api_key and "OPENAI_API_KEY" in st.secrets:
     api_key = st.secrets["OPENAI_API_KEY"]
 
 if not api_key:
     st.error("❌ No API key found. Please set OPENAI_API_KEY as env var or in Streamlit secrets.")
 else:
-    # ✅ new client style: create a client instance
     client = OpenAI(api_key=api_key)
 
 # -------------------------------
@@ -153,12 +149,12 @@ st.bar_chart(df.set_index("Month")[["Conversion Rate (%)", "Customer Churn (%)"]
 if query and api_key:
     with st.spinner("Analyzing with AI..."):
         stream = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o-mini",   # ✅ new client style
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query}
             ],
-            stream=True,   # ✅ enable streaming
+            stream=True,
         )
 
         st.subheader("🤖 AI Executive Insight")
@@ -166,6 +162,6 @@ if query and api_key:
         full_text = ""
 
         for chunk in stream:
-            if chunk.choices[0].delta.get("content"):
-                full_text += chunk.choices[0].delta["content"]
+            if chunk.choices[0].delta.content:
+                full_text += chunk.choices[0].delta.content
                 placeholder.markdown(full_text)
