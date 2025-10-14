@@ -7,42 +7,90 @@ from openai import OpenAI
 # -------------------------------
 # CONFIG & BRANDING
 # -------------------------------
-st.set_page_config(page_title="Strategic Intelligence Assistant", page_icon="🧠", layout="wide")
+st.set_page_config(
+    page_title="Strategic Intelligence Assistant",
+    page_icon="https://img.icons8.com/ios11/16/000000/dashboard-gauge.png",  # professional favicon
+    layout="wide"
+)
 
+# Custom theme using your palette
 st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-        html, body, [class*="css"]  {
-            font-family: 'Inter', sans-serif;
+        body {
             background-color: #000000;
-            color: #F8F8F2;
+            color: #fffefe;
         }
-        h1, h2, h3, label { color: #FFFFFF; }
+        h1, h2, h3, h4, h5, h6 {
+            color: #fffefe;
+            font-weight: 600;
+            border-bottom: none !important;
+        }
+        section.main > div {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
         .metric-card {
-            background-color: #121417;
-            border: 1px solid #2A2F36;
-            border-radius: 10px;
-            padding: 16px;
-            margin: 6px 0;
+            background-color: #2e2e2e;
+            border: 1px solid #7e7e7e;
+            border-radius: 12px;
+            padding: 18px;
+            margin: 8px 0;
             text-align: center;
         }
-        .metric-label { color: #A6B1BB; font-weight: 600; font-size: 13px; letter-spacing: 0.2px; }
-        .metric-value { color: #FFFFFF; font-size: 20px; font-weight: 700; }
-        .section-title {
-            border-bottom: 1px solid #2A2F36;
-            padding-bottom: 6px;
-            margin-top: 18px;
+        .metric-label {
+            color: #b6b6b6;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.3px;
+        }
+        .metric-value {
+            color: #cc1e27;
+            font-size: 22px;
+            font-weight: 700;
         }
         .answer-card {
-            background-color: #0E1114;
-            border: 1px solid #2A2F36;
-            border-radius: 10px;
-            padding: 16px;
+            background-color: #0e4136;
+            border: 1px solid #15395c;
+            border-radius: 12px;
+            padding: 20px;
+            color: #f1efec;
+        }
+        .point-card {
+            background-color: #2e2e2e;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin: 6px 0;
+            color: #f1efec;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+        .point-card.internal {
+            border-left: 4px solid #cc1e27;
+        }
+        .point-card.external {
+            border-left: 4px solid #15395c;
+        }
+        .stButton>button {
+            background-color: #cc1e27;
+            color: #fffefe;
+            border-radius: 6px;
+            border: none;
+            padding: 8px 16px;
+            font-weight: 600;
+        }
+        .stButton>button:hover {
+            background-color: #f1a4a5;
+            color: #000000;
+        }
+        a.disclaimer {
+            color: #f1a4a5;
+            text-decoration: underline;
+            font-size: 13px;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# Use the dentsu black logo
+# Branding
 st.image("https://upload.wikimedia.org/wikipedia/commons/e/e5/Dentsu-logo_black.svg", width=160)
 st.title("Strategic Intelligence Assistant")
 
@@ -63,31 +111,61 @@ else:
 # SYSTEM PROMPT
 # -------------------------------
 system_prompt = """
-You are an AI insights assistant for C‑suite executives in marketing, CRM, and finance.
-Your role is to analyze enterprise‑scale performance data and answer in clear, strategic,
-executive‑ready language.
+You are an AI Insights Assistant for C‑suite executives in Marketing, Media, Creative, CRM, Finance, and Loyalty/Product.
+Your role is to analyze enterprise‑scale performance data and deliver clear, strategic, executive‑ready insights and interactive visualizations.
 
-Always:
-- Focus on financial impact, risks, and opportunities.
-- Highlight trends, seasonal patterns, and anomalies.
-- Provide concise, actionable recommendations for Marketing/Media, Creative, and Finance teams.
-- Use metrics like Revenue, ROAS, CAC, CLV, Churn, CRM Engagement, CPC, CPA, and Conversion Rate.
-- Identify top-performing creative messaging, targeting strategies, channels, publishers, and formats.
-- Recommend optimizations based on what worked and what underperformed.
-- Analyze diminishing returns by channel and spend curve.
-- Compare publisher performance by audience segment.
-- Evaluate online vs. offline CLV and user journey paths.
-- Recommend optimal channel mixes for different investment levels (e.g., $100M, $200M, $300M).
-- Identify months with highest churn and explore internal/external drivers.
-- Research external market or economic factors that may explain churn or performance shifts.
-- Determine which formats generate the highest CPC, ROI, and CPA.
-- Highlight channels with the highest click-to-conversion rates.
-- Recommend what to scale, pause, or optimize for efficiency.
-- Write in a professional, boardroom‑ready tone.
+Core responsibilities:
+- Structure every response as Insight → Action → Recommendation → Next Steps.
+- Focus on financial impact, risks, and opportunities; quantify upside/downside where possible.
+- Highlight trends, seasonal patterns, anomalies, and diminishing returns curves.
+- Provide concise, actionable recommendations tailored to Marketing/Media, Creative, CRM/Loyalty, and Finance teams.
+- Use key metrics: Revenue, ROAS, CAC, CLV (online/offline), Churn, CRM Engagement, AOV, CPC, CPA, Conversion Rate, Retention, and Repeat Rate.
+- Identify top-performing creative messaging, targeting strategies, channels, publishers, formats, and audience segments.
+- Recommend optimizations based on what worked and what underperformed; include risk/impact and effort levels.
+- Analyze diminishing returns by channel and spend curve; flag thresholds where marginal ROI declines.
+- Compare publisher performance by audience segment; include reach, frequency, and quality (post‑click) metrics.
+- Evaluate online vs. offline CLV, attribution, and user journey paths; recommend journey‑level interventions.
+- Recommend optimal channel mixes for different investment levels ($100M, $200M, $300M), with marginal ROI and risk scenarios.
+- Identify months with highest churn; separate internal vs. external drivers; estimate revenue impact.
+- Research and contextualize external market/economic factors; distinguish controllable vs. uncontrollable.
+- Determine formats with highest ROI and CPA; balance efficiency vs. scale and creative fatigue risk.
+- Highlight channels with highest click‑to‑conversion and CLV; avoid over‑indexing on low‑quality volume.
+- Recommend what to scale, pause, or optimize for efficiency; include forecasted impact on EBITDA.
+
+Interactive visualization (Streamlit):
+- Generate Streamlit‑ready charts that are boardroom‑grade and interactive (hover tooltips show relevant metrics).
+- Prefer Altair or Plotly for interactivity, tooltips, and responsive design; include clear titles, axis labels, and annotations.
+- Provide code snippets ready to paste into a Streamlit app (st.altair_chart / st.plotly_chart); ensure hover tooltips expose metric values.
+
+Evidence and reasoning:
+- Draw from internal dataset (provided tables/fields) and enrich with external research/context (industry benchmarks, macroeconomic trends).
+- Reference experiential knowledge across Media buying, Creative testing, CRM/Lifecycle, Loyalty programs, Product assortment, and Pricing/Promo.
+- Clearly separate data‑driven findings vs. judgment calls; flag assumptions and confidence levels.
+
+Follow‑up readiness:
+- Anticipate C‑suite follow‑up questions (e.g., “What’s the ROI if we reallocate 10% from Meta to CTV?”).
+- Provide scenario‑based insights and sensitivity analysis (best/base/worst).
+- Offer next‑step instrumentation (tracking, experiments, governance) to operationalize recommendations.
+
+Tone & delivery:
+- Write in professional, boardroom‑ready language.
+- Be concise, avoid jargon, and prioritize clarity and decision‑readiness.
+
+Output structure per question:
+1) Insight: What the data and context say (with numbers).
+2) Action: Concrete moves teams can take now.
+3) Recommendation: Strategic decision and rationale (financial impact, risks).
+4) Next Steps: Implementation, owners, timeline, measurement (KPIs, guardrails).
+
+When providing charts, include:
+- Chart title, labeled axes, currency/units, and tooltip fields (e.g., Spend, Revenue, ROAS, CAC, CPA, CVR, CLV).
+- Visual aids (benchmarks lines, thresholds, annotations for inflection points and anomalies).
+- Accessibility defaults (high contrast color palette, legible fonts).
 """
 
+
 # -------------------------------
-# EXECUTIVE QUESTIONS (left)
+# EXECUTIVE QUESTIONS
 # -------------------------------
 QUESTIONS = [
     "Show diminishing returns by channel and spend curve. Include publisher-level insights.",
@@ -101,7 +179,6 @@ QUESTIONS = [
     "What should we scale, pause, or optimize for efficiency?"
 ]
 
-# Wider left column so text doesn’t cut off
 left, right = st.columns([1.6, 2.4])
 
 with left:
@@ -127,7 +204,7 @@ def generate_data():
 df = generate_data()
 
 # -------------------------------
-# TOP RIGHT: SUMMARY + VISUALS
+# SUMMARY + VISUALS
 # -------------------------------
 with right:
     st.subheader("Executive summary")
@@ -150,7 +227,7 @@ with right:
     st.line_chart(df.set_index("Month")[["Revenue ($)", "CLV ($)"]])
 
 # -------------------------------
-# EXECUTIVE ANSWER (bottom, full width)
+# EXECUTIVE ANSWER
 # -------------------------------
 st.divider()
 st.subheader("Executive answer")
@@ -166,19 +243,24 @@ if selected and client:
         )
         answer = response.choices[0].message.content
 
-    # Prettify: split into bullet points and render in two columns
-    bullets = [f"- {line.strip()}" for line in answer.split("\n") if line.strip()]
+    bullets = [line.strip("- ").strip() for line in answer.split("\n") if line.strip()]
     if not bullets:
-        bullets = [f"- {line.strip()}" for line in answer.split(". ") if line.strip()]
+        bullets = [line.strip("- ").strip() for line in answer.split(". ") if line.strip()]
 
     st.markdown("<div class='answer-card'>", unsafe_allow_html=True)
-    col_a, col_b = st.columns(2)
-    half = max(1, len(bullets) // 2)
-    with col_a:
-        st.markdown("\n".join(bullets[:half]))
-    with col_b:
-        st.markdown("\n".join(bullets[half:]))
+    for text in bullets:
+        if "internal" in text.lower():
+            st.markdown(f"<div class='point-card internal'>✅ {text}</div>", unsafe_allow_html=True)
+        elif "external" in text.lower():
+            st.markdown(f"<div class='point-card external'>🌍 {text}</div>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<div class='point-card'>{text}</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
+
+    # Simple keyword frequency chart
+    keywords = pd.Series(" ".join(answer.split()).split()).value_counts().head(10)
+    st.subheader("AI-generated keyword frequency")
+    st.bar_chart(keywords)
 
 # -------------------------------
 # EXPANDABLE: Dimensions & metrics dictionary
@@ -187,38 +269,31 @@ st.divider()
 with st.expander("Dimensions & metrics dictionary"):
     dims_metrics = {
         "Dimensions": [
-            "Month", 
-            "Campaign Name", 
-            "Audience Segment", 
-            "Channel",
-            "Publisher", 
-            "Format", 
-            "Targeting Strategy", 
-            "Creative Messaging"
+            "Month", "Campaign Name", "Audience Segment", "Channel",
+            "Publisher", "Format", "Targeting Strategy", "Creative Messaging"
         ],
         "Core metrics": [
-            "Revenue ($)", 
-            "Media Spend ($)", 
-            "ROAS",
-            "CLV ($)"
+            "Revenue ($)", "Media Spend ($)", "ROAS", "CLV ($)"
         ],
-        "Additional enterprise metrics (not visualized here)": [
-            "CAC ($)", 
-            "Churn (%)", 
-            "CRM Emails Sent", 
-            "CRM Open Rate (%)",
-            "Leads Generated", 
-            "Conversions", 
-            "Conversion Rate (%)",
-            "CRM Engagements"
+        "Additional enterprise metrics": [
+            "CAC ($)", "Churn (%)", "CRM Emails Sent", "CRM Open Rate (%)",
+            "Leads Generated", "Conversions", "Conversion Rate (%)", "CRM Engagements",
+            "Retention Rate (%)", "Repeat Purchase Rate (%)", "AOV ($)"
         ],
         "Definitions": {
-            "Creative Messaging": "The specific advertising message, theme, or concept shown to an audience. Examples include value‑driven offers, urgency messaging, lifestyle positioning, or brand storytelling. In analytics, creatives are evaluated by performance metrics such as ROAS, CTR, or conversion rate to determine which messages resonate most effectively."
+            "Creative Messaging": "The specific advertising message, theme, or concept shown to an audience. Examples include value‑driven offers, urgency messaging, lifestyle positioning, or brand storytelling.",
+            "CAC ($)": "Customer Acquisition Cost — total marketing spend divided by new customers acquired.",
+            "CLV ($)": "Customer Lifetime Value — projected net revenue from a customer over their relationship with the company.",
+            "ROAS": "Return on Ad Spend — Revenue divided by Media Spend.",
+            "Churn (%)": "Percentage of customers lost over a given period.",
+            "AOV ($)": "Average Order Value — total revenue divided by number of orders."
         },
-                "Notes": [
+        "Notes": [
             "ROAS = Revenue / Media Spend",
             "Monthly CLV shown for trend illustration; production views use cohort CLV",
-            "Extend dictionary to match your GA4/GMP/CRM schema"
+            "Extend dictionary to match your GA4/GMP/CRM schema",
+            "Include both online and offline CLV where possible",
+            "Ensure consistency of metric definitions across Finance, Marketing, and CRM teams"
         ]
     }
 
