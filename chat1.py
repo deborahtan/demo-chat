@@ -2,7 +2,7 @@ import os
 import streamlit as st
 import pandas as pd
 import numpy as np
-import openai>=1.2.0 as OpenAI
+from openai import OpenAI
 
 # -------------------------------
 # CONFIG
