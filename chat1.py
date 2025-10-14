@@ -181,10 +181,9 @@ with st.container():
             st.altair_chart(pub_chart, use_container_width=True)
 
 # -------------------------------
-# REFERENCE DICTIONARY
+# REFERENCE DICTIONARY (Expandable)
 # -------------------------------
-with st.container():
-    st.subheader("Dimensions & Metrics Dictionary")"
+with st.expander("📖 Dimensions & Metrics Dictionary", expanded=False):
     dims_metrics = {
         "Definitions": {
             "Impressions": "Number of times an ad was displayed.",
