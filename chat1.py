@@ -148,20 +148,24 @@ st.line_chart(df.set_index("Month")[["Revenue ($)", "Media Spend ($)"]])
 st.bar_chart(df.set_index("Month")[["Conversion Rate (%)", "Customer Churn (%)"]])
 
 # -------------------------------
-# AI INSIGHTS (OpenAI)
+# AI INSIGHTS (OpenAI) with streaming
 # -------------------------------
 if query and api_key:
     with st.spinner("Analyzing with AI..."):
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",   # or "gpt-4.1" if your account has access
+        stream = client.chat.completions.create(
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query}
-            ]
+            ],
+            stream=True,   # ✅ enable streaming
         )
 
-        # Extract just the text answer
-        answer = response.choices[0].message["content"]
-
         st.subheader("🤖 AI Executive Insight")
-        st.write(answer)
+        placeholder = st.empty()
+        full_text = ""
+
+        for chunk in stream:
+            if chunk.choices[0].delta.get("content"):
+                full_text += chunk.choices[0].delta["content"]
+                placeholder.markdown(full_text)
