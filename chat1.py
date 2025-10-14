@@ -12,14 +12,12 @@ st.set_page_config(page_title="Black Detsu | Strategic Insights", page_icon="�
 st.markdown("""
     <style>
         .main {background-color: #0B0C10;}
-        h1, h2, h3, .stTextInput label, .stSelectbox label {
-            color: #F8F8F2;
-        }
-        .stMetric label {color: #66FCF1;}
-        .stMetric {background-color: #1F2833; border-radius: 8px; padding: 10px;}
-        .stDataFrame {background-color: #1F2833;}
-        .css-1d391kg {color: #C5C6C7;}
-        .block-container {padding-top: 2rem;}
+        h1, h2, h3, .stTextInput label, .stSelectbox label { color: #F8F8F2; }
+        .stMetric label { color: #66FCF1; }
+        .stMetric { background-color: #1F2833; border-radius: 8px; padding: 10px; }
+        .stDataFrame { background-color: #1F2833; }
+        .css-1d391kg { color: #C5C6C7; }
+        .block-container { padding-top: 2rem; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -85,7 +83,6 @@ SUGGESTIONS = {
 
 selected_suggestion = st.selectbox("💬 Executive Questions", options=[""] + list(SUGGESTIONS.values()))
 user_question = st.text_input("Or type your own question:")
-
 query = selected_suggestion or user_question or None
 
 # -------------------------------
@@ -94,11 +91,19 @@ query = selected_suggestion or user_question or None
 @st.cache_data
 def generate_enterprise_data():
     np.random.seed(42)
-    months = pd.date_range(start="2024-10-01", periods=12, freq="MS").strftime("%b-%Y")
+    months = pd.date_range(start="2024-01-01", periods=12, freq="MS").strftime("%b-%Y")
 
-    campaigns = [...]
-    audiences = [...]
-    channels = ["Paid Search","Social","Display","Email","Video"]
+    campaigns = [
+        "CC Acquisition Q1", "CC Retargeting Q2", "CA Onboarding Q1", "CA Growth Q2",
+        "Mortgage LeadGen Q1", "Mortgage Seasonality Q2", "Loans Promo Q1", "Loans Burst Q2",
+        "BB Awareness Q1", "BB LeadGen Q2", "CRM Re-engage Q1", "CRM Loyalty Q2"
+    ]
+    audiences = [
+        "Students", "Young Professionals", "Families", "Homeowners",
+        "Small Business", "High Net Worth", "Loyal Customers", "Churn Risk",
+        "Prospects", "App Users", "Web Users", "In-branch"
+    ]
+    channels = ["Paid Search", "Social", "Display", "Email", "Video"]
     creatives = ["Low Fee + Rewards", "Holiday Urgency", "Student Empowerment", "Homeowner Stability", "Creative Refresh"]
     strategies = ["Retargeting", "Lookalike", "Sequential Messaging", "Always On", "Burst"]
     publishers = ["Google", "Meta", "YouTube", "TikTok", "LinkedIn"]
@@ -166,9 +171,7 @@ top_creatives = df.groupby("Creative Messaging")["ROAS"].mean().sort_values(asce
 st.bar_chart(top_creatives)
 
 st.subheader("🎯 Targeting Strategy Effectiveness")
-strategy_conv = df.groupby("Targeting Strategy")["Conversion Rate (%)"].mean().
-
-# Continue from previous chart
+strategy_conv = df.groupby("Targeting Strategy")["Conversion Rate (%)"].mean()
 st.bar_chart(strategy_conv)
 
 st.subheader("📡 Channel Revenue Performance")
@@ -207,6 +210,6 @@ if query and api_key:
         full_text = ""
 
         for chunk in stream:
-            if chunk.choices[0].delta.content:
+            if chunk.choices and chunk.choices[0].delta and chunk.choices[0].delta.content:
                 full_text += chunk.choices[0].delta.content
                 placeholder.markdown(full_text)
