@@ -157,9 +157,7 @@ with right:
     st.subheader("📈 Monthly Performance")
     st.dataframe(df, use_container_width=True)
 
-    st.subheader("📊 Visual Trends")
-    st.line_chart(df.set_index("Month")[["Revenue ($)", "Media Spend ($)
-        # -------------------------------
+      # -------------------------------
     # RESTORED ORIGINAL GRAPHS
     # -------------------------------
     st.subheader("📊 Visual Trends")
@@ -190,6 +188,7 @@ with right:
     click_conv = df.groupby("Channel")[["Leads Generated", "Conversions"]].sum()
     click_conv["Click-to-Conversion (%)"] = (click_conv["Conversions"] / click_conv["Leads Generated"]) * 100
     st.bar_chart(click_conv["Click-to-Conversion (%)"])
+
 
 # -------------------------------
 # AI INSIGHTS SECTION
