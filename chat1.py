@@ -1,49 +1,110 @@
+import os
 import streamlit as st
 import pandas as pd
 import numpy as np
+from openai import OpenAI
 
 # -------------------------------
 # CONFIG
 # -------------------------------
-st.set_page_config(page_title="C-Suite Marketing & CRM Insights", layout="wide")
-
-st.title("📊 C-Suite Marketing & CRM Insights Assistant")
+st.set_page_config(page_title="C-Suite Marketing Insights", layout="wide")
+st.title("📊 C-Suite Marketing, CRM & Financial Insights Assistant")
 
 # -------------------------------
-# SUGGESTED QUESTIONS
+# API KEY (secure handling)
+# -------------------------------
+# Option 1: Environment variable
+api_key = os.getenv("OPENAI_API_KEY")
+
+# Option 2: Streamlit secrets (for Streamlit Cloud)
+if not api_key and "OPENAI_API_KEY" in st.secrets:
+    api_key = st.secrets["OPENAI_API_KEY"]
+
+if not api_key:
+    st.error("❌ No API key found. Please set OPENAI_API_KEY as env var or in Streamlit secrets.")
+else:
+    client = OpenAI(api_key=api_key)
+
+# -------------------------------
+# SYSTEM PROMPT (C-Suite framing)
+# -------------------------------
+system_prompt = """
+You are an AI insights assistant for C‑suite executives in marketing, CRM, and finance.
+Your role is to analyze enterprise‑scale performance data and answer in clear, strategic,
+executive‑ready language.
+
+Always:
+- Focus on financial impact, risks, and opportunities.
+- Highlight trends, seasonal patterns, and anomalies.
+- Provide concise, actionable recommendations for Marketing, CRM, and Finance teams.
+- Use metrics like Revenue, ROAS, CAC, CLV, Churn, and CRM Engagement.
+- Write in a professional, boardroom‑ready tone.
+
+Example executive questions you should be able to answer:
+- What was our total revenue last year? Break it down by month and key drivers.
+- What trends stood out across media spend, CRM engagement, and conversions? Any seasonal patterns?
+- How did our CAC and CLV evolve over the year? What does that mean for profitability?
+- Where should we focus next quarter? What are the biggest risks and opportunities?
+- Give me strategic recommendations for Media, Creative, CRM, and Finance teams based on last year’s performance.
+"""
+
+# -------------------------------
+# EXECUTIVE QUESTIONS (UI)
 # -------------------------------
 SUGGESTIONS = {
-    ":blue[:material/insights:] What was our total revenue last year?": (
-        "What was our total revenue last year? Can you break it down by month and highlight key drivers?"
-    ),
-    ":green[:material/trending_up:] What trends stood out across media and CRM?": (
-        "What trends stood out across media spend, CRM engagement, and conversions? Any seasonal patterns?"
-    ),
-    ":orange[:material/compare:] How did CAC and CLV evolve?": (
-        "How did our CAC and CLV evolve over the year? What does that mean for profitability?"
-    ),
-    ":violet[:material/priority:] Where should we focus next quarter?": (
-        "Where should we focus next quarter? What are the biggest risks and opportunities?"
-    ),
-    ":red[:material/strategy:] Strategic recommendations for teams": (
-        "Give me strategic recommendations for marketing, CRM, and finance teams based on last year's performance."
-    ),
+    "💰 Total Revenue": "What was our total revenue last year? Break it down by month and key drivers.",
+    "📈 Trends": "What trends stood out across media spend, CRM engagement, and conversions? Any seasonal patterns?",
+    "💸 CAC & CLV": "How did our CAC and CLV evolve over the year? What does that mean for profitability?",
+    "🎯 Next Quarter Focus": "Where should we focus next quarter? What are the biggest risks and opportunities?",
+    "🧠 Recommendations": "Give me strategic recommendations for Marketing, CRM, and Finance teams based on last year’s performance."
 }
 
 selected_suggestion = st.selectbox("💬 Executive Questions", options=[""] + list(SUGGESTIONS.values()))
+user_question = st.text_input("Or type your own question:")
+
 if selected_suggestion:
-    st.info(f"**{selected_suggestion}**")
+    query = selected_suggestion
+elif user_question:
+    query = user_question
+else:
+    query = None
 
 # -------------------------------
-# DATA GENERATION
+# SAMPLE DATA GENERATION
 # -------------------------------
 @st.cache_data
 def generate_enterprise_data():
     np.random.seed(42)
     months = pd.date_range(start="2024-10-01", periods=12, freq="MS").strftime("%b-%Y")
 
+    campaigns = [
+        "CC_Acq_YPro_Branded+Competitor_AlwaysOn",
+        "CC_Acq_YPro_GenericLowFee+Rewards_Burst",
+        "CC_Acq_YPro_GenericRewards_Sustain",
+        "CC_Acq_YPro_Seasonal_PreHoliday_Burst",
+        "PL_Acq_Students_VideoAwareness_AlwaysOn",
+        "PL_Acq_Students_Reach+Engagement_Burst",
+        "PL_Acq_Students_CreativeTest_Sustain",
+        "PL_Acq_Students_Retargeting_Conversion",
+        "MTG_Acq_Homeowners_Retargeting_AlwaysOn",
+        "MTG_Acq_Homeowners_SequentialMessaging",
+        "MTG_Acq_Homeowners_Awareness_Sustain",
+        "MTG_Acq_Homeowners_CreativeRefresh_Burst"
+    ]
+
+    audiences = [
+        "Young Professionals","Young Professionals","Young Professionals","Young Professionals",
+        "Students","Students","Students","Students",
+        "Homeowners","Homeowners","Homeowners","Homeowners"
+    ]
+
+    channels = ["Paid Search","Social","Display","Email","Video"]
+
     data = {
         "Month": months,
+        "Audience Segment": audiences,
+        "Campaign Name": campaigns,
+        "Channel": np.random.choice(channels, size=12),
         "Media Spend ($)": np.random.randint(10_000_000, 50_000_000, size=12),
         "CRM Emails Sent": np.random.randint(5_000_000, 20_000_000, size=12),
         "CRM Open Rate (%)": np.round(np.random.uniform(15, 35, size=12), 2),
@@ -64,38 +125,18 @@ def generate_enterprise_data():
 df = generate_enterprise_data()
 
 # -------------------------------
-# INSIGHT EXTRACTION
+# EXECUTIVE SUMMARY
 # -------------------------------
-def extract_summary(df):
-    return {
-        "Total Revenue": f"${df['Revenue ($)'].sum():,.0f}",
-        "Total Spend": f"${df['Media Spend ($)'].sum():,.0f}",
-        "Average ROAS": round(df["ROAS"].mean(), 2),
-        "Average CAC": f"${df['CAC ($)'].mean():,.2f}",
-        "Average CLV": f"${df['CLV ($)'].mean():,.2f}",
-        "Best Month (ROAS)": df.loc[df["ROAS"].idxmax(), "Month"],
-        "Worst Month (Churn)": df.loc[df["Customer Churn (%)"].idxmax(), "Month"],
-        "CRM Engagement Peak": df.loc[df["CRM Engagements"].idxmax(), "Month"],
-    }
-
-summary = extract_summary(df)
-
-# -------------------------------
-# STRATEGIC RECOMMENDATIONS
-# -------------------------------
-def generate_recommendations(df):
-    recs = []
-    if df["ROAS"].mean() < 10:
-        recs.append("📉 ROAS is below optimal. Reallocate spend to high-performing channels.")
-    if df["CAC ($)"].mean() > 100:
-        recs.append("💸 CAC is elevated. Optimize acquisition and refine lead scoring.")
-    if df["CLV ($)"].mean() < 1000:
-        recs.append("📦 CLV is low. Explore upsell/cross-sell and loyalty strategies.")
-    if df["Customer Churn (%)"].max() > 6:
-        recs.append("⚠️ High churn detected. Reinforce onboarding and retention programs.")
-    if df["CRM Open Rate (%)"].mean() < 20:
-        recs.append("📬 CRM engagement is weak. Test new subject lines and segmentation.")
-    return recs
+summary = {
+    "Total Revenue": f"${df['Revenue ($)'].sum():,.0f}",
+    "Total Spend": f"${df['Media Spend ($)'].sum():,.0f}",
+    "Average ROAS": round(df["ROAS"].mean(), 2),
+    "Average CAC": f"${df['CAC ($)'].mean():,.2f}",
+    "Average CLV": f"${df['CLV ($)'].mean():,.2f}",
+    "Best Month (ROAS)": df.loc[df["ROAS"].idxmax(), "Month"],
+    "Worst Month (Churn)": df.loc[df["Customer Churn (%)"].idxmax(), "Month"],
+    "CRM Engagement Peak": df.loc[df["CRM Engagements"].idxmax(), "Month"],
+}
 
 # -------------------------------
 # DISPLAY
@@ -112,6 +153,17 @@ st.subheader("📊 Visual Trends")
 st.line_chart(df.set_index("Month")[["Revenue ($)", "Media Spend ($)"]])
 st.bar_chart(df.set_index("Month")[["Conversion Rate (%)", "Customer Churn (%)"]])
 
-st.subheader("🧠 Strategic Recommendations")
-for rec in generate_recommendations(df):
-    st.markdown(f"- {rec}")
+# -------------------------------
+# AI INSIGHTS (OpenAI)
+# -------------------------------
+if query and api_key:
+    with st.spinner("Analyzing with AI..."):
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": query}
+            ]
+        )
+        st.subheader("🤖 AI Executive Insight")
+        st.write(response.choices[0].message["content"])
