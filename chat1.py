@@ -14,8 +14,9 @@ st.markdown("""
         @import url('https://fonts.googleapis.com/css2?family=Stabil+Grotesk:wght@400;600&display=swap');
         html, body, [class*="css"]  {
             font-family: 'Stabil Grotesk', sans-serif;
+            background-color: #000000;
+            color: #F8F8F2;
         }
-        .main {background-color: #0B0C10;}
         h1, h2, h3, label { color: #F8F8F2; }
         .stMetric label { color: #66FCF1; }
         .stMetric { background-color: #1F2833; border-radius: 8px; padding: 10px; }
@@ -67,9 +68,8 @@ Always:
 """
 
 # -------------------------------
-# EXECUTIVE QUESTIONS (main page, left side)
+# EXECUTIVE QUESTIONS (left side)
 # -------------------------------
-st.subheader("💬 Executive Questions")
 SUGGESTIONS = {
     "📉 Diminishing Returns": "Show diminishing returns by channel and spend curve. Include publisher-level insights.",
     "🧑‍🤝‍🧑 Publisher by Audience": "Which publishers performed best by audience segment?",
@@ -81,9 +81,13 @@ SUGGESTIONS = {
     "🚀 Conversion Efficiency": "Which channels had the highest click-to-conversion rate?",
     "⚖️ Efficiency Strategy": "What should we scale, pause, or optimize based on efficiency?"
 }
-selected_suggestion = st.selectbox("Select a question", options=[""] + list(SUGGESTIONS.values()))
-user_question = st.text_area("Ask your own question (free text):")
-query = selected_suggestion or user_question or None
+
+left, right = st.columns([1,3])
+with left:
+    st.subheader("💬 Executive Questions")
+    selected_suggestion = st.radio("Select a question", options=list(SUGGESTIONS.values()))
+    user_question = st.text_area("Or ask your own question:")
+    ask_button = st.button("Ask Question")
 
 # -------------------------------
 # SAMPLE DATA GENERATION
@@ -98,6 +102,7 @@ def generate_enterprise_data():
     creatives = ["Low Fee + Rewards", "Holiday Urgency", "Student Empowerment", "Homeowner Stability", "Creative Refresh"]
     strategies = ["Retargeting", "Lookalike", "Sequential Messaging", "Always On", "Burst"]
     publishers = ["Google", "Meta", "YouTube", "TikTok", "LinkedIn"]
+    formats = ["Video", "Carousel", "Search Ad", "Email", "Display Banner"]
 
     data = {
         "Month": months,
@@ -107,7 +112,10 @@ def generate_enterprise_data():
         "Creative Messaging": np.random.choice(creatives, size=12),
         "Targeting Strategy": np.random.choice(strategies, size=12),
         "Publisher": np.random.choice(publishers, size=12),
+        "Format": np.random.choice(formats, size=12),
         "Media Spend ($)": np.random.randint(10_000_000, 50_000_000, size=12),
+        "CRM Emails Sent": np.random.randint(5_000_000, 20_000_000, size=12),
+        "CRM Open Rate (%)": np.round(np.random.uniform(15, 35, size=12), 2),
         "Leads Generated": np.random.randint(500_000, 2_000_000, size=12),
         "Conversions": np.random.randint(150_000, 800_000, size=12),
         "Revenue ($)": np.random.randint(200_000_000, 1_000_000_000, size=12),
@@ -118,6 +126,7 @@ def generate_enterprise_data():
     df = pd.DataFrame(data)
     df["Conversion Rate (%)"] = (df["Conversions"] / df["Leads Generated"]) * 100
     df["ROAS"] = df["Revenue ($)"] / df["Media Spend ($)"]
+    df["CRM Engagements"] = df["CRM Emails Sent"] * (df["CRM Open Rate (%)"] / 100)
     return df
 
 df = generate_enterprise_data()
@@ -133,35 +142,60 @@ summary = {
     "Average CLV": f"${df['CLV ($)'].mean():,.2f}",
     "Best Month (ROAS)": df.loc[df["ROAS"].idxmax(), "Month"],
     "Worst Month (Churn)": df.loc[df["Customer Churn (%)"].idxmax(), "Month"],
+    "CRM Engagement Peak": df.loc[df["CRM Engagements"].idxmax(), "Month"],
 }
 
-st.subheader("📌 Executive Summary")
-cols = st.columns(len(summary))
-for col, (k, v) in zip(cols, summary.items()):
-    col.metric(label=k, value=v)
+with right:
+    st.subheader("📌 Executive Summary")
+    cols = st.columns(len(summary))
+    for col, (k, v) in zip(cols, summary.items()):
+        col.metric(label=k, value=v)
+
+    # -------------------------------
+    # RESTORED ORIGINAL GRAPHS
+    # -------------------------------
+    st.subheader("📈 Monthly Performance")
+    st.dataframe(df, use_container_width=True)
+
+    st.subheader("📊 Visual Trends")
+    st.line_chart(df.set_index("Month")[["Revenue ($)", "Media Spend ($)
+        # -------------------------------
+    # RESTORED ORIGINAL GRAPHS
+    # -------------------------------
+    st.subheader("📊 Visual Trends")
+    st.line_chart(df.set_index("Month")[["Revenue ($)", "Media Spend ($)"]])
+    st.bar_chart(df.set_index("Month")[["Conversion Rate (%)", "Customer Churn (%)"]])
+
+    st.subheader("🎨 Creative Messaging Performance (ROAS)")
+    creative_roas = df.groupby("Creative Messaging")["ROAS"].mean().sort_values(ascending=False)
+    st.bar_chart(creative_roas)
+
+    st.subheader("🎯 Targeting Strategy Effectiveness")
+    strategy_conv = df.groupby("Targeting Strategy")["Conversion Rate (%)"].mean().sort_values(ascending=False)
+    st.bar_chart(strategy_conv)
+
+    st.subheader("📡 Channel Revenue Performance")
+    channel_rev = df.groupby("Channel")["Revenue ($)"].sum().sort_values(ascending=False)
+    st.bar_chart(channel_rev)
+
+    st.subheader("📰 Publisher Performance by Audience Segment")
+    publisher_audience = df.groupby(["Publisher", "Audience Segment"])["Revenue ($)"].sum().unstack().fillna(0)
+    st.bar_chart(publisher_audience)
+
+    st.subheader("🎥 Format Efficiency (ROAS)")
+    format_roas = df.groupby("Format")["ROAS"].mean().sort_values(ascending=False)
+    st.bar_chart(format_roas)
+
+    st.subheader("🚀 Click-to-Conversion Rate by Channel")
+    click_conv = df.groupby("Channel")[["Leads Generated", "Conversions"]].sum()
+    click_conv["Click-to-Conversion (%)"] = (click_conv["Conversions"] / click_conv["Leads Generated"]) * 100
+    st.bar_chart(click_conv["Click-to-Conversion (%)"])
 
 # -------------------------------
-# CHARTS
+# AI INSIGHTS SECTION
 # -------------------------------
-st.subheader("🎨 Top Performing Creatives by ROAS")
-top_creatives = df.groupby("Creative Messaging")["ROAS"].mean().sort_values(ascending=True).tail(5)
-st.bar_chart(top_creatives)
-
-st.subheader("🎯 Targeting Strategy Effectiveness")
-strategy_conv = df.groupby("Targeting Strategy")["Conversion Rate (%)"].mean().sort_values(ascending=True)
-st.bar_chart(strategy_conv)
-
-st.subheader("📰 Top Publishers by Conversions and ROAS")
-publisher_perf = df.groupby("Publisher").agg({
-    "Conversions": "sum",
-    "ROAS": "mean"
-}).sort_values("Conversions", ascending=False).head(5)
-st.bar_chart(publisher_perf)
-
-# -------------------------------
-# AI INSIGHTS
-# -------------------------------
-if query and client:
+if ask_button and (selected_suggestion or user_question) and client:
+    query = selected_suggestion or user_question
     with st.spinner("Analyzing with AI..."):
         stream = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -171,7 +205,7 @@ if query and client:
             ],
             stream=True,
         )
-        st.subheader("🤖 AI Executive Insight")
+        st.subheader("🤖 Executive Answer")
         placeholder = st.empty()
         full_text = ""
         for chunk in stream:
