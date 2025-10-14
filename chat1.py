@@ -215,7 +215,12 @@ with st.expander("Dimensions & metrics dictionary"):
         "Definitions": {
             "Creative Messaging": "The specific advertising message, theme, or concept shown to an audience. Examples include value‑driven offers, urgency messaging, lifestyle positioning, or brand storytelling. In analytics, creatives are evaluated by performance metrics such as ROAS, CTR, or conversion rate to determine which messages resonate most effectively."
         },
-        "Notes": [
+                "Notes": [
             "ROAS = Revenue / Media Spend",
             "Monthly CLV shown for trend illustration; production views use cohort CLV",
-            "Extend dictionary to match your GA
+            "Extend dictionary to match your GA4/GMP/CRM schema"
+        ]
+    }
+
+    # Display dictionary nicely
+    st.json(dims_metrics)
