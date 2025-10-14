@@ -2,8 +2,7 @@ import os
 import streamlit as st
 import pandas as pd
 import numpy as np
-import openai
-openai.api_key = os.getenv("OPENAI_API_KEY") or st.secrets["OPENAI_API_KEY"]
+import openai   # ✅ old client import
 
 # -------------------------------
 # CONFIG
@@ -24,7 +23,8 @@ if not api_key and "OPENAI_API_KEY" in st.secrets:
 if not api_key:
     st.error("❌ No API key found. Please set OPENAI_API_KEY as env var or in Streamlit secrets.")
 else:
-    client = OpenAI(api_key=api_key)
+    # ✅ old client style: set key directly on the module
+    openai.api_key = api_key
 
 # -------------------------------
 # SYSTEM PROMPT (C-Suite framing)
