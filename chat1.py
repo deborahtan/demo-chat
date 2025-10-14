@@ -24,6 +24,10 @@ st.markdown("""
             background-color: #2e2e2e; border-radius: 12px; padding: 20px; color: #fffefe;
         }
         .stTable { color: #fffefe; }
+        [data-testid="stSidebar"] {
+            min-width: 350px;
+            max-width: 420px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -56,7 +60,7 @@ Core responsibilities:
 - Always factor in audience types (Millennials, Gen X, Boomers), publisher strategies (NZ Herald, Stuff, TVNZ, MediaWorks, NZME Radio, Trade Me), and overarching portfolio trade‑offs.
 - Use the full funnel dataset: Impressions, Clicks, Conversions, Spend, Revenue, ROAS, ROI, CAC, CLV.
 - Highlight trends, seasonal patterns, anomalies, and diminishing returns curves.
-- When asked about diminishing returns, generate and plot a Streamlit‑ready Altair chart of Spend vs ROAS, with annotations for inflection points.
+- When asked about diminishing returns, generate and plot a Streamlit‑ready Altair chart of Spend vs ROAS by Channel.
 - When asked about publisher performance, compare across audience segments and quantify differences.
 - Provide actionable recommendations: reallocations, testing frameworks, risk/impact analysis.
 - Explicitly state reasoning, modelling decisions, and assumptions.
@@ -100,8 +104,22 @@ df = generate_data()
 # -------------------------------
 # SIDEBAR CONTROLS
 # -------------------------------
+if "recent_questions" not in st.session_state:
+    st.session_state.recent_questions = []
+
 with st.sidebar:
     st.header("Executive Q&A")
+
+    st.markdown(
+        """
+        **Instructions**  
+        - Select one of the predefined strategic questions from the dropdown.  
+        - Or type your own custom question in the text box below.  
+        - The assistant will generate structured insights (Insight → Action → Recommendation → Next Steps) and relevant charts.  
+        - Your recent questions will appear below for quick re‑selection.  
+        """
+    )
+
     QUESTIONS = [
         "Analyze diminishing returns by channel and spend curve.",
         "Identify top-performing publishers by audience segment.",
@@ -112,73 +130,124 @@ with st.sidebar:
         "Evaluate channels with the strongest click-to-conversion rates.",
         "Advise what to scale, pause, or optimize for maximum efficiency."
     ]
-    selected = st.selectbox("Select a question", options=QUESTIONS, index=0)
 
-# -------------------------------
-# EXECUTIVE SUMMARY
-# -------------------------------
-with st.container():
-    st.subheader("Executive Summary")
-    col1, col2, col3 = st.columns(3, gap="large")
+    selected = st.selectbox("Select a predefined question:", options=QUESTIONS, index=0)
+    custom_question = st.text_area("Or type your own question:")
 
-    palette = ["#1f77b4", "#ff7f0e", "#2ca02c"]
+    question_to_answer = custom_question.strip() if custom_question.strip() else selected
 
-    with col1:
-        roas_chart = alt.Chart(df).mark_line(point=True, color=palette[0]).encode(
-            x="Spend ($)", y="ROAS",
-            tooltip=["Month","Publisher","Audience","Spend ($)","ROAS"]
-        ).properties(title="ROAS vs Spend")
-        st.altair_chart(roas_chart, use_container_width=True)
-        st.caption("ROAS rises with spend but flattens beyond ~$35M, showing diminishing returns.")
+    if question_to_answer and question_to_answer not in st.session_state.recent_questions:
+        st.session_state.recent_questions.insert(0, question_to_answer)
+        st.session_state.recent_questions = st.session_state.recent_questions[:5]
 
-    with col2:
-        churn_df = df.groupby("Month")["Conversions"].sum().reset_index()
-        churn_df["Churn (%)"] = np.random.uniform(2, 8, size=len(churn_df))
-        churn_chart = alt.Chart(churn_df).mark_line(point=True, color=palette[1]).encode(
-            x="Month", y="Churn (%)", tooltip=["Month","Churn (%)"]
-        ).properties(title="Monthly Churn Trend")
-        st.altair_chart(churn_chart, use_container_width=True)
-        st.caption("Churn peaks in July and November, linked to CRM fatigue and macroeconomic slowdown.")
-
-    with col3:
-        corr_chart = alt.Chart(df).mark_circle(size=60, color=palette[2]).encode(
-            x="Revenue ($)", y="CLV ($)", tooltip=["Month","Publisher","Audience","Revenue ($)","CLV ($)"]
-        ).properties(title="Revenue vs CLV Correlation")
-        st.altair_chart(corr_chart, use_container_width=True)
-        st.caption("Higher CLV correlates with higher revenue, especially for premium publishers.")
+    if st.session_state.recent_questions:
+        st.markdown("**Recent Questions**")
+        for q in st.session_state.recent_questions:
+            if st.button(q, key=f"recent_{q}"):
+                question_to_answer = q
+        if st.button("🗑️ Clear History"):
+            st.session_state.recent_questions = []
 
 # -------------------------------
 # DETAILED ANSWER
 # -------------------------------
 with st.container():
     st.subheader("Detailed Answer")
-    if selected and client:
+    if question_to_answer and client:
         with st.spinner("Generating structured answer..."):
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Provide a structured answer with headings and bullet points (Insight, Action, Recommendation, Next Steps) for: {selected}, using the NZ dataset."}
+                    {"role": "user", "content": f"Provide a structured answer with headings and bullet points (Insight, Action, Recommendation, Next Steps) for: {question_to_answer}, using the NZ dataset."}
                 ]
             )
             detailed = response.choices[0].message.content
 
-        st.markdown(detailed, unsafe_allow_html=True)
+        # Split the AI response into sections
+        sections = {"Insight": "", "Action": "", "Recommendation": "", "Next Steps": ""}
+        current = None
+        for line in detailed.splitlines():
+            if any(h in line for h in sections.keys()):
+                for h in sections.keys():
+                    if h in line:
+                        current = h
+                        break
+            elif current:
+                sections[current] += line + "\n"
 
-        # Conditional chart logic (as before)
-        if "diminishing returns" in selected.lower():
-            chart = alt.Chart(df).mark_line(point=True, color=palette[0]).encode(
-                x="Spend ($)", y="ROAS", color="Publisher",
-                tooltip=["Month","Publisher","Audience","Spend ($)","ROAS"]
-            ).properties(title="Diminishing Returns: Spend vs ROAS by Publisher")
-            st.altair_chart(chart, use_container_width=True)
+        # Render each section as an expander
+        with st.expander("🔍 Insight", expanded=True):
+            st.markdown(sections["Insight"], unsafe_allow_html=True)
 
-        elif "publisher" in selected.lower():
-            pub_chart = alt.Chart(df).mark_bar(color=palette[1]).encode(
-                x="Publisher", y="Conversions", color="Audience",
-                tooltip=["Publisher","Audience","Conversions","ROAS","CAC ($)"]
-            ).properties(title="Publisher Performance by Audience Segment")
-            st.altair_chart(pub_chart, use_container_width=True)
+            # Add relevant chart under Insight
+            if "diminishing returns" in question_to_answer.lower():
+                channels = ["Search","Social","CTV","Display"]
+                df_channels = pd.DataFrame({
+                    "Channel": np.repeat(channels, 10),
+                    "Spend ($)": np.tile(np.linspace(1e6, 50e6, 10), len(channels)),
+                    "ROAS": np.concatenate([
+                        5 - 0.00000005*np.linspace(1e6, 50e6, 10),
+                        4 - 0.00000007*np.linspace(1e6, 50e6, 10),
+                        6 - 0.00000004*np.linspace(1e6, 50e6, 10),
+                        3 - 0.00000006*np.linspace(1e6, 50e6, 10)
+                    ])
+                })
+                chart = alt.Chart(df_channels).mark_line(point=True).encode(
+                    x="Spend ($)", y="ROAS", color="Channel",
+                    tooltip=["Channel","Spend ($)","ROAS"]
+                ).properties(title="Diminishing Returns: Spend vs ROAS by Channel")
+                st.altair_chart(chart, use_container_width=True)
+                st.caption("Each channel shows a flattening ROAS curve as spend increases, highlighting saturation points.")
+
+            elif "publisher" in question_to_answer.lower():
+                pub_chart = alt.Chart(df).mark_bar().encode(
+                    x="Publisher", y="Conversions", color="Audience",
+                    tooltip=["Publisher","Audience","Conversions","ROAS","CAC ($)"]
+                ).properties(title="Publisher Performance by Audience Segment")
+                st.altair_chart(pub_chart, use_container_width=True)
+                st.caption("Publishers over‑ or under‑index by audience segment; e.g. NZ Herald with Millennials vs Stuff with Gen X.")
+
+            elif "churn" in question_to_answer.lower():
+                churn_df = df.groupby("Month")["Conversions"].sum().reset_index()
+                churn_df["Churn (%)"] = np.random.uniform(2, 8, size=len(churn_df))
+                churn_chart = alt.Chart(churn_df).mark_line(point=True).encode(
+                    x="Month", y="Churn (%)", tooltip=["Month","Churn (%)"]
+                ).properties(title="Monthly Churn Trend")
+                st.altair_chart(churn_chart, use_container_width=True)
+                st.caption("Churn spikes in July and November, linked to CRM fatigue and macroeconomic slowdown.")
+
+            elif "roi and cpa" in question_to_answer.lower():
+                formats = pd.DataFrame({
+                    "Format": ["Video","Display","Social","CTV"],
+                    "ROI": [3.2, 2.1, 2.8, 3.5],
+                    "CPA": [55, 40, 50, 45]
+                })
+                chart = alt.Chart(formats).mark_bar().encode(
+                    x="Format", y="ROI", tooltip=["Format","ROI","CPA"]
+                ).properties(title="ROI by Format")
+                st.altair_chart(chart, use_container_width=True)
+                st.caption("Video delivers highest ROI but higher CPA; Display is more efficient but lower ROI.")
+
+            elif "click-to-conversion" in question_to_answer.lower():
+                channels = pd.DataFrame({
+                    "Channel": ["Search","Social","CTV","Display"],
+                    "CVR (%)": [5.2, 3.8, 4.5, 2.9]
+                })
+                chart = alt.Chart(channels).mark_bar().encode(
+                    x="Channel", y="CVR (%)", tooltip=["Channel","CVR (%)"]
+                ).properties(title="Click-to-Conversion Rate by Channel")
+                st.altair_chart(chart, use_container_width=True)
+                st.caption("Search drives the strongest conversion efficiency, followed by CTV.")
+
+        with st.expander("⚡ Action", expanded=False):
+            st.markdown(sections["Action"], unsafe_allow_html=True)
+
+        with st.expander("🎯 Recommendation", expanded=False):
+            st.markdown(sections["Recommendation"], unsafe_allow_html=True)
+
+        with st.expander("📝 Next Steps", expanded=False):
+            st.markdown(sections["Next Steps"], unsafe_allow_html=True)
 
 # -------------------------------
 # REFERENCE DICTIONARY (Expandable)
