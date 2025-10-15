@@ -152,7 +152,7 @@ with st.container():
     if question_to_answer and client:
         with st.spinner("Generating structured answer..."):
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="llama-3.1-8b-instant",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": f"Provide a structured answer with headings and bullet points (Insight, Action, Recommendation, Next Steps) for: {question_to_answer}, using the NZ dataset."}
