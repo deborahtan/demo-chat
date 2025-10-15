@@ -108,7 +108,6 @@ Your responses must follow this structure:
   • "Test 3-format creative rotation (Video vs. Carousel vs. Static) on Meta Conversion layer. Current Video driving $3.87 ROAS; rotate non-performing formats weekly. Expected performance: Video maintains $3.87, Carousel targets $2.50-$2.80, Static targets $1.80-$2.20"
   • Audience targeting refinements with quantified ROI lift expectations
   • Competitive positioning and market context including seasonal trends and economic factors
-  • Consider funnel layer (Awareness, Consideration, Conversion) 
 
 - When analyzing paid search, include detailed performance breakdowns by category, product, and message with concrete examples:
   • "Kitchen Appliances category generated $19.9K revenue from 78 purchases (avg order value $255) with CPA of $38 and ROAS of $2.10. Recommend increasing budget allocation by 30% ($22K) based on 18% ROAS premium vs. category average"
@@ -349,58 +348,51 @@ def generate_data():
 df = generate_data()
 
 # -------------------------------
-# INITIALIZE CHAT HISTORY (MUST BE AT THE TOP, BEFORE SIDEBAR)
+# SIDEBAR CONTROLS
 # -------------------------------
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
 if "recent_questions" not in st.session_state:
     st.session_state.recent_questions = []
 
-# -------------------------------
-# SIDEBAR CONTROLS - CONVERSATIONAL
-# -------------------------------
 with st.sidebar:
-    st.header("Chat Controls")
+    st.header("Executive Q&A")
 
     st.markdown(
         """
-        **How to use**  
-        - Ask questions about your campaign performance
-        - Use the suggested questions below or type your own
-        - The assistant remembers your conversation context
-        - Ask follow-up questions naturally
+        **Instructions**  
+        - Select one of the predefined strategic questions from the dropdown.  
+        - Or type your own custom question in the text box below.  
+        - The assistant will generate comprehensive, data-driven insights with detailed analysis.  
+        - Your recent questions will appear below for quick re-selection.  
         """
     )
 
-    SUGGESTED_QUESTIONS = [
-        "Analyze diminishing returns by channel and spend curve",
-        "Show me CTR and CPC performance by publisher",
-        "Which formats deliver the highest ROI?",
-        "What channels have the best click-to-conversion rates?",
-        "What should I scale, pause, or optimize?",
-        "Show me top-performing placements by ROAS",
-        "Analyze performance by funnel layer",
-        "Identify underperforming placements",
-        "Show me trends over time",
-        "How is my budget allocated across channels?"
+    QUESTIONS = [
+        "Analyze diminishing returns by publisher and identify exact saturation point where ROAS declines.",
+        "Evaluate performance by funnel layer (Awareness, Consideration, Conversion) and recommend budget allocation.",
+        "Identify top-performing placements and formats. What should we scale and what should we pause?",
+        "Assess underperforming placements. Which have viewability issues or high CPCV?",
+        "Recommend format strategy: Video vs. Carousel vs. Static. Which drives best ROAS and lowest CPA?",
+        "Analyze CTR and CPC by publisher. Where are we getting strongest engagement efficiency?",
+        "Provide creative testing recommendations with specific format and messaging approaches.",
+        "What is the optimal budget allocation across awareness, consideration, and conversion layers?"
     ]
 
-    st.markdown("**💡 Suggested Questions**")
-    for question in SUGGESTED_QUESTIONS:
-        if st.button(question, key=f"suggested_{question}", use_container_width=True):
-            # Add question to chat and trigger response
-            st.session_state.messages.append({"role": "user", "content": question})
-            st.rerun()
+    selected = st.selectbox("Select a predefined question:", options=QUESTIONS, index=0)
+    custom_question = st.text_area("Or type your own question:")
 
-    st.divider()
-    
-    if st.button("🗑️ Clear Chat History", use_container_width=True):
-        st.session_state.messages = []
-        st.rerun()
+    question_to_answer = custom_question.strip() if custom_question.strip() else selected
 
-    if len(st.session_state.messages) > 0:
-        st.markdown(f"**💬 Chat Length:** {len(st.session_state.messages)} messages")
+    if question_to_answer and question_to_answer not in st.session_state.recent_questions:
+        st.session_state.recent_questions.insert(0, question_to_answer)
+        st.session_state.recent_questions = st.session_state.recent_questions[:5]
+
+    if st.session_state.recent_questions:
+        st.markdown("**Recent Questions**")
+        for q in st.session_state.recent_questions:
+            if st.button(q, key=f"recent_{q}"):
+                question_to_answer = q
+        if st.button("Clear History"):
+            st.session_state.recent_questions = []
 
 # -------------------------------
 # CHART RENDERING WITH REAL DIMINISHING RETURNS
