@@ -14,6 +14,8 @@ st.set_page_config(
     layout="wide"
 )
 
+st.image("https://upload.wikimedia.org/wikipedia/commons/e/e5/Dentsu-logo_white.svg", width=160)
+
 st.markdown("""
     <style>
         body { background-color: #000000; color: #fffefe; }
@@ -23,17 +25,24 @@ st.markdown("""
             background-color: #2e2e2e; border-radius: 12px; padding: 20px; color: #fffefe;
         }
         .stTable { color: #fffefe; }
+
+        /* Sidebar styling */
         [data-testid="stSidebar"] {
             background-color: #000000;
             color: #fffefe;
-            min-width: 350px;
-            max-width: 420px;
+        }
+        [data-testid="stSidebar"] .stMarkdown,
+        [data-testid="stSidebar"] .stTextInput,
+        [data-testid="stSidebar"] .stSelectbox,
+        [data-testid="stSidebar"] label,
+        [data-testid="stSidebar"] .stButton,
+        [data-testid="stSidebar"] .stHeader {
+            color: #fffefe !important;
         }
     </style>
 """, unsafe_allow_html=True)
 
-st.image("https://upload.wikimedia.org/wikipedia/commons/e/e5/Dentsu-logo_black.svg", width=160)
-st.title("📊 Strategic Intelligence Assistant")
+st.title("Intelligence Assistant")
 
 # -------------------------------
 # API KEY
@@ -320,29 +329,6 @@ with st.container():
             st.markdown(sections["Next Steps"], unsafe_allow_html=True)
 
         st.caption(f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y at %H:%M')}")
-
-# -------------------------------
-# REFERENCE DICTIONARY (Expandable)
-# -------------------------------
-with st.expander("📖 Dimensions & Metrics Dictionary", expanded=False):
-    dims_metrics = {
-        "Definitions": {
-            "Impressions": "Number of times an ad was displayed.",
-            "Clicks": "Number of times users clicked on an ad.",
-            "Conversions": "Number of desired actions completed (e.g., purchases).",
-            "Spend ($)": "Total advertising expenditure.",
-            "Revenue ($)": "Total income generated from conversions.",
-            "ROAS": "Return on Ad Spend = Revenue / Spend.",
-            "ROI": "Return on Investment = (Revenue - Spend) / Spend.",
-            "CLV ($)": "Customer Lifetime Value — projected net revenue per customer.",
-            "CAC ($)": "Customer Acquisition Cost — Spend divided by Conversions.",
-            "Churn (%)": "Percentage of customers lost over a given period."
-        }
-    }
-    df_dict = pd.DataFrame.from_dict(
-        dims_metrics["Definitions"], orient="index", columns=["Definition"]
-    )
-    st.table(df_dict)
 
 # -------------------------------
 # LEGAL DISCLAIMER
