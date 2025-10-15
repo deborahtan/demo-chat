@@ -9,28 +9,49 @@ from groq import Groq
 # CONFIG & BRANDING
 # -------------------------------
 st.set_page_config(
-    page_title="Strategic Intelligence Assistant",
+    page_title="Dentsu Intelligence Assistant",
     page_icon="https://img.icons8.com/ios11/16/000000/dashboard-gauge.png",
     layout="wide"
 )
 
-st.image("https://upload.wikimedia.org/wikipedia/commons/e/e5/Dentsu-logo_white.svg", width=160)
-
+# Apply global styling
 st.markdown("""
     <style>
-        body { background-color: #000000; color: #fffefe; }
-        h1, h2, h3, h4, h5, h6 { color: #fffefe; font-weight: 600; border-bottom: none !important; }
-        section.main > div { padding-top: 1rem; padding-bottom: 1rem; }
-        .answer-card {
-            background-color: #2e2e2e; border-radius: 12px; padding: 20px; color: #fffefe;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        html, body, [class*="css"] {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #fffefe;
         }
-        .stTable { color: #fffefe; }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            color: #fffefe;
+        }
+
+        section.main > div {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        .answer-card {
+            background-color: #2e2e2e;
+            border-radius: 12px;
+            padding: 20px;
+            color: #fffefe;
+        }
+
+        .stTable {
+            color: #fffefe;
+        }
 
         /* Sidebar styling */
         [data-testid="stSidebar"] {
             background-color: #000000;
             color: #fffefe;
         }
+
         [data-testid="stSidebar"] .stMarkdown,
         [data-testid="stSidebar"] .stTextInput,
         [data-testid="stSidebar"] .stSelectbox,
@@ -38,11 +59,26 @@ st.markdown("""
         [data-testid="stSidebar"] .stButton,
         [data-testid="stSidebar"] .stHeader {
             color: #fffefe !important;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Recent Questions buttons */
+        [data-testid="stSidebar"] button,
+        [data-testid="stSidebar"] .stButton button {
+            color: #000000 !important;
+            background-color: #ffffff !important;
+            border-radius: 6px;
+            font-weight: 600;
         }
     </style>
 """, unsafe_allow_html=True)
 
-st.title("Intelligence Assistant")
+# Sidebar logo
+with st.sidebar:
+    st.image("https://upload.wikimedia.org/wikipedia/commons/3/3e/Dentsu_logo_white.svg", width=160)
+
+# Page title
+st.title("Dentsu Intelligence Assistant")
 
 # -------------------------------
 # API KEY
@@ -68,11 +104,13 @@ Your responses must follow this structure:
 - **Next Steps** 🛠️: Clear owners, timelines, and measurable outcomes.
 
 Always include:
-- **Charts** to reflect the question that was asked. Relevant **timeframes** in all charts and insights. Explain ALL the relevant datapoints in the chart with key summaries. If asked which format performs the best please visualise all format performance.
+- **Charts** to reflect the question that was asked. Use 2025 data only. Include relevant **timeframes** in all charts and insights. Explain ALL key datapoints with summaries. If asked which format performs best, visualize all format performance.
+- **Summarized tables**: Group data by relevant dimensions (e.g. Publisher, Audience, Month, Format) to make insights digestible. Avoid line-by-line raw tables unless explicitly requested.
 - A dedicated **Evidence & Reasoning** 📊 section that explains how the insight was derived, what assumptions were made, and what confidence level applies.
 - **Creative, targeting, messaging, and strategy data** where applicable — especially when analyzing campaign performance.
-- **Internal and external factors** (e.g. market trends, economic shifts, competitor moves) based on recent research. Reference them when explaining performance changes or churn.
-- **Specific recommendations**: Tailor the advice provided e.g. if budget should be allocated, explain where it should be reallocated and why. If it's an action be specific about what needs to be done, not just a vague comment on monitoring data over time. Be more specific to the change, decision, strategic or tactical.
+- **Internal and external factors** (e.g. market trends, economic shifts, competitor moves) based on recent research. Reference these when explaining performance changes or churn.
+- **CX diagnostics**: When analyzing churn, include Net Promoter Score (NPS) and Customer Satisfaction (CSAT) metrics for the top 3 churn months to identify internal experience drivers.
+- **Specific recommendations**: Be precise. If budget should be reallocated, explain where and why. If action is needed, define what, who, and how — not just vague monitoring advice.
 
 Core responsibilities:
 - Structure every response in the framework: Insight → Action → Recommendation → Next Steps.
@@ -80,7 +118,7 @@ Core responsibilities:
   • Insight = A precise finding from the data (with metrics, trends, anomalies, or quantified comparisons).  
   • Action = A concrete operational step that teams can take immediately.  
   • Recommendation = A strategic decision with rationale, financial impact, and risk/benefit trade‑offs.  
-  • Next Steps =  Ideas for immediate steps to be taken and the relevant departments, with suggested goals/measurement/KPIs.
+  • Next Steps = Clear owners, timelines, and measurement criteria.
 
 - Always account for:
   • Audience cohorts (Millennials, Gen X, Boomers)  
@@ -92,12 +130,12 @@ Core responsibilities:
 
 - Leverage the full‑funnel dataset: Creative, Targeting, Strategy, Impressions, Clicks, Conversions, Spend, Revenue, ROAS, ROI, CAC, CLV.
 - Identify and explain: trends, seasonal patterns, anomalies, and diminishing returns curves.
-- When analyzing diminishing returns, generate a Streamlit‑ready Altair chart of Spend vs. ROAS by Channel, with hover tooltips for Spend, Revenue, ROAS, and CAC.
+- When analyzing diminishing returns, generate a Streamlit‑ready Altair chart of Spend vs. ROAS by Channel or Month, with hover tooltips for Spend, Revenue, ROAS, and CAC. Highlight inflection points where ROAS declines.
 - When evaluating publisher or platform performance, compare across audience segments, quantify differences, and highlight impact.
 - For Creative insights, frame findings through A/B testing results and key performance trends:
-  • Identify winning vs. underperforming variants.  
-  • Highlight message, format, and visual elements that drive higher CTR, CVR, or CLV.  
-  • Recommend next creative tests and scaling strategies.  
+  • Identify winning vs. underperforming variants  
+  • Highlight message, format, and visual elements that drive higher CTR, CVR, or CLV  
+  • Recommend next creative tests and scaling strategies
 
 - Provide actionable recommendations including: budget reallocations, testing frameworks, risk/impact assessments, and scenario planning.
 - Explicitly state reasoning, modelling choices, and assumptions; flag confidence levels where appropriate.
@@ -235,48 +273,76 @@ def render_chart_for_question(question, df):
         st.dataframe(df_channels)
 
     elif "publisher" in question:
-        pub_chart = alt.Chart(df).mark_bar().encode(
+        summary = df.groupby(["Publisher", "Audience"]).agg({
+            "Conversions": "sum",
+            "Spend ($)": "sum",
+            "Revenue ($)": "sum",
+            "ROAS": "mean",
+            "CAC ($)": "mean"
+        }).reset_index()
+        chart = alt.Chart(summary).mark_bar().encode(
             x="Publisher", y="Conversions", color="Audience",
             tooltip=["Publisher", "Audience", "Conversions", "ROAS", "CAC ($)"]
         ).properties(title="Publisher Performance by Audience Segment")
-        st.altair_chart(pub_chart, use_container_width=True)
-        st.caption("Publishers over‑ or under‑index by audience segment; e.g. NZ Herald with Millennials vs Stuff with Gen X.")
-        st.dataframe(df[["Publisher", "Audience", "Conversions", "ROAS", "CAC ($)"]])
+        st.altair_chart(chart, use_container_width=True)
+        st.caption("Audience-level performance across publishers reveals strategic strengths and gaps.")
+        st.dataframe(summary)
 
     elif "churn" in question:
-        churn_df = df.groupby("Month")["Conversions"].sum().reset_index()
+        churn_df = df.groupby("Month").agg({
+            "Conversions": "sum",
+            "NPS": "mean",
+            "CSAT (%)": "mean",
+            "Unsubscribe Rate (%)": "mean"
+        }).reset_index()
         churn_df["Churn (%)"] = np.random.uniform(2, 8, size=len(churn_df))
-        churn_chart = alt.Chart(churn_df).mark_line(point=True).encode(
-            x="Month", y="Churn (%)", tooltip=["Month", "Churn (%)"]
-        ).properties(title="Monthly Churn Trend")
-        st.altair_chart(churn_chart, use_container_width=True)
-        st.caption("Churn spikes in July and November, linked to CRM fatigue and macroeconomic slowdown.")
+        chart = alt.Chart(churn_df).mark_line(point=True).encode(
+            x="Month", y="Churn (%)",
+            tooltip=["Month", "Churn (%)", "NPS", "CSAT (%)", "Unsubscribe Rate (%)"]
+        ).properties(title="Monthly Churn Trend with CX Diagnostics")
+        st.altair_chart(chart, use_container_width=True)
+        st.caption("CX metrics help diagnose internal churn drivers. Lower NPS and CSAT often correlate with higher churn.")
         st.dataframe(churn_df)
 
     elif "roi and cpa" in question:
-        formats = pd.DataFrame({
-            "Format": ["Video", "Display", "Social", "CTV"],
-            "ROI": [3.2, 2.1, 2.8, 3.5],
-            "CPA": [55, 40, 50, 45]
-        })
-        chart = alt.Chart(formats).mark_bar().encode(
-            x="Format", y="ROI", tooltip=["Format", "ROI", "CPA"]
-        ).properties(title="ROI by Format")
+        summary = df.groupby("Creative Format").agg({
+            "Spend ($)": "sum",
+            "Revenue ($)": "sum",
+            "ROI": "mean",
+            "CAC ($)": "mean"
+        }).reset_index()
+        chart = alt.Chart(summary).mark_bar().encode(
+            x="Creative Format", y="ROI", tooltip=["Creative Format", "ROI", "CAC ($)"]
+        ).properties(title="ROI by Creative Format")
         st.altair_chart(chart, use_container_width=True)
-        st.caption("Video delivers highest ROI but higher CPA; Display is more efficient but lower ROI.")
-        st.dataframe(formats)
+        st.caption("Compare creative efficiency across formats to guide scaling and testing.")
+        st.dataframe(summary)
 
     elif "click-to-conversion" in question:
-        channels = pd.DataFrame({
-            "Channel": ["Search", "Social", "CTV", "Display"],
-            "CVR (%)": [5.2, 3.8, 4.5, 2.9]
-        })
-        chart = alt.Chart(channels).mark_bar().encode(
-            x="Channel", y="CVR (%)", tooltip=["Channel", "CVR (%)"]
-        ).properties(title="Click-to-Conversion Rate by Channel")
+        summary = df.groupby("Targeting Strategy").agg({
+            "Clicks": "sum",
+            "Conversions": "sum"
+        }).reset_index()
+        summary["CVR (%)"] = (summary["Conversions"] / summary["Clicks"]) * 100
+        chart = alt.Chart(summary).mark_bar().encode(
+            x="Targeting Strategy", y="CVR (%)", tooltip=["Targeting Strategy", "CVR (%)"]
+        ).properties(title="Click-to-Conversion Rate by Targeting Strategy")
         st.altair_chart(chart, use_container_width=True)
-        st.caption("Search drives the strongest conversion efficiency, followed by CTV.")
-        st.dataframe(channels)
+        st.caption("Conversion efficiency varies by targeting strategy — behavioral and lookalike often outperform.")
+        st.dataframe(summary)
+
+    elif "organic" in question:
+        organic_df = df.groupby("Month").agg({
+            "Organic Traffic": "sum",
+            "Organic Conversions": "sum"
+        }).reset_index()
+        organic_df["Conversion Rate (%)"] = (organic_df["Organic Conversions"] / organic_df["Organic Traffic"]) * 100
+        chart = alt.Chart(organic_df).mark_line(point=True).encode(
+            x="Month", y="Conversion Rate (%)", tooltip=["Month", "Organic Traffic", "Organic Conversions", "Conversion Rate (%)"]
+        ).properties(title="Organic Conversion Rate Over Time")
+        st.altair_chart(chart, use_container_width=True)
+        st.caption("Organic performance trends reveal SEO and content impact.")
+        st.dataframe(organic_df)
 
 # -------------------------------
 # Render Structured Answer
