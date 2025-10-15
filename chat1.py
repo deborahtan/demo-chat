@@ -102,17 +102,17 @@ Your responses must follow this structure:
 - **Action** 🎯: A specific, clickable operational step. Make it easy to follow up with a deeper question or next move.
 - **Recommendation** 📈: A strategic decision with rationale, financial impact, and trade-offs. Tailor it to relevant channels or campaigns.
 - When analyzing paid search, include performance breakdowns by category, product, and message. Reference real examples such as:
-  • “Kitchen Appliances generated $19.9K revenue from 78 purchases — recommend increasing budget allocation.”  
-  • “Promotional ad extensions for De'Longhi and Simon Lewis drove 312K impressions — continue testing product-level relevance.”  
-  • “CTR uplift of 13% and CPC drop led to 8% more clicks at steady budget — maintain current investment level.”
+  • "Kitchen Appliances generated $19.9K revenue from 78 purchases — recommend increasing budget allocation."  
+  • "Promotional ad extensions for De'Longhi and Simon Lewis drove 312K impressions — continue testing product-level relevance."  
+  • "CTR uplift of 13% and CPC drop led to 8% more clicks at steady budget — maintain current investment level."
 
 - When evaluating creative performance, highlight standout variants and their contribution to revenue and efficiency:
-  • “The ‘Earn’ creative drove 73% of total revenue with CTR of 2.46% and ROAS of $5.07 — scale across Advantage+.”  
-  • “High Touch 1PD audiences delivered 152 remarketing transactions with ROAS of $14.14 and CPA of $19.99 — well below $100 benchmark.”
+  • "The 'Earn' creative drove 73% of total revenue with CTR of 2.46% and ROAS of $5.07 — scale across Advantage+."  
+  • "High Touch 1PD audiences delivered 152 remarketing transactions with ROAS of $14.14 and CPA of $19.99 — well below $100 benchmark."
 
 - When referencing platform performance, include channel-level insights and strategic implications:
-  • “Meta continues to outperform benchmarks across visibility and conversion — recommend continued investment and refreshed catalogue rollout.”  
-  • “Search ROAS at 8.86 with $353K revenue — maintain budget and monitor TAPM vs EAPM allocation.”
+  • "Meta continues to outperform benchmarks across visibility and conversion — recommend continued investment and refreshed catalogue rollout."  
+  • "Search ROAS at 8.86 with $353K revenue — maintain budget and monitor TAPM vs EAPM allocation."
   
 - **Next Steps** 🛠️: Clear owners, timelines, and measurable outcomes.
 
@@ -131,7 +131,7 @@ Core responsibilities:
 - Ensure each element is specific, evidence‑based, and valid:
   • Insight = A precise finding from the data (with metrics, trends, anomalies, or quantified comparisons).  
   • **Action** 🎯: A specific, clickable operational step. Format each Action as a hyperlink that auto-populates a follow-up prompt and triggers a new insight using that prompt. Actions must include channel-level recommendations (e.g. Sponsored Posts on Meta), targeting adjustments (e.g. LinkedIn audience filters), creative guidance (e.g. message, visual, CTA variants), and strategic rationale tied to ROI, CPA, or CLV improvements. 
-  • Recommendation = A strategic decision with rationale, financial impact, and risk/benefit trade‑offs - media, creative, strategic, messaging icluded.  
+  • Recommendation = A strategic decision with rationale, financial impact, and risk/benefit trade‑offs - media, creative, strategic, messaging included.  
   • Evidence & Assumptions = In own category assuming about the data, with a confidence interval
  
 - Always account for:
@@ -157,9 +157,6 @@ Core responsibilities:
 - Deliver all outputs in professional, concise, boardroom‑ready language that supports decision‑making.
 
 - Always phrase outputs in stakeholder-facing language. Do not mention technical tools or implementation details (e.g. Streamlit, Altair, Python). Focus on business impact, strategic clarity, and executive relevance.
-
-Your goal: transform complex performance data into specific insights, valid actions, and strategically grounded recommendations that drive executive confidence and measurable results.
-"""
 
 Your goal: transform complex performance data into specific insights, valid actions, and strategically grounded recommendations that drive executive confidence and measurable results.
 """
@@ -204,9 +201,9 @@ def generate_data():
                 ])
 
     df = pd.DataFrame(rows, columns=[
-        "Month","Publisher","Audience","Impressions","Clicks","Conversions",
-        "Spend ($)","Revenue ($)","ROAS","ROI","CLV ($)","CAC ($)",
-        "Creative Format","Targeting Strategy","Messaging Theme","Strategic Objective"
+        "Month", "Publisher", "Audience", "Impressions", "Clicks", "Conversions",
+        "Spend ($)", "Revenue ($)", "ROAS", "ROI", "CLV ($)", "CAC ($)",
+        "Creative Format", "Targeting Strategy", "Messaging Theme", "Strategic Objective"
     ])
 
     # Ensure Month is datetime for charting
@@ -216,7 +213,6 @@ def generate_data():
 
 
 df = generate_data()
-
 
 # -------------------------------
 # SIDEBAR CONTROLS
