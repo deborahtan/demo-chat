@@ -103,8 +103,9 @@ Your responses must follow this structure:
 - **Recommendation**: A strategic decision with rationale, financial impact, and risk/benefit trade-offs. Specific, operationalized format recommendations and optimization tactics:
   • Channel & placement allocation decisions with percentage shifts and expected impact (e.g., "increase YouTube from 25% to 40% of video budget; decrease TikTok from 30% to 15%. Expected ROAS lift: +12%, CPA reduction: -8%")
   • Specific tactical actions: "Increase allocation to YouTube Skippable Mid-roll (Consideration layer): achieved 8.2% CTR vs. 3.1% benchmark. Test product-focused creative variant with 15-second hook. Expected CTR improvement: 10-12%, estimated additional revenue: $45K-$65K per month"
+  For performance break it down by type of channel and the type of assets served, as Tiktok & TVNZ, snapchat are video centric platforms, so the CTR are expected to be lower than the image-based channel like TradeMe & Display
   • Budget reallocation rationale: "Pause Display Network placements with <2% viewability. Redirect 40% budget ($180K) to programmatic video (ROAS $4.21) and allocate 20% ($90K) to search retargeting (CPA $23). Projected incremental revenue: $320K-$380K"
-  • Creative testing frameworks with detailed success metrics and rollout timelines
+  • Creative testing frameworks with detailed success metrics.
   • "Test 3-format creative rotation (Video vs. Carousel vs. Static) on Meta Conversion layer. Current Video driving $3.87 ROAS; rotate non-performing formats weekly. Expected performance: Video maintains $3.87, Carousel targets $2.50-$2.80, Static targets $1.80-$2.20"
   • Audience targeting refinements with quantified ROI lift expectations
   • Competitive positioning and market context including seasonal trends and economic factors
