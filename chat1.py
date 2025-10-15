@@ -184,7 +184,6 @@ if question_to_answer and client:
                     with st.expander(f"📌 {key}", expanded=(key == "Insight")):
                         st.markdown(f'<div class="answer-card">{content.strip()}</div>', unsafe_allow_html=True)
 
-
             # ROAS by Channel
             channel_map = {
                 "NZ Herald": "Display", "Stuff": "Display",
@@ -202,11 +201,12 @@ if question_to_answer and client:
                 sub = df_roas[df_roas["Channel"] == ch]
                 roas_series.append({
                     "title": f"{ch} ROAS",
-                    "data": [{"time": m, "value": round(v, 2)} for m, v in zip(sub["Month"], sub["ROAS"])]
+                    "data": [{"time": m, "value": round
+                                    "ROAS"])]
                 })
 
             st.markdown("### 📈 ROAS Trends by Channel")
-            renderLightweightCharts(series=roas_series)
+            renderLightweightCharts(roas_series)
 
             # CAC by Audience
             df_cac = df.groupby(["Month", "Audience"]).agg({
@@ -222,7 +222,7 @@ if question_to_answer and client:
                 })
 
             st.markdown("### 💰 CAC Trends by Audience")
-            renderLightweightCharts(series=cac_series)
+            renderLightweightCharts(cac_series)
 
             # Spend vs Revenue by Publisher
             st.markdown("### 🔄 Spend vs Revenue by Publisher")
