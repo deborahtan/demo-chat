@@ -3,3 +3,4 @@ streamlit
 pandas
 numpy
 altair
+streamlit-lightweight-charts
