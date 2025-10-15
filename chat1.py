@@ -4,8 +4,7 @@ import pandas as pd
 import numpy as np
 import altair as alt
 from groq import Groq
-from streamlit_lightweight_charts import render_lightweight_charts
-
+from streamlit_lightweight_charts import st_lightweight_charts
 # -------------------------------
 # CONFIG & BRANDING
 # -------------------------------
