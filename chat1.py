@@ -232,7 +232,7 @@ with st.sidebar:
         **Instructions**  
         - Select one of the predefined strategic questions from the dropdown.  
         - Or type your own custom question in the text box below.  
-        - The assistant will generate structured insights (Insight → Action → Recommendation → Next Steps) and relevant charts.  
+        - The assistant will generate structured insights (Insight to Action/Recommendation) and relevant charts.  
         - Your recent questions will appear below for quick re‑selection.  
         """
     )
