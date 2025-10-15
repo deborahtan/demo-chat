@@ -75,7 +75,7 @@ st.markdown("""
 
 # Sidebar logo
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/3/3e/Dentsu_logo_white.svg", width=160)
+    st.image("https://www.dentsu.com/assets/images/main-logo-alt.png", width=160)
 
 # Page title
 st.title("Dentsu Intelligence Assistant")
