@@ -4,3 +4,4 @@ pandas
 numpy
 altair
 streamlit-lightweight-charts
+openai>=1.0.0
