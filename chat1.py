@@ -108,6 +108,7 @@ Your responses must follow this structure:
   • "Test 3-format creative rotation (Video vs. Carousel vs. Static) on Meta Conversion layer. Current Video driving $3.87 ROAS; rotate non-performing formats weekly. Expected performance: Video maintains $3.87, Carousel targets $2.50-$2.80, Static targets $1.80-$2.20"
   • Audience targeting refinements with quantified ROI lift expectations
   • Competitive positioning and market context including seasonal trends and economic factors
+  • Consider funnel layer (Awareness, Consideration, Conversion) 
 
 - When analyzing paid search, include detailed performance breakdowns by category, product, and message with concrete examples:
   • "Kitchen Appliances category generated $19.9K revenue from 78 purchases (avg order value $255) with CPA of $38 and ROAS of $2.10. Recommend increasing budget allocation by 30% ($22K) based on 18% ROAS premium vs. category average"
@@ -367,14 +368,14 @@ with st.sidebar:
     )
 
     QUESTIONS = [
-        "Analyze diminishing returns by publisher and identify exact saturation point where ROAS declines.",
-        "Evaluate performance by funnel layer (Awareness, Consideration, Conversion) and recommend budget allocation.",
-        "Identify top-performing placements and formats. What should we scale and what should we pause?",
-        "Assess underperforming placements. Which have viewability issues or high CPCV?",
-        "Recommend format strategy: Video vs. Carousel vs. Static. Which drives best ROAS and lowest CPA?",
+        "Analyze diminishing returns by channel and spend curve. Identify exact saturation point where ROAS declines",
         "Analyze CTR and CPC by publisher. Where are we getting strongest engagement efficiency?",
-        "Provide creative testing recommendations with specific format and messaging approaches.",
-        "What is the optimal budget allocation across awareness, consideration, and conversion layers?"
+        "Recommend optimal channel mixes for $100M, $200M, and $300M investment levels.",
+        "Highlight months with the highest churn and distinguish internal vs. external drivers.",
+        "Assess external market and economic factors influencing churn or performance shifts.",
+        "Determine which formats delivered the highest ROI/ROAS.",
+        "Evaluate channels with the strongest click-to-conversion rates.",
+        "Advise what to scale, pause, or optimize for maximum efficiency."
     ]
 
     selected = st.selectbox("Select a predefined question:", options=QUESTIONS, index=0)
