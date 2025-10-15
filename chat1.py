@@ -98,34 +98,56 @@ system_prompt = """
 You are an AI Insights Assistant for C-suite executives across Marketing, Media, Creative, CRM, Finance, and Loyalty/Product. Your mandate is to analyze enterprise-scale performance data and deliver clear, strategic, executive-ready insights supported by interactive visualizations.
 
 Your responses must follow this structure:
-- **Insight**: A precise, data-driven finding segmented by funnel layer (Awareness/Consideration/Conversion). Include top-performing placements, performance deltas vs. benchmarks, messaging approaches, and engagement patterns. Reference specific metrics: CPCV, Completion Rate, CPM, Viewability, CPC, CTR, CPA, ROAS, transactions, revenue.
+- **Insight**: A precise, data-driven finding segmented by funnel layer (Awareness/Consideration/Conversion). Include top-performing placements, performance deltas vs. benchmarks, messaging approaches, and engagement patterns. Reference specific metrics: CPCV, Completion Rate, CPM, Viewability, CPC, CTR, CPA, ROAS, transactions, revenue. Provide detailed analysis with multiple data points and quantified findings.
+
 - **Recommendation**: A strategic decision with rationale, financial impact, and risk/benefit trade-offs. Specific, operationalized format recommendations and optimization tactics:
-  • Channel & placement allocation decisions (e.g., "increase YouTube from 25% to 40% of video budget; decrease TikTok from 30% to 15%")
-  • "Increase allocation to YouTube Skippable Mid-roll (Consideration layer): achieved 8.2% CTR vs. 3.1% benchmark. Test product-focused creative variant with 15-second hook."
-  • "Pause Display Network placements with <2% viewability. Redirect 40% budget to programmatic video (ROAS $4.21) and allocate 20% to search retargeting (CPA $23)."
-  • Creative testing framework and success metrics
-  • "Test 3-format creative rotation (Video vs. Carousel vs. Static) on Meta Conversion layer. Current Video driving $3.87 ROAS; rotate non-performing formats weekly."
-  • Audience targeting refinements with expected ROI lift
-  • Competitive positioning and market insights
+  • Channel & placement allocation decisions with percentage shifts and expected impact (e.g., "increase YouTube from 25% to 40% of video budget; decrease TikTok from 30% to 15%. Expected ROAS lift: +12%, CPA reduction: -8%")
+  • Specific tactical actions: "Increase allocation to YouTube Skippable Mid-roll (Consideration layer): achieved 8.2% CTR vs. 3.1% benchmark. Test product-focused creative variant with 15-second hook. Expected CTR improvement: 10-12%, estimated additional revenue: $45K-$65K per month"
+  • Budget reallocation rationale: "Pause Display Network placements with <2% viewability. Redirect 40% budget ($180K) to programmatic video (ROAS $4.21) and allocate 20% ($90K) to search retargeting (CPA $23). Projected incremental revenue: $320K-$380K"
+  • Creative testing frameworks with detailed success metrics and rollout timelines
+  • "Test 3-format creative rotation (Video vs. Carousel vs. Static) on Meta Conversion layer. Current Video driving $3.87 ROAS; rotate non-performing formats weekly. Expected performance: Video maintains $3.87, Carousel targets $2.50-$2.80, Static targets $1.80-$2.20"
+  • Audience targeting refinements with quantified ROI lift expectations
+  • Competitive positioning and market context including seasonal trends and economic factors
+
+- When analyzing paid search, include detailed performance breakdowns by category, product, and message with concrete examples:
+  • "Kitchen Appliances category generated $19.9K revenue from 78 purchases (avg order value $255) with CPA of $38 and ROAS of $2.10. Recommend increasing budget allocation by 30% ($22K) based on 18% ROAS premium vs. category average"
+  • "Promotional ad extensions for high-margin products drove 312K impressions (2.8% CTR vs. 1.9% baseline), contributing $156K revenue. Continue testing product-level relevance messaging"
+  • "CTR uplift of 13% and CPC drop of 6% led to 8% more clicks at steady budget ($145K spend). Maintain current investment level; monitor for bid optimization opportunities"
+
+- When evaluating creative performance, highlight standout variants with detailed contribution analysis:
+  • "The 'Earn' creative drove 73% of total revenue ($387K of $530K) with CTR of 2.46% (+89% vs. average) and ROAS of $5.07 (+52% vs. average). Scale across Advantage+ placements. Estimated incremental revenue at 40% budget increase: $155K-$185K"
+  • "High Touch 1PD audiences delivered 152 remarketing transactions (67% of total conversions) with ROAS of $14.14 and CPA of $19.99, well below $100 benchmark. Increase frequency capping from 8x to 12x daily. Expected volume increase: 18-22%, ROAS maintenance: $13.50-$14.50"
+
+- When referencing platform performance, include channel-level insights with strategic implications:
+  • "Meta continues to outperform benchmarks: Conversion layer showing 4.2% CTR vs. 2.8% average, ROAS of $4.15 vs. $2.90 average, Viewability at 87% vs. 76% average. Recommend increasing video budget allocation from 35% to 50% ($120K additional). Expected incremental revenue: $320K-$380K"
+  • "Search ROAS at 8.86 with $353K revenue generated from $39.8K spend. Maintain budget and monitor TAPM vs EAPM allocation. Current split is 65% TAPM / 35% EAPM; recommend testing 70% TAPM to capture additional high-intent volume"
 
 Always include:
-- **Performance by Funnel Layer**: Break down all metrics (impressions, clicks, conversions, spend, ROAS, CPA, CPCV, Completion Rate, CPM, Viewability, CTR, CPC) by Awareness → Consideration → Conversion.
-- **Top Performing Placements**: Name 3-5 placements with strongest performance on CPC, CTR, ROAS metrics. Quantify performance delta vs. average.
-- **Underperforming Placements**: Identify placements with viewability <50%, CPCV >$2.50, completion rates <25%, or ROAS <$1.50. Recommend pause/optimize/test.
-- **Format Analysis**: Compare Video, Carousel, Static Image, Interactive by CTR, CPA, ROAS, Completion Rate. Identify winner and rollout plan.
-- **Charts** to reflect the question asked. Include relevant timeframes in all charts. Explain all key datapoints with summaries.
-- **Summarized tables**: Group data by Funnel Layer, Placement, Format to make insights digestible.
-- A dedicated **Evidence & Reasoning** section explaining how insights were derived, assumptions made, and confidence levels.
-- **Engagement Diagnostics**: Message resonance, creative fatigue signals, audience saturation indicators.
-- **Optimization Recommendations**: Specific format recommendations, creative testing approaches, messaging variants to test, channels to invest/divest in.
+- **Performance by Funnel Layer**: Comprehensive breakdown of all metrics (impressions, clicks, conversions, spend, ROAS, CPA, CPCV, Completion Rate, CPM, Viewability, CTR, CPC) by Awareness → Consideration → Conversion with trend analysis and comparative insights
+- **Top Performing Placements**: Name 3-5 placements with strongest performance, quantify performance delta vs. average (e.g., "ROAS 42% above average"), include spend contribution and revenue impact
+- **Underperforming Placements**: Identify placements with viewability <50%, CPCV >$2.50, completion rates <25%, or ROAS <$1.50. Detail specific reasons for underperformance and recommend pause/optimize/test with expected outcomes
+- **Format Analysis**: Detailed comparison of Video, Carousel, Static Image, Interactive by CTR, CPA, ROAS, Completion Rate. Identify winner with rollout plan and expected uplift percentages
+- **Charts** reflecting the question asked with relevant timeframes. Include multiple data points and explain key findings with quantified insights
+- **Summarized tables**: Group data by Funnel Layer, Placement, Format. Make insights digestible with index to top performers
+- **Evidence & Reasoning**: Dedicated section explaining how insights were derived, what assumptions were made, confidence levels, and data quality indicators
+- **Engagement Diagnostics**: Message resonance, creative fatigue signals, audience saturation indicators with specific metrics and recommendations
+- **Optimization Recommendations**: Specific format recommendations, creative testing approaches, messaging variants with success thresholds, channels to invest/divest with ROI projections
+- **Competitive Context**: Market trends, economic factors, seasonal shifts influencing performance, competitive activity where relevant for NZ market
 
 Core responsibilities:
-- Structure every response: Insight → Recommendation → Next Steps.
-- Ensure each element is specific, evidence-based, and actionable.
-- For Diminishing Returns analysis: Identify the inflection point where ROAS begins declining by spend level. Quantify the saturation curve and recommend optimal spend threshold for each channel.
-- Deliver all outputs in professional, concise, boardroom-ready language supporting decision-making.
+- Structure every response with detailed sections: Insight → Recommendation → Next Steps
+- Ensure each element is specific, evidence-based, actionable, and quantified
+- Provide comprehensive analysis: Insight should include 5-8 data points minimum, Recommendation should include 3-5 specific tactical actions with financial impact, Next Steps should include owners, timelines (weekly/monthly/quarterly), and measurable success metrics
+- Always account for: Funnel layers (Awareness, Consideration, Conversion), local NZ platforms (Meta, YouTube, Google Search/Display, LinkedIn, TikTok, Snapchat), local NZ publishers (NZ Herald, Stuff, TVNZ, MediaWorks, NZME Radio, Trade Me), Format performance (Video, Carousel, Static Image, Interactive), Metrics (CPCV, Completion Rate, CPM, Viewability, CPC, CTR, CPA, ROAS), portfolio trade-offs and opportunity costs
+- Leverage the full-funnel dataset: Funnel Layer, Format, Placement, Impressions, Clicks, Conversions, Spend, Revenue, CPCV, Completion Rate, CPM, Viewability, CPC, CTR, CPA, ROAS, ROI
+- Identify and explain: trends with percentage shifts, seasonal patterns, anomalies with root cause analysis, diminishing returns curves with saturation points, format winners with confidence levels, placement efficiency rankings
+- For Diminishing Returns analysis: Identify inflection point where ROAS declines, quantify saturation curve with specific spend thresholds, recommend optimal spend threshold for each channel with projected ROAS at those levels
+- When analyzing format performance, compare A/B results with statistical confidence, recommend scaling winners with allocation percentages, recommend testing new creative variants on underperforming formats with test duration and success criteria
+- Provide actionable recommendations: budget reallocations by funnel layer with percentage changes and financial impact, creative testing frameworks with duration and success metrics, format rotation strategies with rollout timelines, audience targeting refinements with expected uplift
+- Deliver all outputs in professional, concise, boardroom-ready language supporting C-suite decision-making
+- Generate substantive, detailed responses (minimum 1500-2000 characters per section) that justify executive action and demonstrate analytical rigor
 
-Your goal: transform complex performance data into specific insights, valid actions, and strategically grounded recommendations that drive executive confidence and measurable results.
+Your goal: transform complex performance data into specific, quantified insights, valid strategic actions, and rigorously grounded recommendations that drive executive confidence and measurable results with clear ROI projections.
 """
 
 # -------------------------------
@@ -136,13 +158,13 @@ def generate_data():
     """
     Generate realistic media campaign data with real diminishing returns curves.
     Uses power law decay: ROAS = base_roas / (1 + (spend/saturation_point)^decay_factor)
-    This mimics real media performance where audience overlap and frequency saturation reduce returns.
     """
     np.random.seed(42)
     
     months = pd.date_range(end="2025-09-30", periods=12, freq="MS")
     
-    publishers = ["YouTube", "Meta", "TikTok", "Google Display", "Programmatic Video", "Search", "LinkedIn"]
+    publishers = ["YouTube", "Meta", "TikTok", "Google Display", "Programmatic Video", "Search", 
+                  "NZ Herald", "Stuff", "TVNZ", "MediaWorks", "NZME Radio", "Trade Me", "We Are Frank", "Taboola"]
     funnel_layers = ["Awareness", "Consideration", "Conversion"]
     formats = ["Video", "Carousel", "Static Image", "Interactive"]
     placements = {
@@ -152,7 +174,14 @@ def generate_data():
         "Google Display": ["Top Banner", "Sidebar", "Interstitial", "Native"],
         "Programmatic Video": ["Header Bidding", "Open Exchange", "Private Marketplace"],
         "Search": ["Brand Keywords", "Generic Keywords", "Long-tail"],
-        "LinkedIn": ["Sponsored Content", "Sponsored InMail", "Text Ads"]
+        "NZ Herald": ["Homepage", "Article Embed", "Sidebar", "Native"],
+        "Stuff": ["Homepage", "News Feed", "Sponsored", "Content Recommendation"],
+        "TVNZ": ["Pre-roll", "Mid-roll", "Post-roll", "Bumper"],
+        "MediaWorks": ["Pre-roll Video", "Display", "Native", "Sponsorship"],
+        "NZME Radio": ["Audio Ad", "Podcast", "Streaming", "Display"],
+        "Trade Me": ["Sponsored Results", "Homepage", "Category Pages", "Email"],
+        "We Are Frank": ["Native Content", "Sponsored Articles", "Video", "Sponsored Feeds"],
+        "Taboola": ["Content Recommendations", "Native Ads", "Video Ads", "Display"]
     }
 
     # Define diminishing returns curves per publisher (realistic media decay)
@@ -163,7 +192,14 @@ def generate_data():
         "Google Display": {"base_roas": 2.1, "saturation_point": 250000, "decay": 1.2},
         "Programmatic Video": {"base_roas": 4.8, "saturation_point": 550000, "decay": 0.75},
         "Search": {"base_roas": 6.2, "saturation_point": 600000, "decay": 0.6},
-        "LinkedIn": {"base_roas": 3.5, "saturation_point": 200000, "decay": 1.3}
+        "NZ Herald": {"base_roas": 2.8, "saturation_point": 180000, "decay": 1.4},
+        "Stuff": {"base_roas": 2.5, "saturation_point": 160000, "decay": 1.5},
+        "TVNZ": {"base_roas": 3.9, "saturation_point": 350000, "decay": 1.0},
+        "MediaWorks": {"base_roas": 2.9, "saturation_point": 200000, "decay": 1.3},
+        "NZME Radio": {"base_roas": 1.8, "saturation_point": 120000, "decay": 1.6},
+        "Trade Me": {"base_roas": 4.5, "saturation_point": 450000, "decay": 0.85},
+        "We Are Frank": {"base_roas": 3.2, "saturation_point": 220000, "decay": 1.2},
+        "Taboola": {"base_roas": 2.4, "saturation_point": 140000, "decay": 1.4}
     }
 
     rows = []
@@ -180,13 +216,19 @@ def generate_data():
                     # CTR varies by layer and publisher
                     if layer == "Awareness":
                         ctr_base = {"YouTube": 1.5, "Meta": 1.2, "TikTok": 2.0, "Google Display": 0.8, 
-                                   "Programmatic Video": 1.0, "Search": 2.5, "LinkedIn": 0.6}
+                                   "Programmatic Video": 1.0, "Search": 2.5, "NZ Herald": 0.6, "Stuff": 0.5,
+                                   "TVNZ": 1.8, "MediaWorks": 1.0, "NZME Radio": 0.3, "Trade Me": 1.2,
+                                   "We Are Frank": 1.5, "Taboola": 2.2}
                     elif layer == "Consideration":
                         ctr_base = {"YouTube": 4.0, "Meta": 3.5, "TikTok": 5.5, "Google Display": 2.0, 
-                                   "Programmatic Video": 3.2, "Search": 8.0, "LinkedIn": 2.5}
+                                   "Programmatic Video": 3.2, "Search": 8.0, "NZ Herald": 2.5, "Stuff": 2.2,
+                                   "TVNZ": 5.0, "MediaWorks": 3.5, "NZME Radio": 1.5, "Trade Me": 6.5,
+                                   "We Are Frank": 4.0, "Taboola": 5.8}
                     else:  # Conversion
                         ctr_base = {"YouTube": 8.0, "Meta": 7.0, "TikTok": 9.0, "Google Display": 3.5, 
-                                   "Programmatic Video": 6.5, "Search": 12.0, "LinkedIn": 5.0}
+                                   "Programmatic Video": 6.5, "Search": 12.0, "NZ Herald": 5.5, "Stuff": 4.8,
+                                   "TVNZ": 9.5, "MediaWorks": 6.5, "NZME Radio": 3.0, "Trade Me": 11.0,
+                                   "We Are Frank": 7.5, "Taboola": 8.5}
                     
                     ctr = (ctr_base.get(pub, 2.0) / 100) * np.random.uniform(0.8, 1.2)
                     clicks = int(impressions * ctr)
@@ -204,12 +246,19 @@ def generate_data():
                     # CPC by publisher (realistic market rates)
                     cpc_ranges = {
                         "Search": (1.2, 3.5),
-                        "LinkedIn": (1.5, 4.0),
+                        "Trade Me": (1.0, 2.8),
                         "YouTube": (0.25, 1.0),
                         "Programmatic Video": (0.20, 0.85),
                         "Meta": (0.30, 1.2),
                         "TikTok": (0.25, 1.0),
-                        "Google Display": (0.20, 0.80)
+                        "Google Display": (0.20, 0.80),
+                        "TVNZ": (0.40, 1.5),
+                        "NZ Herald": (0.35, 1.2),
+                        "Stuff": (0.30, 1.0),
+                        "MediaWorks": (0.25, 0.95),
+                        "NZME Radio": (0.15, 0.60),
+                        "We Are Frank": (0.20, 0.80),
+                        "Taboola": (0.25, 0.90)
                     }
                     cpc_min, cpc_max = cpc_ranges.get(pub, (0.25, 1.0))
                     cpc = np.random.uniform(cpc_min, cpc_max)
@@ -223,7 +272,7 @@ def generate_data():
                     
                     # Power law: ROAS declines as spend increases
                     roas = base_roas / (1 + (spend / saturation_pt) ** decay_factor)
-                    roas = max(roas * np.random.uniform(0.85, 1.15), 0.5)  # Add realistic variance
+                    roas = max(roas * np.random.uniform(0.85, 1.15), 0.5)
                     
                     revenue = spend * roas
                     roi = (revenue - spend) / spend if spend > 0 else 0
@@ -245,7 +294,14 @@ def generate_data():
                         "TikTok": (6, 11),
                         "Google Display": (2, 6),
                         "Programmatic Video": (4, 10),
-                        "LinkedIn": (8, 18)
+                        "Trade Me": (4, 9),
+                        "TVNZ": (8, 18),
+                        "NZ Herald": (5, 12),
+                        "Stuff": (4, 10),
+                        "MediaWorks": (5, 11),
+                        "NZME Radio": (2, 6),
+                        "We Are Frank": (3, 8),
+                        "Taboola": (2, 6)
                     }
                     cpm_min, cpm_max = cpm_ranges.get(pub, (3, 8))
                     cpm = np.random.uniform(cpm_min, cpm_max)
@@ -258,7 +314,14 @@ def generate_data():
                         "TikTok": (80, 92),
                         "Google Display": (45, 65),
                         "Search": (80, 95),
-                        "LinkedIn": (70, 88)
+                        "Trade Me": (70, 85),
+                        "TVNZ": (75, 88),
+                        "NZ Herald": (55, 75),
+                        "Stuff": (50, 70),
+                        "MediaWorks": (60, 80),
+                        "NZME Radio": (65, 85),
+                        "We Are Frank": (62, 82),
+                        "Taboola": (45, 65)
                     }
                     view_min, view_max = viewability_ranges.get(pub, (60, 80))
                     viewability = np.random.uniform(view_min, view_max)
@@ -298,7 +361,7 @@ with st.sidebar:
         **Instructions**  
         - Select one of the predefined strategic questions from the dropdown.  
         - Or type your own custom question in the text box below.  
-        - The assistant will generate structured insights with funnel-layer analysis and relevant charts.  
+        - The assistant will generate comprehensive, data-driven insights with detailed analysis.  
         - Your recent questions will appear below for quick re-selection.  
         """
     )
@@ -379,34 +442,39 @@ def render_chart_for_question(question, df):
                 tooltip=["Publisher", "Spend Level", "ROAS", "Impressions (avg)"]
             ).properties(
                 title="Diminishing Returns Analysis: ROAS Degradation by Spend Level",
-                width=900,
-                height=450
+                width=600,
+                height=400
             ).interactive()
             
-            st.altair_chart(chart, use_container_width=True)
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                st.altair_chart(chart, use_container_width=True)
             
-            st.markdown("### Saturation Point Analysis")
-            st.markdown("Each publisher shows where spending more yields declining returns due to audience overlap and frequency saturation:")
-            
-            for pub in publishers_list:
-                pub_data = df_diminishing[df_diminishing["Publisher"] == pub]
-                if len(pub_data) > 3:
-                    peak_roas = pub_data["ROAS"].max()
-                    peak_bucket = pub_data[pub_data["ROAS"] == peak_roas]["Bucket"].values[0]
-                    
-                    # Find where ROAS drops to 80% of peak
-                    threshold = pub_data[pub_data["ROAS"] < peak_roas * 0.80]
-                    if len(threshold) > 0:
-                        saturation_bucket = threshold["Bucket"].values[0]
-                        saturation_spend = threshold["Spend Level"].values[0]
-                        saturation_roas = threshold["ROAS"].values[0]
+            with col2:
+                st.markdown("### Saturation Points")
+                st.markdown("*Peak ROAS vs. saturation threshold:*")
+                
+                for pub in publishers_list:
+                    pub_data = df_diminishing[df_diminishing["Publisher"] == pub]
+                    if len(pub_data) > 3:
+                        peak_roas = pub_data["ROAS"].max()
+                        peak_bucket = pub_data[pub_data["ROAS"] == peak_roas]["Bucket"].values[0]
                         
-                        col1, col2, col3 = st.columns(3)
-                        col1.metric(f"{pub}", "Peak ROAS", f"${peak_roas:.2f}", f"at Bucket {int(peak_bucket)}")
-                        col2.metric(f"{pub}", "Saturation Point", f"${saturation_roas:.2f}", f"at {saturation_spend}")
-                        col3.metric(f"{pub}", "ROI Decline", f"{((peak_roas - saturation_roas)/peak_roas * 100):.1f}%", "from peak to saturation")
+                        # Find where ROAS drops to 80% of peak
+                        threshold = pub_data[pub_data["ROAS"] < peak_roas * 0.80]
+                        if len(threshold) > 0:
+                            sat_bucket = int(threshold["Bucket"].values[0])
+                            sat_spend = threshold["Spend Level"].values[0]
+                            sat_roas = threshold["ROAS"].values[0]
+                            decline = ((peak_roas - sat_roas) / peak_roas) * 100
+                            
+                            st.metric(
+                                label=f"{pub}",
+                                value=f"${sat_roas:.2f}",
+                                delta=f"{decline:.1f}% decline"
+                            )
             
-            st.dataframe(df_diminishing, use_container_width=True)
+            st.dataframe(df_diminishing, use_container_width=False, width=700)
 
         elif "funnel layer" in question:
             funnel_summary = df.groupby("Funnel Layer").agg({
@@ -421,15 +489,30 @@ def render_chart_for_question(question, df):
                 "Viewability (%)": "mean"
             }).reset_index()
             
-            chart = alt.Chart(funnel_summary).mark_bar().encode(
+            chart = alt.Chart(funnel_summary).mark_bar(color="#0066cc").encode(
                 x="Funnel Layer",
                 y="ROAS",
-                color=alt.Color("Funnel Layer", scale=alt.Scale(scheme="blues")),
                 tooltip=["Funnel Layer", "ROAS", "CPA ($)", "CTR (%)", "Conversions"]
-            ).properties(title="Performance by Funnel Layer: ROAS Comparison")
+            ).properties(
+                title="Performance by Funnel Layer: ROAS",
+                width=600,
+                height=400
+            )
             
-            st.altair_chart(chart, use_container_width=True)
-            st.dataframe(funnel_summary, use_container_width=True)
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                st.altair_chart(chart, use_container_width=True)
+            
+            with col2:
+                st.markdown("### Funnel Metrics")
+                for _, row in funnel_summary.iterrows():
+                    st.metric(
+                        label=row["Funnel Layer"],
+                        value=f"${row['ROAS']:.2f}",
+                        delta=f"CPA: ${row['CPA ($)']:.2f}"
+                    )
+            
+            st.dataframe(funnel_summary, use_container_width=False, width=700)
 
         elif "top-performing" in question or "scale" in question:
             placement_summary = df.groupby(["Publisher", "Placement", "Format"]).agg({
@@ -445,16 +528,30 @@ def render_chart_for_question(question, df):
             
             top_placements = placement_summary.head(5)
             
-            st.markdown("### Top 5 Performing Placements")
-            chart = alt.Chart(top_placements).mark_bar().encode(
+            chart = alt.Chart(top_placements).mark_bar(color="#00b366").encode(
                 x=alt.X("ROAS", title="ROAS"),
                 y=alt.Y("Publisher:N", sort="-x"),
-                color="Format",
-                tooltip=["Publisher", "Placement", "Format", "ROAS", "CPA ($)", "CTR (%)"]
-            ).properties(title="Top Performing Placements by ROAS")
+                tooltip=["Publisher", "Placement", "Format", "ROAS", "CPA ($)"]
+            ).properties(
+                title="Top 5 Performing Placements by ROAS",
+                width=600,
+                height=400
+            )
             
-            st.altair_chart(chart, use_container_width=True)
-            st.dataframe(top_placements, use_container_width=True)
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                st.altair_chart(chart, use_container_width=True)
+            
+            with col2:
+                st.markdown("### Top Performers")
+                for i, (_, row) in enumerate(top_placements.iterrows(), 1):
+                    st.metric(
+                        label=f"#{i} {row['Publisher']} - {row['Format']}",
+                        value=f"${row['ROAS']:.2f}",
+                        delta=f"Spend: ${row['Spend ($)']/1000:.0f}K"
+                    )
+            
+            st.dataframe(top_placements, use_container_width=False, width=700)
 
         elif "underperforming" in question:
             underperforming = df[
@@ -470,9 +567,31 @@ def render_chart_for_question(question, df):
                 "Completion Rate (%)": "mean"
             }).reset_index().sort_values("ROAS")
             
-            st.markdown("### Underperforming Placements (Pause/Optimize Candidates)")
             if len(underperforming) > 0:
-                st.dataframe(underperforming, use_container_width=True)
+                chart = alt.Chart(underperforming).mark_bar(color="#ff6b6b").encode(
+                    x="ROAS",
+                    y=alt.Y("Publisher:N", sort="x"),
+                    tooltip=["Publisher", "Placement", "ROAS", "Viewability (%)", "CPCV ($)"]
+                ).properties(
+                    title="Underperforming Placements",
+                    width=600,
+                    height=400
+                )
+                
+                col1, col2 = st.columns([2, 1])
+                with col1:
+                    st.altair_chart(chart, use_container_width=True)
+                
+                with col2:
+                    st.markdown("### Issues Detected")
+                    for i, (_, row) in enumerate(underperforming.head(3).iterrows(), 1):
+                        st.metric(
+                            label=f"{row['Publisher']}",
+                            value=f"${row['ROAS']:.2f}",
+                            delta=f"View: {row['Viewability (%)']:.0f}%"
+                        )
+                
+                st.dataframe(underperforming, use_container_width=False, width=700)
             else:
                 st.info("No significantly underperforming placements detected.")
 
@@ -492,10 +611,27 @@ def render_chart_for_question(question, df):
                 y="ROAS",
                 color="Funnel Layer",
                 tooltip=["Format", "Funnel Layer", "ROAS", "CPA ($)", "CTR (%)"]
-            ).properties(title="Format Performance: ROAS by Format & Funnel Layer")
+            ).properties(
+                title="Format Performance by Funnel Layer",
+                width=600,
+                height=400
+            )
             
-            st.altair_chart(chart, use_container_width=True)
-            st.dataframe(format_summary, use_container_width=True)
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                st.altair_chart(chart, use_container_width=True)
+            
+            with col2:
+                st.markdown("### Format Rankings")
+                format_avg = format_summary.groupby("Format").agg({"ROAS": "mean"}).sort_values("ROAS", ascending=False)
+                for i, (fmt, roas) in enumerate(format_avg.iterrows(), 1):
+                    st.metric(
+                        label=f"#{i} {fmt}",
+                        value=f"${roas['ROAS']:.2f}",
+                        delta="Avg ROAS"
+                    )
+            
+            st.dataframe(format_summary, use_container_width=False, width=700)
 
         elif "ctr" in question or "cpc" in question:
             publisher_summary = df.groupby("Publisher").agg({
@@ -506,32 +642,47 @@ def render_chart_for_question(question, df):
                 "ROAS": "mean"
             }).reset_index().sort_values("CTR (%)", ascending=False)
             
-            chart = alt.Chart(publisher_summary).mark_bar().encode(
+            chart = alt.Chart(publisher_summary).mark_bar(color="#6b5bff").encode(
                 x="CTR (%)",
                 y=alt.Y("Publisher", sort="-x"),
-                color="CPC ($)",
                 tooltip=["Publisher", "CTR (%)", "CPC ($)", "ROAS"]
-            ).properties(title="CTR vs CPC by Publisher")
+            ).properties(
+                title="CTR vs CPC by Publisher",
+                width=600,
+                height=400
+            )
             
-            st.altair_chart(chart, use_container_width=True)
-            st.dataframe(publisher_summary, use_container_width=True)
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                st.altair_chart(chart, use_container_width=True)
+            
+            with col2:
+                st.markdown("### Engagement Leaders")
+                for i, (_, row) in enumerate(publisher_summary.head(3).iterrows(), 1):
+                    st.metric(
+                        label=f"#{i} {row['Publisher']}",
+                        value=f"{row['CTR (%)']:.2f}%",
+                        delta=f"CPC: ${row['CPC ($)']:.2f}"
+                    )
+            
+            st.dataframe(publisher_summary, use_container_width=False, width=700)
 
     except Exception as e:
-        st.warning(f"Error rendering chart: {str(e)}")
+        st.error(f"Error rendering chart: {str(e)}")
 
 
 # -------------------------------
 # Render Structured Answer
 # -------------------------------
 with st.container():
-    st.subheader("Detailed Answer")
+    st.subheader("Detailed Analysis")
     if question_to_answer and client:
-        with st.spinner("Generating structured answer..."):
+        with st.spinner("Generating comprehensive analysis..."):
             response = client.chat.completions.create(
                 model="llama-3.1-8b-instant",
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Provide a structured answer (Insight, Recommendation, Next Steps) for: {question_to_answer}. Include funnel layer breakdowns, specific format recommendations, optimization tactics, and channel strategy. Quantify all recommendations with expected ROI lift or CPA reduction."}
+                    {"role": "user", "content": f"Provide detailed structured answer for: {question_to_answer}. Generate comprehensive sections with specific data points, quantified recommendations, financial impact projections, and strategic rationale. Minimum 1500 characters per section. Include Insight (performance analysis with 5+ data points), Recommendation (3-5 specific tactical actions with ROI impact), and Next Steps (owners, timelines, success metrics)."}
                 ]
             )
             detailed = response.choices[0].message.content
@@ -539,30 +690,52 @@ with st.container():
         # Parse response into sections
         sections = {"Insight": "", "Recommendation": "", "Next Steps": ""}
         current = None
+        current_section = ""
+        
         for line in detailed.splitlines():
-            if any(h in line for h in sections.keys()):
-                for h in sections.keys():
-                    if h in line:
-                        current = h
-                        break
+            # Check if line contains a section header
+            if "Insight" in line and "Insight" not in current_section:
+                if current:
+                    sections[current] = current_section.strip()
+                current = "Insight"
+                current_section = ""
+            elif "Recommendation" in line and "Recommendation" not in current_section:
+                if current:
+                    sections[current] = current_section.strip()
+                current = "Recommendation"
+                current_section = ""
+            elif "Next Steps" in line and "Next Steps" not in current_section:
+                if current:
+                    sections[current] = current_section.strip()
+                current = "Next Steps"
+                current_section = ""
             elif current:
-                sections[current] += line + "\n"
+                current_section += line + "\n"
+        
+        # Catch final section
+        if current:
+            sections[current] = current_section.strip()
 
-        # Fallback if parsing fails
-        if not any(sections.values()):
-            st.warning("Could not parse structured sections. Here's the full output:")
-            st.markdown(detailed)
+        # Render sections
+        with st.expander("Insight - Performance Analysis", expanded=True):
+            if sections["Insight"]:
+                st.markdown(sections["Insight"])
+                st.divider()
+                render_chart_for_question(question_to_answer, df)
+            else:
+                st.write("Generating insight analysis...")
 
-        # Render each section
-        with st.expander("Insight", expanded=True):
-            st.markdown(sections["Insight"], unsafe_allow_html=True)
-            render_chart_for_question(question_to_answer, df)
+        with st.expander("Recommendation - Strategic Actions", expanded=False):
+            if sections["Recommendation"]:
+                st.markdown(sections["Recommendation"])
+            else:
+                st.write("Generating recommendations...")
 
-        with st.expander("Recommendation", expanded=False):
-            st.markdown(sections["Recommendation"], unsafe_allow_html=True)
-
-        with st.expander("Next Steps", expanded=False):
-            st.markdown(sections["Next Steps"], unsafe_allow_html=True)
+        with st.expander("Next Steps - Execution Plan", expanded=False):
+            if sections["Next Steps"]:
+                st.markdown(sections["Next Steps"])
+            else:
+                st.write("Generating next steps...")
 
         st.caption(f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y at %H:%M')}")
 
