@@ -101,24 +101,24 @@ Your responses must follow this structure:
 - **Insight** 🧠: A precise, data-driven finding segmented by funnel layer (Awareness/Consideration/Conversion). Include top-performing placements, performance deltas vs. benchmarks, messaging approaches, and engagement patterns. Reference specific metrics: CPCV, Completion Rate, CPM, Viewability, CPC, CTR, CPA, ROAS, transactions, revenue.
 - **Recommendation** 📈: A strategic decision with rationale, financial impact, and risk/benefit trade-offs. Specific, operationalized format recommendations and optimization tactics:
   • Channel & placement allocation decisions (e.g., "increase YouTube from 25% to 40% of video budget; decrease TikTok from 30% to 15%")
-  "Increase allocation to YouTube Skippable Mid-roll (Consideration layer): achieved 8.2% CTR vs. 3.1% benchmark. Test product-focused creative variant with 15-second hook."
-  "Pause Display Network placements with <2% viewability. Redirect 40% budget to programmatic video (ROAS $4.21) and allocate 20% to search retargeting (CPA $23)."
+  • "Increase allocation to YouTube Skippable Mid-roll (Consideration layer): achieved 8.2% CTR vs. 3.1% benchmark. Test product-focused creative variant with 15-second hook."
+  • "Pause Display Network placements with <2% viewability. Redirect 40% budget to programmatic video (ROAS $4.21) and allocate 20% to search retargeting (CPA $23)."
   • Creative testing framework and success metrics
-   "Test 3-format creative rotation (Video vs. Carousel vs. Static) on Meta Conversion layer. Current Video driving $3.87 ROAS; rotate non-performing formats weekly."
+  • "Test 3-format creative rotation (Video vs. Carousel vs. Static) on Meta Conversion layer. Current Video driving $3.87 ROAS; rotate non-performing formats weekly."
   • Audience targeting refinements with expected ROI lift
   • Competitive positioning and market insights
 
 - When analyzing paid search, include performance breakdowns by category, product, and message. Reference real examples such as:
-  • "Kitchen Appliances generated $19.9K revenue from 78 purchases — recommend increasing budget allocation."  
-  • "Promotional ad extensions for De'Longhi and Simon Lewis drove 312K impressions — continue testing product-level relevance."  
+  • "Kitchen Appliances generated $19.9K revenue from 78 purchases — recommend increasing budget allocation."
+  • "Promotional ad extensions for De'Longhi and Simon Lewis drove 312K impressions — continue testing product-level relevance."
   • "CTR uplift of 13% and CPC drop led to 8% more clicks at steady budget — maintain current investment level."
 
 - When evaluating creative performance, highlight standout variants and their contribution to revenue and efficiency:
-  • "The 'Earn' creative drove 73% of total revenue with CTR of 2.46% and ROAS of $5.07 — scale across Advantage+."  
+  • "The 'Earn' creative drove 73% of total revenue with CTR of 2.46% and ROAS of $5.07 — scale across Advantage+."
   • "High Touch 1PD audiences delivered 152 remarketing transactions with ROAS of $14.14 and CPA of $19.99 — well below $100 benchmark."
 
 - When referencing platform performance, include channel-level insights and strategic implications:
-  • "Meta continues to outperform benchmarks across visibility and conversion — recommend continued investment and refreshed catalogue rollout."  
+  • "Meta continues to outperform benchmarks across visibility and conversion — recommend continued investment and refreshed catalogue rollout."
   • "Search ROAS at 8.86 with $353K revenue — maintain budget and monitor TAPM vs EAPM allocation."
 
 Always include:
@@ -382,7 +382,7 @@ def render_chart_for_question(question, df):
             st.altair_chart(chart, use_container_width=True)
             
             # Identify inflection points
-            st.markdown("### 📊 Saturation Point Analysis")
+            st.markdown("### Saturation Point Analysis")
             for pub in publishers_list:
                 pub_data = df_diminishing[df_diminishing["Publisher"] == pub]
                 if len(pub_data) > 0:
@@ -443,7 +443,7 @@ def render_chart_for_question(question, df):
             
             top_placements = placement_summary.head(5)
             
-            st.markdown("### 🏆 Top 5 Performing Placements")
+            st.markdown("### Top 5 Performing Placements")
             chart = alt.Chart(top_placements).mark_bar().encode(
                 x=alt.X("ROAS", title="ROAS"),
                 y=alt.Y("Publisher:N", sort="-x"),
@@ -468,7 +468,7 @@ def render_chart_for_question(question, df):
                 "Completion Rate (%)": "mean"
             }).reset_index().sort_values("ROAS")
             
-            st.markdown("### ⚠️ Underperforming Placements (Pause/Optimize Candidates)")
+            st.markdown("### Underperforming Placements (Pause/Optimize Candidates)")
             st.dataframe(underperforming)
 
         elif "format" in question:
@@ -519,20 +519,20 @@ def render_chart_for_question(question, df):
 # Render Structured Answer
 # -------------------------------
 with st.container():
-    st.subheader("📘 Detailed Answer")
+    st.subheader("Detailed Answer")
     if question_to_answer and client:
         with st.spinner("Generating structured answer..."):
             response = client.chat.completions.create(
                 model="llama-3.1-8b-instant",
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Provide a structured answer (Insight, Action, Recommendation, Next Steps) for: {question_to_answer}. Include funnel layer breakdowns, specific format recommendations, optimization tactics, and channel strategy. Quantify all recommendations with expected ROI lift or CPA reduction."}
+                    {"role": "user", "content": f"Provide a structured answer (Insight, Recommendation, Next Steps) for: {question_to_answer}. Include funnel layer breakdowns, specific format recommendations, optimization tactics, and channel strategy. Quantify all recommendations with expected ROI lift or CPA reduction."}
                 ]
             )
             detailed = response.choices[0].message.content
 
         # Parse response into sections
-        sections = {"Insight": "", "Action": "", "Recommendation": "", "Next Steps": ""}
+        sections = {"Insight": "", "Recommendation": "", "Next Steps": ""}
         current = None
         for line in detailed.splitlines():
             if any(h in line for h in sections.keys()):
@@ -545,15 +545,28 @@ with st.container():
 
         # Fallback if parsing fails
         if not any(sections.values()):
-            st.warning("⚠️ Could not parse structured sections. Here's the full output:")
+            st.warning("Could not parse structured sections. Here's the full output:")
             st.markdown(detailed)
 
         # Render each section
-        with st.expander("🔍 Insight", expanded=True):
+        with st.expander("Insight", expanded=True):
             st.markdown(sections["Insight"], unsafe_allow_html=True)
             render_chart_for_question(question_to_answer, df)
 
-        with st.expander("⚡ Action", expanded=False):
-            st.markdown(sections["Action"], unsafe_allow_html=True)
+        with st.expander("Recommendation", expanded=False):
+            st.markdown(sections["Recommendation"], unsafe_allow_html=True)
 
-        with st.expander("�
+        with st.expander("Next Steps", expanded=False):
+            st.markdown(sections["Next Steps"], unsafe_allow_html=True)
+
+        st.caption(f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y at %H:%M')}")
+
+# -------------------------------
+# LEGAL DISCLAIMER
+# -------------------------------
+st.markdown("---")
+st.markdown(
+    "Legal Disclaimer — "
+    "The insights and visualizations generated by this tool are for informational purposes only "
+    "and should not be considered financial, legal, or business advice."
+)
