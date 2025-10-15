@@ -81,14 +81,14 @@ Core responsibilities:
 
 - Leverage the full‑funnel dataset: Impressions, Clicks, Conversions, Spend, Revenue, ROAS, ROI, CAC, CLV.
 - Identify and explain: trends, seasonal patterns, anomalies, and diminishing returns curves.
-- When analyzing diminishing returns, generate a Streamlit‑ready Altair chart of Spend vs. ROAS by Channel, with hover tooltips for Spend, Revenue, ROAS, and CAC. This should show the returns so it increases until it reaches a certain point then decreases. Highlight the point of diminishing returns.
+- When analyzing diminishing returns, generate a Streamlit‑ready Altair chart of Spend vs ROAS over time (month by month). Highlight the inflection point where ROAS begins to decline. Include hover tooltips for Month, Spend, Revenue, ROAS, and CAC. If multiple channels are involved, show them as separate lines or facets.
 - When evaluating publisher or platform performance, compare across audience segments, quantify differences, and highlight impact.
 - For Creative insights, frame findings through A/B testing results and key performance trends:
   • Identify winning vs. underperforming variants.  
   • Highlight message, format, and visual elements that drive higher CTR, CVR, or CLV.  
   • Recommend next creative tests and scaling strategies.  
 
-- Provide actionable recommendations including: budget reallocations, testing frameworks, risk/impact assessments, and scenario planning.
+- Provide actionable recommendations including: strategic decisions, budget reallocations, testing frameworks, risk/impact assessments, and scenario planning.
 - Explicitly state reasoning, modelling choices, and assumptions; flag confidence levels where appropriate.
 - Anticipate likely C‑suite follow‑up questions (ROI sensitivity, scalability, risk exposure, competitive benchmarks) and prepare concise, data‑driven responses.
 - Deliver all outputs in professional, concise, boardroom‑ready language that supports decision‑making.
@@ -103,9 +103,14 @@ Your goal: transform complex performance data into specific insights, valid acti
 @st.cache_data
 def generate_data():
     np.random.seed(42)
-    months = pd.date_range(start="2024-01-01", periods=12, freq="MS").strftime("%b-%Y")
+    # Generate months from Oct 2024 to Sep 2025
+    months = pd.date_range(end="2025-09-30", periods=12, freq="MS").strftime("%b-%Y")
     publishers = ["NZ Herald", "Stuff", "TVNZ", "MediaWorks", "NZME Radio", "Trade Me"]
     audiences = ["Millennials", "Gen X", "Boomers"]
+    creatives = ["Video", "Carousel", "Static Image", "Interactive"]
+    targeting_strategies = ["Behavioral", "Contextual", "Demographic", "Lookalike"]
+    messaging_themes = ["Value-driven", "Urgency", "Emotional Appeal", "Product Benefits"]
+    strategic_objectives = ["Acquisition", "Retention", "Upsell", "Reactivation"]
 
     rows = []
     for m in months:
@@ -120,16 +125,26 @@ def generate_data():
                 roi = (revenue - spend) / spend if spend > 0 else 0
                 clv = np.random.uniform(500, 2000)
                 cac = spend / conversions if conversions > 0 else np.nan
-                rows.append([m, pub, aud, impressions, clicks, conversions,
-                             spend, revenue, roas, roi, clv, cac])
+                creative = np.random.choice(creatives)
+                targeting = np.random.choice(targeting_strategies)
+                messaging = np.random.choice(messaging_themes)
+                strategy = np.random.choice(strategic_objectives)
+
+                rows.append([
+                    m, pub, aud, impressions, clicks, conversions,
+                    spend, revenue, roas, roi, clv, cac,
+                    creative, targeting, messaging, strategy
+                ])
 
     df = pd.DataFrame(rows, columns=[
         "Month","Publisher","Audience","Impressions","Clicks","Conversions",
-        "Spend ($)","Revenue ($)","ROAS","ROI","CLV ($)","CAC ($)"
+        "Spend ($)","Revenue ($)","ROAS","ROI","CLV ($)","CAC ($)",
+        "Creative Format","Targeting Strategy","Messaging Theme","Strategic Objective"
     ])
     return df
 
 df = generate_data()
+
 
 # -------------------------------
 # SIDEBAR CONTROLS
