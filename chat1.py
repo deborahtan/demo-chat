@@ -349,51 +349,49 @@ def generate_data():
 df = generate_data()
 
 # -------------------------------
-# SIDEBAR CONTROLS
+# SIDEBAR CONTROLS - CONVERSATIONAL
 # -------------------------------
-if "recent_questions" not in st.session_state:
-    st.session_state.recent_questions = []
-
 with st.sidebar:
-    st.header("Executive Q&A")
+    st.header("Chat Controls")
 
     st.markdown(
         """
-        **Instructions**  
-        - Select one of the predefined strategic questions from the dropdown.  
-        - Or type your own custom question in the text box below.  
-        - The assistant will generate comprehensive, data-driven insights with detailed analysis.  
-        - Your recent questions will appear below for quick re-selection.  
+        **How to use**  
+        - Ask questions about your campaign performance
+        - Use the suggested questions below or type your own
+        - The assistant remembers your conversation context
+        - Ask follow-up questions naturally
         """
     )
 
-    QUESTIONS = [
-        "Analyze diminishing returns by channel and spend curve. Identify exact saturation point where ROAS declines",
-        "Analyze CTR and CPC by publisher. Where are we getting strongest engagement efficiency?",
-        "Recommend optimal channel mixes for $100M, $200M, and $300M investment levels.",
-        "Highlight months with the highest churn and distinguish internal vs. external drivers.",
-        "Assess external market and economic factors influencing churn or performance shifts.",
-        "Determine which formats delivered the highest ROI/ROAS.",
-        "Evaluate channels with the strongest click-to-conversion rates.",
-        "Advise what to scale, pause, or optimize for maximum efficiency."
+    SUGGESTED_QUESTIONS = [
+        "Analyze diminishing returns by channel and spend curve",
+        "Show me CTR and CPC performance by publisher",
+        "Which formats deliver the highest ROI?",
+        "What channels have the best click-to-conversion rates?",
+        "What should I scale, pause, or optimize?",
+        "Show me top-performing placements by ROAS",
+        "Analyze performance by funnel layer",
+        "Identify underperforming placements",
+        "Show me trends over time",
+        "How is my budget allocated across channels?"
     ]
 
-    selected = st.selectbox("Select a predefined question:", options=QUESTIONS, index=0)
-    custom_question = st.text_area("Or type your own question:")
+    st.markdown("**💡 Suggested Questions**")
+    for question in SUGGESTED_QUESTIONS:
+        if st.button(question, key=f"suggested_{question}", use_container_width=True):
+            # Add question to chat and trigger response
+            st.session_state.messages.append({"role": "user", "content": question})
+            st.rerun()
 
-    question_to_answer = custom_question.strip() if custom_question.strip() else selected
+    st.divider()
+    
+    if st.button("🗑️ Clear Chat History", use_container_width=True):
+        st.session_state.messages = []
+        st.rerun()
 
-    if question_to_answer and question_to_answer not in st.session_state.recent_questions:
-        st.session_state.recent_questions.insert(0, question_to_answer)
-        st.session_state.recent_questions = st.session_state.recent_questions[:5]
-
-    if st.session_state.recent_questions:
-        st.markdown("**Recent Questions**")
-        for q in st.session_state.recent_questions:
-            if st.button(q, key=f"recent_{q}"):
-                question_to_answer = q
-        if st.button("Clear History"):
-            st.session_state.recent_questions = []
+    if len(st.session_state.messages) > 0:
+        st.markdown(f"**💬 Chat Length:** {len(st.session_state.messages)} messages")
 
 # -------------------------------
 # CHART RENDERING WITH REAL DIMINISHING RETURNS
