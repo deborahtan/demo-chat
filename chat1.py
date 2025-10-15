@@ -201,8 +201,7 @@ if question_to_answer and client:
                 sub = df_roas[df_roas["Channel"] == ch]
                 roas_series.append({
                     "title": f"{ch} ROAS",
-                    "data": [{"time": m, "value": round
-                                    "ROAS"])]
+                    "data": [{"time": m, "value": round(v, 2)} for m, v in zip(sub["Month"], sub["ROAS"])]
                 })
 
             st.markdown("### 📈 ROAS Trends by Channel")
