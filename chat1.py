@@ -1,5 +1,8 @@
 import os
 import streamlit as st
+import pandas as pd
+import numpy as np
+import altair as alt
 from groq import Groq
 
 # -------------------------------
@@ -119,7 +122,20 @@ with st.sidebar:
             st.session_state.recent_questions = []
 
 # -------------------------------
-# GROQ RESPONSE
+# SAMPLE DATA FOR CHARTS
+# -------------------------------
+def generate_roas_data():
+    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    channels = ["Display", "CTV", "Search"]
+    data = []
+    for i, month in enumerate(months):
+        data.append({"Month": month, "Channel": "Display", "ROAS": max(2.1 - i * 0.1, 0.5)})
+        data.append({"Month": month, "Channel": "CTV", "ROAS": max(3.4 - i * 0.1, 1.0)})
+        data.append({"Month": month, "Channel": "Search", "ROAS": max(3.9 - i * 0.1, 1.5)})
+    return pd.DataFrame(data)
+
+# -------------------------------
+# GROQ RESPONSE + CHARTS
 # -------------------------------
 if question_to_answer and client:
     with st.spinner("Generating strategic insights..."):
@@ -162,6 +178,17 @@ if question_to_answer and client:
                 if sections[key].strip():
                     with st.expander(f"{icon} {key}", expanded=(key == "Insight")):
                         st.markdown(f'<div class="answer-card">{sections[key].strip()}</div>', unsafe_allow_html=True)
+
+            # ROAS Chart
+            st.markdown("### 📈 ROAS Trends by Channel")
+            df_roas = generate_roas_data()
+            chart = alt.Chart(df_roas).mark_line(point=True).encode(
+                x="Month",
+                y="ROAS",
+                color="Channel",
+                tooltip=["Month", "Channel", "ROAS"]
+            ).properties(height=400)
+            st.altair_chart(chart, use_container_width=True)
 
         except Exception as e:
             st.error(f"Error generating response: {e}")
