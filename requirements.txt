@@ -1,4 +1,5 @@
+groq>=0.5.0
 streamlit
 pandas
 numpy
-anthropic>=0.20.0
+altair
