@@ -184,6 +184,7 @@ if question_to_answer and client:
                     with st.expander(f"📌 {key}", expanded=(key == "Insight")):
                         st.markdown(f'<div class="answer-card">{content.strip()}</div>', unsafe_allow_html=True)
 
+           
             # ROAS by Channel
             channel_map = {
                 "NZ Herald": "Display", "Stuff": "Display",
@@ -196,7 +197,7 @@ if question_to_answer and client:
             }).reset_index()
             df_roas["ROAS"] = df_roas["Revenue ($)"] / df_roas["Spend ($)"]
 
-                      roas_series = []
+            roas_series = []
             for ch in df_roas["Channel"].unique():
                 sub = df_roas[df_roas["Channel"] == ch]
                 roas_series.append({
@@ -207,7 +208,7 @@ if question_to_answer and client:
             st.markdown("### 📈 ROAS Trends by Channel")
             renderLightweightCharts(series=roas_series)
 
-            # Chart 2: CAC over time by audience
+            # CAC by Audience
             df_cac = df.groupby(["Month", "Audience"]).agg({
                 "CAC ($)": "mean"
             }).reset_index()
@@ -223,7 +224,7 @@ if question_to_answer and client:
             st.markdown("### 💰 CAC Trends by Audience")
             renderLightweightCharts(series=cac_series)
 
-            # Chart 3: Spend vs Revenue by publisher (Altair scatter)
+            # Spend vs Revenue by Publisher
             st.markdown("### 🔄 Spend vs Revenue by Publisher")
             chart_data = df.groupby("Publisher").agg({
                 "Spend ($)": "sum",
@@ -242,4 +243,4 @@ if question_to_answer and client:
             st.altair_chart(scatter, use_container_width=True)
 
         except Exception as e:
-            st.error(f"Error generating response: {e}")
+            st.error(f"Error generating response: {e}"
