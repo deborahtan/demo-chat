@@ -184,7 +184,7 @@ if question_to_answer and client:
                     with st.expander(f"📌 {key}", expanded=(key == "Insight")):
                         st.markdown(f'<div class="answer-card">{content.strip()}</div>', unsafe_allow_html=True)
 
-           
+
             # ROAS by Channel
             channel_map = {
                 "NZ Herald": "Display", "Stuff": "Display",
@@ -243,4 +243,4 @@ if question_to_answer and client:
             st.altair_chart(scatter, use_container_width=True)
 
         except Exception as e:
-            st.error(f"Error generating response: {e}"
+            st.error(f"Error generating response: {e}")
