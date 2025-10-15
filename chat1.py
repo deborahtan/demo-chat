@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
-from openai import OpenAI
+import anthropic  # ✅ Replaces OpenAI
 
 # -------------------------------
 # CONFIG & BRANDING
@@ -38,15 +38,15 @@ st.title("📊 Strategic Intelligence Assistant")
 # -------------------------------
 # API KEY
 # -------------------------------
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key and "OPENAI_API_KEY" in st.secrets:
-    api_key = st.secrets["OPENAI_API_KEY"]
+api_key = os.getenv("ANTHROPIC_API_KEY")
+if not api_key and "ANTHROPIC_API_KEY" in st.secrets:
+    api_key = st.secrets["ANTHROPIC_API_KEY"]
 
 client = None
 if api_key:
-    client = OpenAI(api_key=api_key)
+    client = anthropic.Anthropic(api_key=api_key)
 else:
-    st.error("No API key found. Please set OPENAI_API_KEY as env var or in Streamlit secrets.")
+    st.error("No API key found. Please set ANTHROPIC_API_KEY as env var or in Streamlit secrets.")
 
 # -------------------------------
 # SYSTEM PROMPT
@@ -169,135 +169,45 @@ with st.sidebar:
             st.session_state.recent_questions = []
 
 # -------------------------------
-# DETAILED ANSWER
+# CLAUDE RESPONSE GENERATION
 # -------------------------------
-with st.container():
-    st.subheader("Detailed Answer")
-    if question_to_answer and client:
-        with st.spinner("Generating structured answer..."):
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
+if question_to_answer and client:
+    with st.spinner("Generating strategic insights..."):
+        try:
+            response = client.messages.create(
+                model="claude-3-sonnet-20240229",
+                max_tokens=1000,
+                temperature=0.7,
+                system=system_prompt,
                 messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Provide a structured answer with headings and bullet points (Insight, Action, Recommendation, Next Steps) for: {question_to_answer}, using the NZ dataset."}
+                    {"role": "user", "content": question_to_answer}
                 ]
             )
-            detailed = response.choices[0].message.content
 
-        # Split the AI response into sections
-        sections = {"Insight": "", "Action": "", "Recommendation": "", "Next Steps": ""}
-        current = None
-        for line in detailed.splitlines():
-            if any(h in line for h in sections.keys()):
-                for h in sections.keys():
-                    if h in line:
-                        current = h
-                        break
-            elif current:
-                sections[current] += line + "\n"
+            response_text = response.content
 
-        # Render each section as an expander
-        with st.expander("🔍 Insight", expanded=True):
-            st.markdown(sections["Insight"], unsafe_allow_html=True)
+            st.markdown("### Executive Insight")
+            st.markdown(f'<div class="answer-card">{response_text}</div>', unsafe_allow_html=True)
 
-            # Add relevant chart under Insight
-            if "diminishing returns" in question_to_answer.lower():
-                channels = ["Search","Social","CTV","Display"]
-                df_channels = pd.DataFrame({
-                    "Channel": np.repeat(channels, 10),
-                    "Spend ($)": np.tile(np.linspace(1e6, 50e6, 10), len(channels)),
-                    "ROAS": np.concatenate([
-                        5 - 0.00000005*np.linspace(1e6, 50e6, 10),
-                        4 - 0.00000007*np.linspace(1e6, 50e6, 10),
-                        6 - 0.00000004*np.linspace(1e6, 50e6, 10),
-                        3 - 0.00000006*np.linspace(1e6, 50e6, 10)
-                    ])
-                })
-                chart = alt.Chart(df_channels).mark_line(point=True).encode(
-                    x="Spend ($)", y="ROAS", color="Channel",
-                    tooltip=["Channel","Spend ($)","ROAS"]
-                ).properties(title="Diminishing Returns: Spend vs ROAS by Channel")
+            if "Spend vs. ROAS by Channel" in response_text:
+                st.markdown("### 📈 Spend vs. ROAS by Channel")
+                chart_data = df.groupby("Publisher").agg({
+                    "Spend ($)": "sum",
+                    "Revenue ($)": "sum",
+                    "ROAS": "mean",
+                    "CAC ($)": "mean"
+                }).reset_index()
+
+                chart = alt.Chart(chart_data).mark_circle(size=100).encode(
+                    x=alt.X("Spend ($)", scale=alt.Scale(zero=False)),
+                    y=alt.Y("ROAS", scale=alt.Scale(zero=False)),
+                    color="Publisher",
+                    tooltip=["Publisher", "Spend ($)", "Revenue ($)", "ROAS", "CAC ($)"]
+                ).properties(height=400)
+
                 st.altair_chart(chart, use_container_width=True)
-                st.caption("Each channel shows a flattening ROAS curve as spend increases, highlighting saturation points.")
 
-            elif "publisher" in question_to_answer.lower():
-                pub_chart = alt.Chart(df).mark_bar().encode(
-                    x="Publisher", y="Conversions", color="Audience",
-                    tooltip=["Publisher","Audience","Conversions","ROAS","CAC ($)"]
-                ).properties(title="Publisher Performance by Audience Segment")
-                st.altair_chart(pub_chart, use_container_width=True)
-                st.caption("Publishers over‑ or under‑index by audience segment; e.g. NZ Herald with Millennials vs Stuff with Gen X.")
-
-            elif "churn" in question_to_answer.lower():
-                churn_df = df.groupby("Month")["Conversions"].sum().reset_index()
-                churn_df["Churn (%)"] = np.random.uniform(2, 8, size=len(churn_df))
-                churn_chart = alt.Chart(churn_df).mark_line(point=True).encode(
-                    x="Month", y="Churn (%)", tooltip=["Month","Churn (%)"]
-                ).properties(title="Monthly Churn Trend")
-                st.altair_chart(churn_chart, use_container_width=True)
-                st.caption("Churn spikes in July and November, linked to CRM fatigue and macroeconomic slowdown.")
-
-            elif "roi and cpa" in question_to_answer.lower():
-                formats = pd.DataFrame({
-                    "Format": ["Video","Display","Social","CTV"],
-                    "ROI": [3.2, 2.1, 2.8, 3.5],
-                    "CPA": [55, 40, 50, 45]
-                })
-                chart = alt.Chart(formats).mark_bar().encode(
-                    x="Format", y="ROI", tooltip=["Format","ROI","CPA"]
-                ).properties(title="ROI by Format")
-                st.altair_chart(chart, use_container_width=True)
-                st.caption("Video delivers highest ROI but higher CPA; Display is more efficient but lower ROI.")
-
-            elif "click-to-conversion" in question_to_answer.lower():
-                channels = pd.DataFrame({
-                    "Channel": ["Search","Social","CTV","Display"],
-                    "CVR (%)": [5.2, 3.8, 4.5, 2.9]
-                })
-                chart = alt.Chart(channels).mark_bar().encode(
-                    x="Channel", y="CVR (%)", tooltip=["Channel","CVR (%)"]
-                ).properties(title="Click-to-Conversion Rate by Channel")
-                st.altair_chart(chart, use_container_width=True)
-                st.caption("Search drives the strongest conversion efficiency, followed by CTV.")
-
-        with st.expander("⚡ Action", expanded=False):
-            st.markdown(sections["Action"], unsafe_allow_html=True)
-
-        with st.expander("🎯 Recommendation", expanded=False):
-            st.markdown(sections["Recommendation"], unsafe_allow_html=True)
-
-        with st.expander("📝 Next Steps", expanded=False):
-            st.markdown(sections["Next Steps"], unsafe_allow_html=True)
-
-# -------------------------------
-# REFERENCE DICTIONARY (Expandable)
-# -------------------------------
-with st.expander("📖 Dimensions & Metrics Dictionary", expanded=False):
-    dims_metrics = {
-        "Definitions": {
-            "Impressions": "Number of times an ad was displayed.",
-            "Clicks": "Number of times users clicked on an ad.",
-            "Conversions": "Number of desired actions completed (e.g., purchases).",
-            "Spend ($)": "Total advertising expenditure.",
-            "Revenue ($)": "Total income generated from conversions.",
-            "ROAS": "Return on Ad Spend = Revenue / Spend.",
-            "ROI": "Return on Investment = (Revenue - Spend) / Spend.",
-            "CLV ($)": "Customer Lifetime Value — projected net revenue per customer.",
-            "CAC ($)": "Customer Acquisition Cost — Spend divided by Conversions.",
-            "Churn (%)": "Percentage of customers lost over a given period."
-        }
-    }
-    df_dict = pd.DataFrame.from_dict(
-        dims_metrics["Definitions"], orient="index", columns=["Definition"]
-    )
-    st.table(df_dict)
-
-# -------------------------------
-# LEGAL DISCLAIMER
-# -------------------------------
-st.markdown("---")
-st.markdown(
-    "⚖️ [Legal Disclaimer](https://www.example.com/legal-disclaimer) — "
-    "The insights and visualizations generated by this tool are for informational purposes only "
-    "and should not be considered financial, legal, or business advice."
-)
+        except anthropic.RateLimitError:
+            st.error("⚠️ Claude's rate limit has been reached. Please wait a few minutes and try again.")
+        except Exception as e:
+            st.error(f"Error generating response: {e}")
