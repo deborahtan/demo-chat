@@ -349,6 +349,15 @@ def generate_data():
 df = generate_data()
 
 # -------------------------------
+# INITIALIZE CHAT HISTORY (MUST BE AT THE TOP, BEFORE SIDEBAR)
+# -------------------------------
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+if "recent_questions" not in st.session_state:
+    st.session_state.recent_questions = []
+
+# -------------------------------
 # SIDEBAR CONTROLS - CONVERSATIONAL
 # -------------------------------
 with st.sidebar:
