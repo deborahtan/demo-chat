@@ -1,7 +1,5 @@
 import os
 import streamlit as st
-import pandas as pd
-import numpy as np
 from groq import Groq
 
 # -------------------------------
@@ -135,16 +133,25 @@ if question_to_answer and client:
             )
             response_text = response.choices[0].message.content
 
-            sections = {"Insight": "", "Action": "", "Recommendation": "", "Next Steps": "", "Evidence": ""}
+            sections = {
+                "Insight": "",
+                "Action": "",
+                "Recommendation": "",
+                "Next Steps": "",
+                "Evidence": ""
+            }
+
             current = None
             for line in response_text.splitlines():
                 line = line.strip()
-                for h in sections.keys():
-                    if line.lower().startswith(h.lower()):
-                        current = h
-                        break
-                elif current:
-                    sections[current] += line + "\n"
+                if any(line.lower().startswith(h.lower()) for h in sections.keys()):
+                    for h in sections.keys():
+                        if line.lower().startswith(h.lower()):
+                            current = h
+                            break
+                else:
+                    if current:
+                        sections[current] += line + "\n"
 
             for key, icon in {
                 "Insight": "🧠",
