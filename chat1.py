@@ -4,7 +4,8 @@ import pandas as pd
 import numpy as np
 import altair as alt
 from groq import Groq
-from streamlit_lightweight_charts import st_lightweight_charts
+from streamlit_lightweight_charts import renderLightweightCharts
+
 # -------------------------------
 # CONFIG & BRANDING
 # -------------------------------
@@ -183,8 +184,7 @@ if question_to_answer and client:
                     with st.expander(f"📌 {key}", expanded=(key == "Insight")):
                         st.markdown(f'<div class="answer-card">{content.strip()}</div>', unsafe_allow_html=True)
 
-
-             # Chart 1: ROAS over time by channel
+            # ROAS by Channel
             channel_map = {
                 "NZ Herald": "Display", "Stuff": "Display",
                 "TVNZ": "CTV", "MediaWorks": "CTV",
@@ -196,7 +196,7 @@ if question_to_answer and client:
             }).reset_index()
             df_roas["ROAS"] = df_roas["Revenue ($)"] / df_roas["Spend ($)"]
 
-            roas_series = []
+                      roas_series = []
             for ch in df_roas["Channel"].unique():
                 sub = df_roas[df_roas["Channel"] == ch]
                 roas_series.append({
@@ -205,17 +205,7 @@ if question_to_answer and client:
                 })
 
             st.markdown("### 📈 ROAS Trends by Channel")
-            render_lightweight_charts(
-                series=roas_series,
-                width=800,
-                height=400,
-                options={
-                    "layout": {"background": {"color": "#ffffff"}, "textColor": "#000000"},
-                    "grid": {"vertLines": {"color": "#eee"}, "horzLines": {"color": "#eee"}},
-                    "priceScale": {"position": "right"},
-                    "timeScale": {"timeVisible": True}
-                }
-            )
+            renderLightweightCharts(series=roas_series)
 
             # Chart 2: CAC over time by audience
             df_cac = df.groupby(["Month", "Audience"]).agg({
@@ -231,19 +221,9 @@ if question_to_answer and client:
                 })
 
             st.markdown("### 💰 CAC Trends by Audience")
-            render_lightweight_charts(
-                series=cac_series,
-                width=800,
-                height=400,
-                options={
-                    "layout": {"background": {"color": "#ffffff"}, "textColor": "#000000"},
-                    "grid": {"vertLines": {"color": "#eee"}, "horzLines": {"color": "#eee"}},
-                    "priceScale": {"position": "right"},
-                    "timeScale": {"timeVisible": True}
-                }
-            )
+            renderLightweightCharts(series=cac_series)
 
-            # Chart 3: Spend vs Revenue by publisher (scatter)
+            # Chart 3: Spend vs Revenue by publisher (Altair scatter)
             st.markdown("### 🔄 Spend vs Revenue by Publisher")
             chart_data = df.groupby("Publisher").agg({
                 "Spend ($)": "sum",
