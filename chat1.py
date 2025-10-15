@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
-from openai import OpenAI
+from groq import Groq 
 
 # -------------------------------
 # CONFIG & BRANDING
@@ -14,7 +14,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# Sleek theme
 st.markdown("""
     <style>
         body { background-color: #000000; color: #fffefe; }
@@ -31,22 +30,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Branding
 st.image("https://upload.wikimedia.org/wikipedia/commons/e/e5/Dentsu-logo_black.svg", width=160)
 st.title("📊 Strategic Intelligence Assistant")
 
 # -------------------------------
 # API KEY
 # -------------------------------
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key and "OPENAI_API_KEY" in st.secrets:
-    api_key = st.secrets["OPENAI_API_KEY"]
+api_key = os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY")
 
-client = None
-if api_key:
-    client = OpenAI(api_key=api_key)
-else:
-    st.error("No API key found. Please set OPENAI_API_KEY as env var or in Streamlit secrets.")
+if not api_key:
+    st.error("🚫 GROQ_API_KEY not found. Please set it in your environment or Streamlit secrets.")
+    st.stop()
+
+client = Groq(api_key=api_key)
 
 # -------------------------------
 # SYSTEM PROMPT
