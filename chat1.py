@@ -45,33 +45,34 @@ client = Groq(api_key=api_key)
 # SYSTEM PROMPT
 # -------------------------------
 system_prompt = """
-You are a Strategic Intelligence Assistant for C-suite executives across Marketing, Media, CRM, Finance, Loyalty, and Product.
+You are a Strategic Intelligence Assistant serving C-suite leaders across Marketing, Media, CRM, Finance, Loyalty, and Product.
 
-Your role is to analyze enterprise-scale performance data and deliver structured, boardroom-ready insights using the NZ dataset provided.
+Your mission is to analyze enterprise-scale performance data from the New Zealand market and deliver structured, boardroom-ready insights that drive confident decision-making.
 
-Your response must always follow this structure:
-- Insight: What’s happening and why.
-- Action: What should be done immediately.
-- Recommendation: Strategic advice for medium-term planning.
-- Next Steps: Tactical follow-ups or governance suggestions.
+Your response must always follow this format:
+- Insight: What’s happening and why it matters.
+- Action: Immediate steps to take.
+- Recommendation: Strategic guidance for medium-term planning.
+- Next Steps: Tactical follow-ups and governance considerations.
 
-You must:
-- Use full funnel metrics: Impressions, Clicks, Conversions, Spend, Revenue, ROAS, ROI, CAC, CLV.
-- Reference audience segments (Millennials, Gen X, Boomers) and publishers (NZ Herald, Stuff, TVNZ, MediaWorks, NZME Radio, Trade Me).
+Your analysis must:
+- Use full-funnel metrics: Impressions, Clicks, Conversions, Spend, Revenue, ROAS, ROI, CAC, CLV.
+- Reference key audience segments: Millennials, Gen X, Boomers.
+- Reference major NZ publishers: NZ Herald, Stuff, TVNZ, MediaWorks, NZME Radio, Trade Me.
 - Highlight patterns such as seasonal shifts, anomalies, and diminishing returns.
 
 When asked about diminishing returns:
-- Model ROAS as a curve that rises initially, flattens, and then declines — with a clear inflection point.
-- Example: Display and Audio channels often show early saturation; CTV and Search sustain growth longer.
+- Model ROAS as a curve that rises, flattens, and declines — identifying the inflection point.
+- Example: Display and Audio channels often saturate early; CTV and Search sustain performance longer.
 
 When asked about channel mix:
 - Recommend allocations based on marginal ROAS and saturation thresholds.
-- Example: CTV maintains higher ROAS at scale; Display delivers early efficiency but plateaus quickly; Search performs well across budget tiers.
+- Example: CTV maintains high ROAS at scale; Display is efficient early but plateaus; Search performs well across budget tiers.
 
 When asked about churn:
 - Distinguish internal vs. external drivers and visualize monthly trends.
-- Example internal drivers: CRM fatigue, loyalty drop-off, poor onboarding.
-- Example external drivers: economic uncertainty, seasonal demand shifts, competitive switching.
+- Internal: CRM fatigue, loyalty drop-off, poor onboarding.
+- External: economic uncertainty, seasonal demand shifts, competitive switching.
 
 When asked about publisher performance:
 - Compare across audience segments and quantify differences.
@@ -79,11 +80,11 @@ When asked about publisher performance:
 
 When asked about formats or conversion rates:
 - Rank by ROI, CPA, and CVR.
-- Example: Video formats often deliver highest ROI but higher CPA; Display is more efficient but lower ROI.
+- Example: Video formats deliver high ROI but higher CPA; Display is efficient but lower ROI.
 
 Your tone must be:
 - Executive-ready, confident, and concise.
-- Free of filler or generic advice.
+- Free of filler, generic advice, or speculation.
 - Always grounded in the NZ dataset and performance metrics.
 """
 
@@ -122,16 +123,18 @@ with st.sidebar:
             st.session_state.recent_questions = []
 
 # -------------------------------
-# SAMPLE DATA FOR CHARTS
+# SAMPLE DATA GENERATION
 # -------------------------------
-def generate_roas_data():
+def generate_sample_data(question):
     months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     channels = ["Display", "CTV", "Search"]
     data = []
     for i, month in enumerate(months):
-        data.append({"Month": month, "Channel": "Display", "ROAS": max(2.1 - i * 0.1, 0.5)})
-        data.append({"Month": month, "Channel": "CTV", "ROAS": max(3.4 - i * 0.1, 1.0)})
-        data.append({"Month": month, "Channel": "Search", "ROAS": max(3.9 - i * 0.1, 1.5)})
+        for ch in channels:
+            base = {"Display": 2.1, "CTV": 3.4, "Search": 3.9}[ch]
+            decay = i * 0.1
+            roas = max(base - decay, 0.5)
+            data.append({"Month": month, "Channel": ch, "ROAS": roas})
     return pd.DataFrame(data)
 
 # -------------------------------
@@ -149,6 +152,7 @@ if question_to_answer and client:
             )
             response_text = response.choices[0].message.content
 
+            # Parse structured response
             sections = {
                 "Insight": "",
                 "Action": "",
@@ -156,18 +160,18 @@ if question_to_answer and client:
                 "Next Steps": "",
                 "Evidence": ""
             }
-
             current = None
             for line in response_text.splitlines():
                 line = line.strip()
-                if any(line.lower().startswith(h.lower()) for h in sections.keys()):
-                    for h in sections.keys():
+                if any(line.lower().startswith(h.lower()) for h in sections):
+                    for h in sections:
                         if line.lower().startswith(h.lower()):
                             current = h
                             break
                 elif current:
                     sections[current] += line + "\n"
 
+            # Display insights
             for key, icon in {
                 "Insight": "🧠",
                 "Action": "⚡",
@@ -179,16 +183,17 @@ if question_to_answer and client:
                     with st.expander(f"{icon} {key}", expanded=(key == "Insight")):
                         st.markdown(f'<div class="answer-card">{sections[key].strip()}</div>', unsafe_allow_html=True)
 
-            # ROAS Chart
-            st.markdown("### 📈 ROAS Trends by Channel")
-            df_roas = generate_roas_data()
-            chart = alt.Chart(df_roas).mark_line(point=True).encode(
-                x="Month",
-                y="ROAS",
-                color="Channel",
-                tooltip=["Month", "Channel", "ROAS"]
-            ).properties(height=400)
-            st.altair_chart(chart, use_container_width=True)
+            # Dynamically generate chart if relevant
+            if "diminishing returns" in question_to_answer.lower() or "roas" in question_to_answer.lower():
+                st.markdown("### 📈 ROAS Trends by Channel")
+                df_roas = generate_sample_data(question_to_answer)
+                chart = alt.Chart(df_roas).mark_line(point=True).encode(
+                    x="Month",
+                    y="ROAS",
+                    color="Channel",
+                    tooltip=["Month", "Channel", "ROAS"]
+                ).properties(height=400)
+                st.altair_chart(chart, use_container_width=True)
 
         except Exception as e:
             st.error(f"Error generating response: {e}")
