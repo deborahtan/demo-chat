@@ -102,8 +102,8 @@ Your goal: transform complex performance data into specific insights, valid acti
 @st.cache_data
 def generate_data():
     np.random.seed(42)
-    # Generate months from Oct 2024 to Sep 2025
-    months = pd.date_range(end="2025-09-30", periods=12, freq="MS").strftime("%b-%Y")
+    # Generate months from Oct 2024 to Sep 2025 as datetime objects
+    months = pd.date_range(end="2025-09-30", periods=12, freq="MS")
     publishers = ["NZ Herald", "Stuff", "TVNZ", "MediaWorks", "NZME Radio", "Trade Me"]
     audiences = ["Millennials", "Gen X", "Boomers"]
     creatives = ["Video", "Carousel", "Static Image", "Interactive"]
@@ -140,7 +140,12 @@ def generate_data():
         "Spend ($)","Revenue ($)","ROAS","ROI","CLV ($)","CAC ($)",
         "Creative Format","Targeting Strategy","Messaging Theme","Strategic Objective"
     ])
+
+    # Ensure Month is datetime for charting
+    df["Month"] = pd.to_datetime(df["Month"])
+
     return df
+
 
 df = generate_data()
 
