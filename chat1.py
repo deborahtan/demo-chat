@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 import altair as alt
 from groq import Groq
-from streamlit_lightweight_charts import renderLightweightCharts
 
 # -------------------------------
 # CONFIG & BRANDING
@@ -23,6 +22,8 @@ st.markdown("""
             padding: 20px;
             color: #000000;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            font-size: 16px;
+            line-height: 1.6;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -178,52 +179,51 @@ if question_to_answer and client:
                 elif current:
                     sections[current] += line + "\n"
 
-            # Expandable Insight with Visualization
-            with st.expander("📊 Insight with Data Visualization", expanded=True):
-                st.markdown(f'<div class="answer-card">{sections["Insight"].strip()}</div>', unsafe_allow_html=True)
-
-                # ROAS by Channel
-                channel_map = {
-                    "NZ Herald": "Display", "Stuff": "Display",
-                    "TVNZ": "CTV", "MediaWorks": "CTV",
-                    "NZME Radio": "Audio", "Trade Me": "Search"
-                }
-                df["Channel"] = df["Publisher"].map(channel_map)
-                df_roas = df.groupby(["Month", "Channel"]).agg({
-                    "Spend ($)": "sum", "Revenue ($)": "sum"
-                }).reset_index()
-                df_roas["ROAS"] = df_roas["Revenue ($)"] / df_roas["Spend ($)"]
-
-                roas_series = []
-                for ch in df_roas["Channel"].unique():
-                    sub = df_roas[df_roas["Channel"] == ch]
-                    roas_series.append({
-                        "title": f"{ch} ROAS",
-                        "data": [{"time": m, "value": round(v, 2)} for m, v in zip(sub["Month"], sub["ROAS"])]
-                    })
-
-                renderLightweightCharts(roas_series)
-
-                # CAC by Audience
-                df_cac = df.groupby(["Month", "Audience"]).agg({
-                    "CAC ($)": "mean"
-                }).reset_index()
-
-                cac_series = []
-                for aud in df_cac["Audience"].unique():
-                    sub = df_cac[df_cac["Audience"] == aud]
-                    cac_series.append({
-                        "title": f"{aud} CAC",
-                        "data": [{"time": m, "value": round(v, 2)} for m, v in zip(sub["Month"], sub["CAC ($)"])]
-                    })
-
-                renderLightweightCharts(cac_series)
-
-            # Expandable blocks for Action, Recommendation, Next Steps
-            for key in ["Action", "Recommendation", "Next Steps"]:
+            for key, icon in {
+                "Insight": "🧠",
+                "Action": "⚡",
+                "Recommendation": "📌",
+                "Next Steps": "🛠️"
+            }.items():
                 if sections[key].strip():
-                    with st.expander(f"📌 {key}", expanded=False):
+                    with st.expander(f"{icon} {key}", expanded=(key == "Insight")):
                         st.markdown(f'<div class="answer-card">{sections[key].strip()}</div>', unsafe_allow_html=True)
+
+            # ROAS by Channel
+            channel_map = {
+                "NZ Herald": "Display", "Stuff": "Display",
+                "TVNZ": "CTV", "MediaWorks": "CTV",
+                "NZME Radio": "Audio", "Trade Me": "Search"
+            }
+            df["Channel"] = df["Publisher"].map(channel_map)
+            df_roas = df.groupby(["Month", "Channel"]).agg({
+                "Spend ($)": "sum",
+                "Revenue ($)": "sum"
+            }).reset_index()
+            df_roas["ROAS"] = df_roas["Revenue ($)"] / df_roas["Spend ($)"]
+
+            st.markdown("### 📈 ROAS Trends by Channel")
+            roas_chart = alt.Chart(df_roas).mark_line(point=True).encode(
+                x="Month",
+                y="ROAS",
+                color="Channel",
+                tooltip=["Month", "Channel", "ROAS"]
+            ).properties(height=400)
+            st.altair_chart(roas_chart, use_container_width=True)
+
+            # CAC by Audience
+            df_cac = df.groupby(["Month", "Audience"]).agg({
+                "CAC ($)": "mean"
+            }).reset_index()
+
+            st.markdown("### 💰 CAC Trends by Audience")
+            cac_chart = alt.Chart(df_cac).mark_line(point=True).encode(
+                x="Month",
+                y="CAC ($)",
+                color="Audience",
+                tooltip=["Month", "Audience", "CAC ($)"]
+            ).properties(height=400)
+            st.altair_chart(cac_chart, use_container_width=True)
 
             # Spend vs Revenue by Publisher
             st.markdown("### 🔄 Spend vs Revenue by Publisher")
@@ -240,8 +240,22 @@ if question_to_answer and client:
                 color="Publisher",
                 tooltip=["Publisher", "Spend ($)", "Revenue ($)", "ROAS", "CAC ($)"]
             ).properties(height=400)
-
             st.altair_chart(scatter, use_container_width=True)
+
+            # Evidence & Reasoning
+            with st.expander("🧪 Evidence & Reasoning"):
+                st.markdown("""
+                <div class="answer-card">
+                <div class="section-title">Analytical Process</div>
+                - Data was grouped by month and channel to calculate ROAS trends over time.<br>
+                - CAC was averaged by audience segment to highlight cost efficiency.<br>
+                - Publisher-level aggregation revealed spend vs revenue dynamics.<br><br>
+                <div class="section-title">Why These Metrics Matter</div>
+                - ROAS helps identify saturation and diminishing returns.<br>
+                - CAC reveals audience-specific acquisition efficiency.<br>
+                - Spend vs Revenue shows which publishers drive profitability.<br>
+                </div>
+                """, unsafe_allow_html=True)
 
         except Exception as e:
             st.error(f"Error generating response: {e}")
