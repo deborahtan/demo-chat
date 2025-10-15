@@ -166,7 +166,6 @@ if question_to_answer and client:
             )
             response_text = response.choices[0].message.content
 
-            st.markdown("### Executive Insight")
             sections = {"Insight": "", "Action": "", "Recommendation": "", "Next Steps": ""}
             current = None
             for line in response_text.splitlines():
@@ -179,49 +178,52 @@ if question_to_answer and client:
                 elif current:
                     sections[current] += line + "\n"
 
-            for key, content in sections.items():
-                if content.strip():
-                    with st.expander(f"📌 {key}", expanded=(key == "Insight")):
-                        st.markdown(f'<div class="answer-card">{content.strip()}</div>', unsafe_allow_html=True)
+            # Expandable Insight with Visualization
+            with st.expander("📊 Insight with Data Visualization", expanded=True):
+                st.markdown(f'<div class="answer-card">{sections["Insight"].strip()}</div>', unsafe_allow_html=True)
 
-            # ROAS by Channel
-            channel_map = {
-                "NZ Herald": "Display", "Stuff": "Display",
-                "TVNZ": "CTV", "MediaWorks": "CTV",
-                "NZME Radio": "Audio", "Trade Me": "Search"
-            }
-            df["Channel"] = df["Publisher"].map(channel_map)
-            df_roas = df.groupby(["Month", "Channel"]).agg({
-                "Spend ($)": "sum", "Revenue ($)": "sum"
-            }).reset_index()
-            df_roas["ROAS"] = df_roas["Revenue ($)"] / df_roas["Spend ($)"]
+                # ROAS by Channel
+                channel_map = {
+                    "NZ Herald": "Display", "Stuff": "Display",
+                    "TVNZ": "CTV", "MediaWorks": "CTV",
+                    "NZME Radio": "Audio", "Trade Me": "Search"
+                }
+                df["Channel"] = df["Publisher"].map(channel_map)
+                df_roas = df.groupby(["Month", "Channel"]).agg({
+                    "Spend ($)": "sum", "Revenue ($)": "sum"
+                }).reset_index()
+                df_roas["ROAS"] = df_roas["Revenue ($)"] / df_roas["Spend ($)"]
 
-            roas_series = []
-            for ch in df_roas["Channel"].unique():
-                sub = df_roas[df_roas["Channel"] == ch]
-                roas_series.append({
-                    "title": f"{ch} ROAS",
-                    "data": [{"time": m, "value": round(v, 2)} for m, v in zip(sub["Month"], sub["ROAS"])]
-                })
+                roas_series = []
+                for ch in df_roas["Channel"].unique():
+                    sub = df_roas[df_roas["Channel"] == ch]
+                    roas_series.append({
+                        "title": f"{ch} ROAS",
+                        "data": [{"time": m, "value": round(v, 2)} for m, v in zip(sub["Month"], sub["ROAS"])]
+                    })
 
-            st.markdown("### 📈 ROAS Trends by Channel")
-            renderLightweightCharts(roas_series)
+                renderLightweightCharts(roas_series)
 
-            # CAC by Audience
-            df_cac = df.groupby(["Month", "Audience"]).agg({
-                "CAC ($)": "mean"
-            }).reset_index()
+                # CAC by Audience
+                df_cac = df.groupby(["Month", "Audience"]).agg({
+                    "CAC ($)": "mean"
+                }).reset_index()
 
-            cac_series = []
-            for aud in df_cac["Audience"].unique():
-                sub = df_cac[df_cac["Audience"] == aud]
-                cac_series.append({
-                    "title": f"{aud} CAC",
-                    "data": [{"time": m, "value": round(v, 2)} for m, v in zip(sub["Month"], sub["CAC ($)"])]
-                })
+                cac_series = []
+                for aud in df_cac["Audience"].unique():
+                    sub = df_cac[df_cac["Audience"] == aud]
+                    cac_series.append({
+                        "title": f"{aud} CAC",
+                        "data": [{"time": m, "value": round(v, 2)} for m, v in zip(sub["Month"], sub["CAC ($)"])]
+                    })
 
-            st.markdown("### 💰 CAC Trends by Audience")
-            renderLightweightCharts(cac_series)
+                renderLightweightCharts(cac_series)
+
+            # Expandable blocks for Action, Recommendation, Next Steps
+            for key in ["Action", "Recommendation", "Next Steps"]:
+                if sections[key].strip():
+                    with st.expander(f"📌 {key}", expanded=False):
+                        st.markdown(f'<div class="answer-card">{sections[key].strip()}</div>', unsafe_allow_html=True)
 
             # Spend vs Revenue by Publisher
             st.markdown("### 🔄 Spend vs Revenue by Publisher")
