@@ -149,9 +149,8 @@ if question_to_answer and client:
                         if line.lower().startswith(h.lower()):
                             current = h
                             break
-                else:
-                    if current:
-                        sections[current] += line + "\n"
+                elif current:
+                    sections[current] += line + "\n"
 
             for key, icon in {
                 "Insight": "🧠",
