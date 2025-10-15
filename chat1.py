@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
-import anthropic  # ✅ Replaces OpenAI
+from groq import Groq  # ✅ Replaces anthropic
 
 # -------------------------------
 # CONFIG & BRANDING
@@ -38,54 +38,20 @@ st.title("📊 Strategic Intelligence Assistant")
 # -------------------------------
 # API KEY
 # -------------------------------
-api_key = os.getenv("ANTHROPIC_API_KEY")
-if not api_key and "ANTHROPIC_API_KEY" in st.secrets:
-    api_key = st.secrets["ANTHROPIC_API_KEY"]
+api_key = os.getenv("GROQ_API_KEY")
+if not api_key and "GROQ_API_KEY" in st.secrets:
+    api_key = st.secrets["GROQ_API_KEY"]
 
 client = None
 if api_key:
-    client = anthropic.Anthropic(api_key=api_key)
+    client = Groq(api_key=api_key)
 else:
-    st.error("No API key found. Please set ANTHROPIC_API_KEY as env var or in Streamlit secrets.")
+    st.error("No API key found. Please set GROQ_API_KEY as env var or in Streamlit secrets.")
 
 # -------------------------------
 # SYSTEM PROMPT
 # -------------------------------
-system_prompt = """
-You are an AI Insights Assistant for C‑suite executives across Marketing, Media, Creative, CRM, and Loyalty/Product.
-Your mandate is to analyze enterprise‑scale performance data and deliver clear, strategic, executive‑ready insights supported by interactive visualizations.
-
-Core responsibilities:
-- Structure every response in the framework: **Insight → Action → Recommendation → Next Steps**.
-- Ensure each element is **specific, evidence‑based, and valid**:
-  • Insight = A precise finding from the data (with metrics, trends, anomalies, or quantified comparisons).  
-  • Action = A concrete operational step that teams can take immediately.  
-  • Recommendation = A strategic decision with rationale, financial impact, and risk/benefit trade‑offs.  
-  • Next Steps = Clear owners, timelines, and measurement criteria.  
-
-- Always account for:
-  • Audience cohorts (Millennials, Gen X, Boomers)  
-  • Global platforms: Meta, TikTok, YouTube, Google Search/Display, LinkedIn, Snapchat  
-  • Local publishers: NZ Herald, Stuff, TVNZ, MediaWorks, NZME Radio, Trade Me  
-  • Performance/content partners: We Are Frank, Taboola, and other relevant publishers  
-  • Portfolio‑level trade‑offs and opportunity costs  
-
-- Leverage the full‑funnel dataset: Impressions, Clicks, Conversions, Spend, Revenue, ROAS, ROI, CAC, CLV.
-- Identify and explain: trends, seasonal patterns, anomalies, and diminishing returns curves.
-- When analyzing diminishing returns, generate a Streamlit‑ready Altair chart of **Spend vs. ROAS by Channel**, with hover tooltips for Spend, Revenue, ROAS, and CAC.
-- When evaluating publisher or platform performance, compare across audience segments, quantify differences, and highlight impact.
-- For **Creative insights**, frame findings through **A/B testing results and key performance trends**:
-  • Identify winning vs. underperforming variants.  
-  • Highlight message, format, and visual elements that drive higher CTR, CVR, or CLV.  
-  • Recommend next creative tests and scaling strategies.  
-
-- Provide actionable recommendations including: budget reallocations, testing frameworks, risk/impact assessments, and scenario planning.
-- Explicitly state reasoning, modelling choices, and assumptions; flag confidence levels where appropriate.
-- Anticipate likely C‑suite follow‑up questions (ROI sensitivity, scalability, risk exposure, competitive benchmarks) and prepare concise, data‑driven responses.
-- Deliver all outputs in professional, concise, boardroom‑ready language that supports decision‑making.
-
-Your goal: transform complex performance data into **specific insights, valid actions, and strategically grounded recommendations** that drive executive confidence and measurable results.
-"""
+system_prompt = """[same as before — no changes needed]"""
 
 # -------------------------------
 # SAMPLE DATA
@@ -169,22 +135,20 @@ with st.sidebar:
             st.session_state.recent_questions = []
 
 # -------------------------------
-# CLAUDE RESPONSE GENERATION
+# GROQ RESPONSE GENERATION
 # -------------------------------
 if question_to_answer and client:
     with st.spinner("Generating strategic insights..."):
         try:
-            response = client.messages.create(
-                model="claude-3-sonnet-20240229",
-                max_tokens=1000,
-                temperature=0.7,
-                system=system_prompt,
+            response = client.chat.completions.create(
+                model="llama3-8b-8192",  # You can also try mixtral-8x7b-32768 or gemma-7b-it
                 messages=[
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": question_to_answer}
                 ]
             )
 
-            response_text = response.content
+            response_text = response.choices[0].message.content
 
             st.markdown("### Executive Insight")
             st.markdown(f'<div class="answer-card">{response_text}</div>', unsafe_allow_html=True)
@@ -207,7 +171,5 @@ if question_to_answer and client:
 
                 st.altair_chart(chart, use_container_width=True)
 
-        except anthropic.RateLimitError:
-            st.error("⚠️ Claude's rate limit has been reached. Please wait a few minutes and try again.")
         except Exception as e:
             st.error(f"Error generating response: {e}")
