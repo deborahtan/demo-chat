@@ -101,6 +101,19 @@ Your responses must follow this structure:
 - **Insight** 🧠: A precise, data-driven finding (trend, anomaly, comparison, or opportunity). Include timeframe and relevant metrics.
 - **Action** 🎯: A specific, clickable operational step. Make it easy to follow up with a deeper question or next move.
 - **Recommendation** 📈: A strategic decision with rationale, financial impact, and trade-offs. Tailor it to relevant channels or campaigns.
+- When analyzing paid search, include performance breakdowns by category, product, and message. Reference real examples such as:
+  • “Kitchen Appliances generated $19.9K revenue from 78 purchases — recommend increasing budget allocation.”  
+  • “Promotional ad extensions for De'Longhi and Simon Lewis drove 312K impressions — continue testing product-level relevance.”  
+  • “CTR uplift of 13% and CPC drop led to 8% more clicks at steady budget — maintain current investment level.”
+
+- When evaluating creative performance, highlight standout variants and their contribution to revenue and efficiency:
+  • “The ‘Earn’ creative drove 73% of total revenue with CTR of 2.46% and ROAS of $5.07 — scale across Advantage+.”  
+  • “High Touch 1PD audiences delivered 152 remarketing transactions with ROAS of $14.14 and CPA of $19.99 — well below $100 benchmark.”
+
+- When referencing platform performance, include channel-level insights and strategic implications:
+  • “Meta continues to outperform benchmarks across visibility and conversion — recommend continued investment and refreshed catalogue rollout.”  
+  • “Search ROAS at 8.86 with $353K revenue — maintain budget and monitor TAPM vs EAPM allocation.”
+  
 - **Next Steps** 🛠️: Clear owners, timelines, and measurable outcomes.
 
 Always include:
@@ -111,15 +124,16 @@ Always include:
 - **Internal and external factors** (e.g. market trends, economic shifts, competitor moves) based on recent research. Reference these when explaining performance changes or churn.
 - **CX diagnostics**: When analyzing churn, include Net Promoter Score (NPS) and Customer Satisfaction (CSAT) metrics for the top 3 churn months to identify internal experience drivers.
 - **Specific recommendations**: Be precise. If budget should be reallocated, explain where and why. If action is needed, define what, who, and how — not just vague monitoring advice.
+- "Advise what to scale, pause, or optimize for maximum efficiency — including platforms, formats, and creative variants (messages, visuals, calls-to-action)."
 
 Core responsibilities:
 - Structure every response in the framework: Insight → Action → Recommendation → Next Steps.
 - Ensure each element is specific, evidence‑based, and valid:
   • Insight = A precise finding from the data (with metrics, trends, anomalies, or quantified comparisons).  
-  • Action = A concrete operational step that teams can take immediately.  
-  • Recommendation = A strategic decision with rationale, financial impact, and risk/benefit trade‑offs.  
-  • Next Steps = Clear owners, timelines, and measurement criteria.
-
+  • **Action** 🎯: A specific, clickable operational step. Format each Action as a hyperlink that auto-populates a follow-up prompt and triggers a new insight using that prompt. Actions must include channel-level recommendations (e.g. Sponsored Posts on Meta), targeting adjustments (e.g. LinkedIn audience filters), creative guidance (e.g. message, visual, CTA variants), and strategic rationale tied to ROI, CPA, or CLV improvements. 
+  • Recommendation = A strategic decision with rationale, financial impact, and risk/benefit trade‑offs - media, creative, strategic, messaging icluded.  
+  • Evidence & Assumptions = In own category assuming about the data, with a confidence interval
+ 
 - Always account for:
   • Audience cohorts (Millennials, Gen X, Boomers)  
   • Global platforms: Meta, TikTok, YouTube, Google Search/Display, LinkedIn, Snapchat  
@@ -141,6 +155,11 @@ Core responsibilities:
 - Explicitly state reasoning, modelling choices, and assumptions; flag confidence levels where appropriate.
 - Anticipate likely C‑suite follow‑up questions (ROI sensitivity, scalability, risk exposure, competitive benchmarks) and prepare concise, data‑driven responses.
 - Deliver all outputs in professional, concise, boardroom‑ready language that supports decision‑making.
+
+- Always phrase outputs in stakeholder-facing language. Do not mention technical tools or implementation details (e.g. Streamlit, Altair, Python). Focus on business impact, strategic clarity, and executive relevance.
+
+Your goal: transform complex performance data into specific insights, valid actions, and strategically grounded recommendations that drive executive confidence and measurable results.
+"""
 
 Your goal: transform complex performance data into specific insights, valid actions, and strategically grounded recommendations that drive executive confidence and measurable results.
 """
@@ -252,97 +271,128 @@ with st.sidebar:
 def render_chart_for_question(question, df):
     question = question.lower()
 
-    if "diminishing returns" in question:
-        channels = ["Search", "Social", "CTV", "Display"]
-        df_channels = pd.DataFrame({
-            "Channel": np.repeat(channels, 10),
-            "Spend ($)": np.tile(np.linspace(1e6, 50e6, 10), len(channels)),
-            "ROAS": np.concatenate([
-                5 - 0.00000005*np.linspace(1e6, 50e6, 10),
-                4 - 0.00000007*np.linspace(1e6, 50e6, 10),
-                6 - 0.00000004*np.linspace(1e6, 50e6, 10),
-                3 - 0.00000006*np.linspace(1e6, 50e6, 10)
-            ])
-        })
-        chart = alt.Chart(df_channels).mark_line(point=True).encode(
-            x="Spend ($)", y="ROAS", color="Channel",
-            tooltip=["Channel", "Spend ($)", "ROAS"]
-        ).properties(title="Diminishing Returns: Spend vs ROAS by Channel")
-        st.altair_chart(chart, use_container_width=True)
-        st.caption("Each channel shows a flattening ROAS curve as spend increases, highlighting saturation points.")
-        st.dataframe(df_channels)
+    try:
+        if "diminishing returns" in question:
+            channels = ["Search", "Social", "CTV", "Display"]
+            df_channels = pd.DataFrame({
+                "Channel": np.repeat(channels, 10),
+                "Spend ($)": np.tile(np.linspace(1e6, 50e6, 10), len(channels)),
+                "ROAS": np.concatenate([
+                    5 - 0.00000005*np.linspace(1e6, 50e6, 10),
+                    4 - 0.00000007*np.linspace(1e6, 50e6, 10),
+                    6 - 0.00000004*np.linspace(1e6, 50e6, 10),
+                    3 - 0.00000006*np.linspace(1e6, 50e6, 10)
+                ])
+            })
+            chart = alt.Chart(df_channels).mark_line(point=True).encode(
+                x="Spend ($)", y="ROAS", color="Channel",
+                tooltip=["Channel", "Spend ($)", "ROAS"]
+            ).properties(title="Diminishing Returns: Spend vs ROAS by Channel")
+            st.altair_chart(chart, use_container_width=True)
+            st.caption("Each channel shows a flattening ROAS curve as spend increases, highlighting saturation points.")
+            st.dataframe(df_channels)
 
-    elif "publisher" in question:
-        summary = df.groupby(["Publisher", "Audience"]).agg({
-            "Conversions": "sum",
-            "Spend ($)": "sum",
-            "Revenue ($)": "sum",
-            "ROAS": "mean",
-            "CAC ($)": "mean"
-        }).reset_index()
-        chart = alt.Chart(summary).mark_bar().encode(
-            x="Publisher", y="Conversions", color="Audience",
-            tooltip=["Publisher", "Audience", "Conversions", "ROAS", "CAC ($)"]
-        ).properties(title="Publisher Performance by Audience Segment")
-        st.altair_chart(chart, use_container_width=True)
-        st.caption("Audience-level performance across publishers reveals strategic strengths and gaps.")
-        st.dataframe(summary)
+        elif "publisher" in question:
+            cols = ["Publisher", "Audience"]
+            metrics = {
+                "Conversions": "sum",
+                "Spend ($)": "sum",
+                "Revenue ($)": "sum",
+                "ROAS": "mean",
+                "CAC ($)": "mean"
+            }
+            valid_metrics = {k: v for k, v in metrics.items() if k in df.columns}
+            summary = df.groupby(cols).agg(valid_metrics).reset_index()
+            chart = alt.Chart(summary).mark_bar().encode(
+                x="Publisher", y="Conversions", color="Audience",
+                tooltip=[col for col in summary.columns if col not in cols]
+            ).properties(title="Publisher Performance by Audience Segment")
+            st.altair_chart(chart, use_container_width=True)
+            st.caption("Audience-level performance across publishers reveals strategic strengths and gaps.")
+            st.dataframe(summary)
 
-    elif "churn" in question:
-        churn_df = df.groupby("Month").agg({
-            "Conversions": "sum",
-            "NPS": "mean",
-            "CSAT (%)": "mean",
-            "Unsubscribe Rate (%)": "mean"
-        }).reset_index()
-        churn_df["Churn (%)"] = np.random.uniform(2, 8, size=len(churn_df))
-        chart = alt.Chart(churn_df).mark_line(point=True).encode(
-            x="Month", y="Churn (%)",
-            tooltip=["Month", "Churn (%)", "NPS", "CSAT (%)", "Unsubscribe Rate (%)"]
-        ).properties(title="Monthly Churn Trend with CX Diagnostics")
-        st.altair_chart(chart, use_container_width=True)
-        st.caption("CX metrics help diagnose internal churn drivers. Lower NPS and CSAT often correlate with higher churn.")
-        st.dataframe(churn_df)
+        elif "churn" in question:
+            metrics = {
+                "Conversions": "sum",
+                "NPS": "mean",
+                "CSAT (%)": "mean",
+                "Unsubscribe Rate (%)": "mean"
+            }
+            valid_metrics = {k: v for k, v in metrics.items() if k in df.columns}
+            if "Month" in df.columns:
+                churn_df = df.groupby("Month").agg(valid_metrics).reset_index()
+                churn_df["Churn (%)"] = np.random.uniform(2, 8, size=len(churn_df))
+                chart = alt.Chart(churn_df).mark_line(point=True).encode(
+                    x="Month", y="Churn (%)",
+                    tooltip=[col for col in churn_df.columns if col != "Churn (%)"]
+                ).properties(title="Monthly Churn Trend with CX Diagnostics")
+                st.altair_chart(chart, use_container_width=True)
+                st.caption("CX metrics help diagnose internal churn drivers. Lower NPS and CSAT often correlate with higher churn.")
+                st.dataframe(churn_df)
+            else:
+                st.warning("There was an error, please try again.")
 
-    elif "roi and cpa" in question:
-        summary = df.groupby("Creative Format").agg({
-            "Spend ($)": "sum",
-            "Revenue ($)": "sum",
-            "ROI": "mean",
-            "CAC ($)": "mean"
-        }).reset_index()
-        chart = alt.Chart(summary).mark_bar().encode(
-            x="Creative Format", y="ROI", tooltip=["Creative Format", "ROI", "CAC ($)"]
-        ).properties(title="ROI by Creative Format")
-        st.altair_chart(chart, use_container_width=True)
-        st.caption("Compare creative efficiency across formats to guide scaling and testing.")
-        st.dataframe(summary)
+        elif "roi and cpa" in question:
+            group_col = "Creative Format"
+            metrics = {
+                "Spend ($)": "sum",
+                "Revenue ($)": "sum",
+                "ROI": "mean",
+                "CAC ($)": "mean"
+            }
+            valid_metrics = {k: v for k, v in metrics.items() if k in df.columns}
+            if group_col in df.columns:
+                summary = df.groupby(group_col).agg(valid_metrics).reset_index()
+                chart = alt.Chart(summary).mark_bar().encode(
+                    x=group_col, y="ROI", tooltip=[col for col in summary.columns if col != group_col]
+                ).properties(title="ROI by Creative Format")
+                st.altair_chart(chart, use_container_width=True)
+                st.caption("Compare creative efficiency across formats to guide scaling and testing.")
+                st.dataframe(summary)
+            else:
+                st.warning("There was an error, please try again.")
 
-    elif "click-to-conversion" in question:
-        summary = df.groupby("Targeting Strategy").agg({
-            "Clicks": "sum",
-            "Conversions": "sum"
-        }).reset_index()
-        summary["CVR (%)"] = (summary["Conversions"] / summary["Clicks"]) * 100
-        chart = alt.Chart(summary).mark_bar().encode(
-            x="Targeting Strategy", y="CVR (%)", tooltip=["Targeting Strategy", "CVR (%)"]
-        ).properties(title="Click-to-Conversion Rate by Targeting Strategy")
-        st.altair_chart(chart, use_container_width=True)
-        st.caption("Conversion efficiency varies by targeting strategy — behavioral and lookalike often outperform.")
-        st.dataframe(summary)
+        elif "click-to-conversion" in question:
+            group_col = "Targeting Strategy"
+            metrics = {
+                "Clicks": "sum",
+                "Conversions": "sum"
+            }
+            valid_metrics = {k: v for k, v in metrics.items() if k in df.columns}
+            if group_col in df.columns and "Clicks" in df.columns and "Conversions" in df.columns:
+                summary = df.groupby(group_col).agg(valid_metrics).reset_index()
+                summary["CVR (%)"] = (summary["Conversions"] / summary["Clicks"]) * 100
+                chart = alt.Chart(summary).mark_bar().encode(
+                    x=group_col, y="CVR (%)", tooltip=[group_col, "CVR (%)"]
+                ).properties(title="Click-to-Conversion Rate by Targeting Strategy")
+                st.altair_chart(chart, use_container_width=True)
+                st.caption("Conversion efficiency varies by targeting strategy — behavioral and lookalike often outperform.")
+                st.dataframe(summary)
+            else:
+                st.warning("There was an error, please try again.")
 
-    elif "organic" in question:
-        organic_df = df.groupby("Month").agg({
-            "Organic Traffic": "sum",
-            "Organic Conversions": "sum"
-        }).reset_index()
-        organic_df["Conversion Rate (%)"] = (organic_df["Organic Conversions"] / organic_df["Organic Traffic"]) * 100
-        chart = alt.Chart(organic_df).mark_line(point=True).encode(
-            x="Month", y="Conversion Rate (%)", tooltip=["Month", "Organic Traffic", "Organic Conversions", "Conversion Rate (%)"]
-        ).properties(title="Organic Conversion Rate Over Time")
-        st.altair_chart(chart, use_container_width=True)
-        st.caption("Organic performance trends reveal SEO and content impact.")
-        st.dataframe(organic_df)
+        elif "organic" in question:
+            metrics = {
+                "Organic Traffic": "sum",
+                "Organic Conversions": "sum"
+            }
+            valid_metrics = {k: v for k, v in metrics.items() if k in df.columns}
+            if "Month" in df.columns and "Organic Traffic" in df.columns and "Organic Conversions" in df.columns:
+                organic_df = df.groupby("Month").agg(valid_metrics).reset_index()
+                organic_df["Conversion Rate (%)"] = (organic_df["Organic Conversions"] / organic_df["Organic Traffic"]) * 100
+                chart = alt.Chart(organic_df).mark_line(point=True).encode(
+                    x="Month", y="Conversion Rate (%)",
+                    tooltip=["Month", "Organic Traffic", "Organic Conversions", "Conversion Rate (%)"]
+                ).properties(title="Organic Conversion Rate Over Time")
+                st.altair_chart(chart, use_container_width=True)
+                st.caption("Organic performance trends reveal SEO and content impact.")
+                st.dataframe(organic_df)
+            else:
+                st.warning("There was an error, please try again.")
+
+    except Exception:
+        st.warning("There was an error, please try again.")
+
 
 # -------------------------------
 # Render Structured Answer
