@@ -25,6 +25,9 @@ st.markdown("""
 # -------------------------------
 with st.sidebar:
     st.image("https://www.dentsu.com/assets/images/main-logo-alt.png", width=160)
+    if st.button("✎ Start New Chat"):
+        st.session_state.chat_history = []
+        st.experimental_rerun()
     st.header("Executive Chat")
     st.markdown("""
     **How to use**
@@ -32,9 +35,6 @@ with st.sidebar:
     - The assistant responds with quantified, data-driven insight.
     - Conversation context is remembered.
     """)
-    if st.button("✎ Start New Chat"):
-        st.session_state.chat_history = []
-        st.experimental_rerun()
 
 # -------------------------------
 # HEADER
