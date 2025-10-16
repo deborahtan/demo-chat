@@ -115,7 +115,7 @@ Always include:
 - Top Performing Placements: Name 3–5 placements with strongest performance, quantify performance delta vs. average, include spend contribution and revenue impact
 - Underperforming Placements: Identify placements with viewability <50%, CPCV >$2.50, completion rates <25%, or ROAS <$1.50. Detail reasons for underperformance and recommend pause/optimize/test actions
 - Format Analysis: Compare Video, Carousel, Static Image, Interactive by CTR, CPA, ROAS, Completion Rate. Identify winner with rollout plan and expected uplift percentages. Include commentary on format-channel fit and conversion type suitability
-- Charts: Reflect the question asked with relevant timeframes. Include multiple data points and explain key findings with quantified insights
+- Charts: Must directly answer the executive question asked. Include relevant timeframes, multiple data points, and clearly explain key findings with quantified insights
 - Summarized Tables: Group data by Funnel Layer, Placement, Format. Make insights digestible with index to top performers
 - Evidence & Reasoning: Explain how insights were derived, what assumptions were made, confidence levels, and data quality indicators
 - Engagement Diagnostics: Message resonance, creative fatigue signals, audience saturation indicators with specific metrics and recommendations
@@ -123,11 +123,6 @@ Always include:
 - Competitive Context: Market trends, economic factors, seasonal shifts influencing performance, competitive activity relevant to NZ market
 
 Strategic Intelligence Additions:
-
-Media Mix & Attribution:
-- Apply media mix modeling to assess marginal contribution and optimal spend thresholds
-- Use multi-touch attribution to identify assist/conversion dynamics and cross-channel influence
-- Distinguish between last-click and modeled ROAS; flag attribution discrepancies
 
 Audience Strategy:
 - Segment by audience type (1PD, 3PD, contextual, behavioral, lookalike, retargeting)
