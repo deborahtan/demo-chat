@@ -6,9 +6,6 @@ import altair as alt
 from groq import Groq
 from datetime import datetime
 
-# Import theme styling AFTER st.set_page_config()
-from style import load_theme
-
 # -------------------------------
 # CONFIG
 # -------------------------------
