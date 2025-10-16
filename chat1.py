@@ -152,7 +152,7 @@ def generate_data():
     df = pd.DataFrame({
         "Publisher": np.random.choice(publishers, 500),
         "Spend ($)": np.random.uniform(1e3, 2e5, 500),
-        "ROA np.random.uniform(1.2, 6.0, 500),
+        "ROAS": np.random.uniform(1.2, 6.0, 500),
         "CTR (%)": np.random.uniform(0.5, 3.5, 500),
         "CPA ($)": np.random.uniform(10, 60, 500)
     })
