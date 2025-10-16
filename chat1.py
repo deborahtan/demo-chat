@@ -18,6 +18,11 @@ st.set_page_config(
 # STYLING
 # -------------------------------
 st.markdown("""
+<style>
+    .stSidebar {
+        min-width: 336px;
+    }
+</style>
 """, unsafe_allow_html=True)
 
 # -------------------------------
