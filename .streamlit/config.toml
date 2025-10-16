@@ -3,22 +3,22 @@ enableStaticServing = true
 
 [[theme.fontFaces]]
 family="StabilGrotesk"
-url="app/static/StabilGrotesk-Regular.ttf"
+url="app/static/StabilGrotesk-Regular.otf"
 style="normal"
 weight=400
 [[theme.fontFaces]]
 family="StabilGrotesk"
-url="app/static/StabilGrotesk-Bold.ttf"
+url="app/static/StabilGrotesk-Bold.otf"
 style="normal"
 weight=700
 [[theme.fontFaces]]
 family="StabilGrotesk"
-url="app/static/StabilGrotesk-Light.ttf"
+url="app/static/StabilGrotesk-Light.otf"
 style="normal"
 weight=400
 [[theme.fontFaces]]
 family="StabilGrotesk"
-url="app/static/StabilGrotesk-Black.ttf"
+url="app/static/StabilGrotesk-Black.otf"
 style="normal"
 weight=700
 
