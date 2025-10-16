@@ -70,6 +70,14 @@ st.markdown("""
             border-radius: 6px;
             font-weight: 600;
         }
+
+        /* Chat message styling */
+        .stChatMessage {
+            background-color: #2e2e2e;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -182,9 +190,9 @@ Always account for:
 
 Goal:
 Transform complex performance data into specific, quantified insights, valid strategic actions, and rigorously grounded recommendations that drive executive confidence and measurable results with clear ROI projections.
+
+When answering follow-up questions, maintain context from the conversation history and build upon previous insights. Reference earlier data points and recommendations when relevant.
 """
-
-
 
 # -------------------------------
 # SAMPLE DATA WITH REAL DIMINISHING RETURNS
@@ -384,21 +392,27 @@ def generate_data():
 df = generate_data()
 
 # -------------------------------
-# SIDEBAR CONTROLS
+# INITIALIZE SESSION STATE
 # -------------------------------
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
 if "recent_questions" not in st.session_state:
     st.session_state.recent_questions = []
 
+# -------------------------------
+# SIDEBAR CONTROLS
+# -------------------------------
 with st.sidebar:
     st.header("Executive Q&A")
 
     st.markdown(
         """
         **Instructions**  
-        - Select one of the predefined strategic questions from the dropdown.  
-        - Or type your own custom question in the text box below.  
-        - The assistant will generate comprehensive, data-driven insights with detailed analysis.  
-        - Your recent questions will appear below for quick re-selection.  
+        - Select a predefined question or use the chat below
+        - Ask follow-up questions to dive deeper into insights
+        - The assistant maintains conversation context
+        - Recent questions appear below for quick access
         """
     )
 
@@ -413,22 +427,26 @@ with st.sidebar:
         "Advise what to scale, pause, or optimize for maximum efficiency."
     ]
 
-    selected = st.selectbox("Select a predefined question:", options=QUESTIONS, index=0)
-    custom_question = st.text_area("Or type your own question:")
-
-    question_to_answer = custom_question.strip() if custom_question.strip() else selected
-
-    if question_to_answer and question_to_answer not in st.session_state.recent_questions:
-        st.session_state.recent_questions.insert(0, question_to_answer)
-        st.session_state.recent_questions = st.session_state.recent_questions[:5]
+    selected = st.selectbox("Quick start with a predefined question:", options=[""] + QUESTIONS, index=0)
+    
+    if selected and selected not in [msg["content"] for msg in st.session_state.messages if msg["role"] == "user"]:
+        st.session_state.messages.append({"role": "user", "content": selected})
+        if selected not in st.session_state.recent_questions:
+            st.session_state.recent_questions.insert(0, selected)
+            st.session_state.recent_questions = st.session_state.recent_questions[:5]
+        st.rerun()
 
     if st.session_state.recent_questions:
         st.markdown("**Recent Questions**")
         for q in st.session_state.recent_questions:
             if st.button(q, key=f"recent_{q}"):
-                question_to_answer = q
+                st.session_state.messages.append({"role": "user", "content": q})
+                st.rerun()
+        
         if st.button("Clear History"):
             st.session_state.recent_questions = []
+            st.session_state.messages = []
+            st.rerun()
 
 # -------------------------------
 # CHART RENDERING WITH REAL DIMINISHING RETURNS
@@ -481,98 +499,6 @@ def render_chart_for_question(question, df):
                 width=600,
                 height=400
             ).interactive()
-            
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                st.altair_chart(chart, use_container_width=True)
-            
-            with col2:
-                st.markdown("### Saturation Points")
-                st.markdown("*Peak ROAS vs. saturation threshold:*")
-                
-                for pub in publishers_list:
-                    pub_data = df_diminishing[df_diminishing["Publisher"] == pub]
-                    if len(pub_data) > 3:
-                        peak_roas = pub_data["ROAS"].max()
-                        peak_bucket = pub_data[pub_data["ROAS"] == peak_roas]["Bucket"].values[0]
-                        
-                        # Find where ROAS drops to 80% of peak
-                        threshold = pub_data[pub_data["ROAS"] < peak_roas * 0.80]
-                        if len(threshold) > 0:
-                            sat_bucket = int(threshold["Bucket"].values[0])
-                            sat_spend = threshold["Spend Level"].values[0]
-                            sat_roas = threshold["ROAS"].values[0]
-                            decline = ((peak_roas - sat_roas) / peak_roas) * 100
-                            
-                            st.metric(
-                                label=f"{pub}",
-                                value=f"${sat_roas:.2f}",
-                                delta=f"{decline:.1f}% decline"
-                            )
-            
-            st.dataframe(df_diminishing, use_container_width=False, width=700)
-
-        elif "funnel layer" in question:
-            funnel_summary = df.groupby("Funnel Layer").agg({
-                "Impressions": "sum",
-                "Clicks": "sum",
-                "Conversions": "sum",
-                "Spend ($)": "sum",
-                "Revenue ($)": "sum",
-                "ROAS": "mean",
-                "CPA ($)": "mean",
-                "CTR (%)": "mean",
-                "Viewability (%)": "mean"
-            }).reset_index()
-            
-            chart = alt.Chart(funnel_summary).mark_bar(color="#0066cc").encode(
-                x="Funnel Layer",
-                y="ROAS",
-                tooltip=["Funnel Layer", "ROAS", "CPA ($)", "CTR (%)", "Conversions"]
-            ).properties(
-                title="Performance by Funnel Layer: ROAS",
-                width=600,
-                height=400
-            )
-            
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                st.altair_chart(chart, use_container_width=True)
-            
-            with col2:
-                st.markdown("### Funnel Metrics")
-                for _, row in funnel_summary.iterrows():
-                    st.metric(
-                        label=row["Funnel Layer"],
-                        value=f"${row['ROAS']:.2f}",
-                        delta=f"CPA: ${row['CPA ($)']:.2f}"
-                    )
-            
-            st.dataframe(funnel_summary, use_container_width=False, width=700)
-
-        elif "top-performing" in question or "scale" in question:
-            placement_summary = df.groupby(["Publisher", "Placement", "Format"]).agg({
-                "Clicks": "sum",
-                "Conversions": "sum",
-                "Spend ($)": "sum",
-                "Revenue ($)": "sum",
-                "ROAS": "mean",
-                "CPA ($)": "mean",
-                "CTR (%)": "mean",
-                "Viewability (%)": "mean"
-            }).reset_index().sort_values("ROAS", ascending=False)
-            
-            top_placements = placement_summary.head(5)
-            
-            chart = alt.Chart(top_placements).mark_bar(color="#00b366").encode(
-                x=alt.X("ROAS", title="ROAS"),
-                y=alt.Y("Publisher:N", sort="-x"),
-                tooltip=["Publisher", "Placement", "Format", "ROAS", "CPA ($)"]
-            ).properties(
-                title="Top 5 Performing Placements by ROAS",
-                width=600,
-                height=400
-            )
             
             col1, col2 = st.columns([2, 1])
             with col1:
@@ -708,72 +634,55 @@ def render_chart_for_question(question, df):
 
 
 # -------------------------------
-# Render Structured Answer
+# CONVERSATIONAL CHAT INTERFACE
 # -------------------------------
-with st.container():
-    st.subheader("Detailed Analysis")
-    if question_to_answer and client:
-        with st.spinner("Generating comprehensive analysis..."):
+st.subheader("Intelligence Chat")
+
+# Display chat messages
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Chat input
+if prompt := st.chat_input("Ask a question or request follow-up analysis..."):
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    
+    # Add to recent questions
+    if prompt not in st.session_state.recent_questions:
+        st.session_state.recent_questions.insert(0, prompt)
+        st.session_state.recent_questions = st.session_state.recent_questions[:5]
+    
+    # Display user message
+    with st.chat_message("user"):
+        st.markdown(prompt)
+    
+    # Generate assistant response
+    with st.chat_message("assistant"):
+        with st.spinner("Analyzing data..."):
+            # Build conversation history for API
+            api_messages = [{"role": "system", "content": system_prompt}]
+            for msg in st.session_state.messages:
+                api_messages.append({"role": msg["role"], "content": msg["content"]})
+            
+            # Get response from API
             response = client.chat.completions.create(
                 model="llama-3.1-8b-instant",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Provide detailed structured answer for: {question_to_answer}. Generate comprehensive sections with specific data points, quantified recommendations, financial impact projections, and strategic rationale. Minimum 1500 characters per section. Include Insight (performance analysis with 5+ data points), Recommendation (3-5 specific tactical actions with ROI impact), and Next Steps (owners, timelines, success metrics)."}
-                ]
+                messages=api_messages
             )
-            detailed = response.choices[0].message.content
-
-        # Parse response into sections
-        sections = {"Insight": "", "Recommendation": "", "Next Steps": ""}
-        current = None
-        current_section = ""
-        
-        for line in detailed.splitlines():
-            # Check if line contains a section header
-            if "Insight" in line and "Insight" not in current_section:
-                if current:
-                    sections[current] = current_section.strip()
-                current = "Insight"
-                current_section = ""
-            elif "Recommendation" in line and "Recommendation" not in current_section:
-                if current:
-                    sections[current] = current_section.strip()
-                current = "Recommendation"
-                current_section = ""
-            elif "Next Steps" in line and "Next Steps" not in current_section:
-                if current:
-                    sections[current] = current_section.strip()
-                current = "Next Steps"
-                current_section = ""
-            elif current:
-                current_section += line + "\n"
-        
-        # Catch final section
-        if current:
-            sections[current] = current_section.strip()
-
-        # Render sections
-        with st.expander("Insight - Performance Analysis", expanded=True):
-            if sections["Insight"]:
-                st.markdown(sections["Insight"])
-                st.divider()
-                render_chart_for_question(question_to_answer, df)
-            else:
-                st.write("Generating insight analysis...")
-
-        with st.expander("Recommendation - Strategic Actions", expanded=False):
-            if sections["Recommendation"]:
-                st.markdown(sections["Recommendation"])
-            else:
-                st.write("Generating recommendations...")
-
-        with st.expander("Next Steps - Execution Plan", expanded=False):
-            if sections["Next Steps"]:
-                st.markdown(sections["Next Steps"])
-            else:
-                st.write("Generating next steps...")
-
-        st.caption(f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y at %H:%M')}")
+            
+            assistant_message = response.choices[0].message.content
+            
+            # Display the response
+            st.markdown(assistant_message)
+            
+            # Render relevant chart if applicable
+            st.divider()
+            st.markdown("### Visual Analysis")
+            render_chart_for_question(prompt, df)
+            
+            # Add assistant response to chat history
+            st.session_state.messages.append({"role": "assistant", "content": assistant_message})
 
 # -------------------------------
 # LEGAL DISCLAIMER
@@ -783,4 +692,96 @@ st.markdown(
     "Legal Disclaimer - "
     "The insights and visualizations generated by this tool are for informational purposes only "
     "and should not be considered financial, legal, or business advice."
-)
+)chart, use_container_width=True)
+            
+            with col2:
+                st.markdown("### Saturation Points")
+                st.markdown("*Peak ROAS vs. saturation threshold:*")
+                
+                for pub in publishers_list:
+                    pub_data = df_diminishing[df_diminishing["Publisher"] == pub]
+                    if len(pub_data) > 3:
+                        peak_roas = pub_data["ROAS"].max()
+                        peak_bucket = pub_data[pub_data["ROAS"] == peak_roas]["Bucket"].values[0]
+                        
+                        # Find where ROAS drops to 80% of peak
+                        threshold = pub_data[pub_data["ROAS"] < peak_roas * 0.80]
+                        if len(threshold) > 0:
+                            sat_bucket = int(threshold["Bucket"].values[0])
+                            sat_spend = threshold["Spend Level"].values[0]
+                            sat_roas = threshold["ROAS"].values[0]
+                            decline = ((peak_roas - sat_roas) / peak_roas) * 100
+                            
+                            st.metric(
+                                label=f"{pub}",
+                                value=f"${sat_roas:.2f}",
+                                delta=f"{decline:.1f}% decline"
+                            )
+            
+            st.dataframe(df_diminishing, use_container_width=False, width=700)
+
+        elif "funnel layer" in question:
+            funnel_summary = df.groupby("Funnel Layer").agg({
+                "Impressions": "sum",
+                "Clicks": "sum",
+                "Conversions": "sum",
+                "Spend ($)": "sum",
+                "Revenue ($)": "sum",
+                "ROAS": "mean",
+                "CPA ($)": "mean",
+                "CTR (%)": "mean",
+                "Viewability (%)": "mean"
+            }).reset_index()
+            
+            chart = alt.Chart(funnel_summary).mark_bar(color="#0066cc").encode(
+                x="Funnel Layer",
+                y="ROAS",
+                tooltip=["Funnel Layer", "ROAS", "CPA ($)", "CTR (%)", "Conversions"]
+            ).properties(
+                title="Performance by Funnel Layer: ROAS",
+                width=600,
+                height=400
+            )
+            
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                st.altair_chart(chart, use_container_width=True)
+            
+            with col2:
+                st.markdown("### Funnel Metrics")
+                for _, row in funnel_summary.iterrows():
+                    st.metric(
+                        label=row["Funnel Layer"],
+                        value=f"${row['ROAS']:.2f}",
+                        delta=f"CPA: ${row['CPA ($)']:.2f}"
+                    )
+            
+            st.dataframe(funnel_summary, use_container_width=False, width=700)
+
+        elif "top-performing" in question or "scale" in question:
+            placement_summary = df.groupby(["Publisher", "Placement", "Format"]).agg({
+                "Clicks": "sum",
+                "Conversions": "sum",
+                "Spend ($)": "sum",
+                "Revenue ($)": "sum",
+                "ROAS": "mean",
+                "CPA ($)": "mean",
+                "CTR (%)": "mean",
+                "Viewability (%)": "mean"
+            }).reset_index().sort_values("ROAS", ascending=False)
+            
+            top_placements = placement_summary.head(5)
+            
+            chart = alt.Chart(top_placements).mark_bar(color="#00b366").encode(
+                x=alt.X("ROAS", title="ROAS"),
+                y=alt.Y("Publisher:N", sort="-x"),
+                tooltip=["Publisher", "Placement", "Format", "ROAS", "CPA ($)"]
+            ).properties(
+                title="Top 5 Performing Placements by ROAS",
+                width=600,
+                height=400
+            )
+            
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                st.altair_chart(
