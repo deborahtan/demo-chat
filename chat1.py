@@ -92,31 +92,17 @@ with st.sidebar:
     
     st.markdown("""
     **Instructions**
-    - Select one of the predefined strategic questions from the dropdown.
-    - Or type your own custom question in the text box below.
-    - The assistant will generate comprehensive, data-driven insights with detailed analysis.
+    - Type your own question in the text box below.
+    - Or select from suggested questions on the right.
     - Your recent questions will appear below for quick re-selection.
     """)
     
-    QUESTIONS = [
-        "Analyze diminishing returns by channel and spend curve.",
-        "Identify top-performing publishers by audience segment.",
-        "Recommend optimal channel mixes for $100M, $200M, and $300M investment levels. Advise on the allocation for each option across awareness, consideration, and conversion layers?",
-        "Determine which formats delivered the highest ROI and CPA.",
-        "Evaluate channels & publishers with the strongest click-to-conversion rates.",
-        "Highlight months with the highest churn and distinguish internal vs. external drivers.",
-        "Advise what to scale, pause, or optimize for maximum efficiency.",
-        "Provide creative testing recommendations with specific format and messaging approaches."
-    ]
+    custom_question = st.text_area("Ask your question:")
     
-    selected = st.selectbox("Select a predefined question:", options=QUESTIONS, index=0)
-    custom_question = st.text_area("Or type your own question:")
-    
-    suggested_question = custom_question.strip() if custom_question.strip() else selected
-    
-    if suggested_question and suggested_question not in st.session_state.recent_questions:
-        st.session_state.recent_questions.insert(0, suggested_question)
-        st.session_state.recent_questions = st.session_state.recent_questions[:5]
+    if st.button("Submit Question", use_container_width=True):
+        if custom_question.strip():
+            st.session_state.suggested_question = custom_question.strip()
+            st.rerun()
     
     if st.session_state.recent_questions:
         st.markdown("---")
@@ -130,6 +116,27 @@ with st.sidebar:
     if st.button("Clear Chat History", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
+
+# Right sidebar with suggested questions
+QUESTIONS = [
+    "Analyze diminishing returns by channel and spend curve.",
+    "Identify top-performing publishers by audience segment.",
+    "Recommend optimal channel mixes for $100M, $200M, and $300M investment levels. Advise on the allocation for each option across awareness, consideration, and conversion layers?",
+    "Determine which formats delivered the highest ROI and CPA.",
+    "Evaluate channels & publishers with the strongest click-to-conversion rates.",
+    "Highlight months with the highest churn and distinguish internal vs. external drivers.",
+    "Advise what to scale, pause, or optimize for maximum efficiency.",
+    "Provide creative testing recommendations with specific format and messaging approaches."
+]
+
+with st.sidebar:
+    st.markdown("---")
+    st.markdown("**📊 Suggested Questions**")
+    
+    for i, question in enumerate(QUESTIONS):
+        if st.button(question, key=f"suggested_{i}", use_container_width=True):
+            st.session_state.suggested_question = question
+            st.rerun()
 
 # Page title
 st.title("Dentsu Intelligence Assistant")
