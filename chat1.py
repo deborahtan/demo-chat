@@ -48,12 +48,16 @@ h1,h2,h3,h4,h5,h6 {font-weight:600;color:#fff;}
 # -------------------------------
 with st.sidebar:
     st.image("https://www.dentsu.com/assets/images/main-logo-alt.png", width=160)
-    st.header("Executive Q&A")
+    st.header("Executive Chat")
     st.markdown("""
-    **Instructions**
-    - Choose a predefined question or enter your own.
-    - The assistant delivers concise, data-driven strategy insights.
+    **How to use**
+    - Type any question about campaign performance or strategy.
+    - The assistant responds with quantified, data-driven insight.
+    - Conversation context is remembered.
     """)
+    if st.button("🧹 Clear Conversation"):
+        st.session_state.chat_history = []
+        st.experimental_rerun()
 
 # -------------------------------
 # GROQ SETUP
@@ -66,7 +70,7 @@ if not api_key:
 client = Groq(api_key=api_key)
 
 # -------------------------------
-# SYSTEM PROMPT (concise version)
+# SYSTEM PROMPT (your version)
 # -------------------------------
 system_prompt = """
 You are the Dentsu Intelligence Assistant — a senior strategist turning marketing data into concise, quantified, executive-ready insight.
@@ -91,12 +95,10 @@ Be concise, data-driven, and provide clear next steps.
 """
 
 # -------------------------------
-# MEMORY INITIALIZATION
+# CHAT MEMORY
 # -------------------------------
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [
-        {"role": "system", "content": system_prompt}
-    ]
+    st.session_state.chat_history = [{"role": "system", "content": system_prompt}]
 
 # -------------------------------
 # SAMPLE DATA
@@ -118,62 +120,38 @@ def generate_data():
 df = generate_data()
 
 # -------------------------------
-# USER INPUT
+# DISPLAY PREVIOUS MESSAGES
 # -------------------------------
-QUESTIONS = [
-    "Analyze diminishing returns by channel.",
-    "Which publishers delivered the most ROAS and CTR?",
-    "Recommend budget shifts for optimal ROI."
-]
-
-selected = st.selectbox("Predefined questions:", options=QUESTIONS)
-custom_q = st.text_input("Or type your own question:")
-question = custom_q.strip() if custom_q else selected
+for msg in st.session_state.chat_history:
+    if msg["role"] == "assistant":
+        with st.chat_message("assistant"):
+            st.markdown(msg["content"])
+    elif msg["role"] == "user":
+        with st.chat_message("user"):
+            st.markdown(msg["content"])
 
 # -------------------------------
-# DISPLAY CHAT HISTORY
+# CHAT INPUT
 # -------------------------------
-st.markdown("### 💬 Conversation")
-for msg in st.session_state.chat_history[1:]:
-    if msg["role"] == "user":
-        st.markdown(f"**You:** {msg['content']}")
-    else:
-        st.markdown(f"**Assistant:** {msg['content']}")
+user_input = st.chat_input("Ask about performance, ROI, or recommendations...")
 
-# -------------------------------
-# CHART
-# -------------------------------
-if "diminishing" in question.lower():
-    chart = alt.Chart(df).mark_circle(size=60).encode(
-        x="Spend ($)",
-        y="ROAS",
-        color="Publisher",
-        tooltip=["Publisher", "Spend ($)", "ROAS"]
-    ).properties(title="ROAS vs Spend by Publisher").interactive()
-    st.altair_chart(chart, use_container_width=True)
+if user_input:
+    st.session_state.chat_history.append({"role": "user", "content": user_input})
+    with st.chat_message("user"):
+        st.markdown(user_input)
 
-# -------------------------------
-# ANALYSIS (GROQ)
-# -------------------------------
-if st.button("Generate Analysis"):
-    with st.spinner("Analyzing performance..."):
-        try:
-            # Add user input to chat memory
-            st.session_state.chat_history.append({"role": "user", "content": question})
-
-            response = client.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=st.session_state.chat_history
-            )
-
-            output = response.choices[0].message.content
-            st.session_state.chat_history.append({"role": "assistant", "content": output})
-            st.markdown(output)
-
-        except Exception as e:
-            st.error(f"Error from Groq API: {e}")
-
-    st.caption(f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y at %H:%M')}")
+    with st.chat_message("assistant"):
+        with st.spinner("Analyzing performance..."):
+            try:
+                response = client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=st.session_state.chat_history
+                )
+                output = response.choices[0].message.content
+                st.markdown(output)
+                st.session_state.chat_history.append({"role": "assistant", "content": output})
+            except Exception as e:
+                st.error(f"Error from Groq API: {e}")
 
 # -------------------------------
 # LEGAL DISCLAIMER
