@@ -22,6 +22,9 @@ st.markdown("""
     .stSidebar {
         min-width: 336px;
     }
+    .stSidebar .stHeading {
+        color: #FAFAFA;
+    }
 </style>
 """, unsafe_allow_html=True)
 
