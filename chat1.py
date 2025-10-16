@@ -32,7 +32,7 @@ with st.sidebar:
     - The assistant responds with quantified, data-driven insight.
     - Conversation context is remembered.
     """)
-    if st.button("🧹 Clear Conversation"):
+    if st.button("✎ Start New Chat"):
         st.session_state.chat_history = []
         st.experimental_rerun()
 
