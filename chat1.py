@@ -30,165 +30,28 @@ st.markdown("""
             color: #fffefe;
         }
 
-        section.main > div {
-            padding-top: 1rem;
-            padding-bottom: 1rem;
-        }
-
-        .answer-card {
-            background-color: #2e2e2e;
-            border-radius: 12px;
-            padding: 20px;
-            color: #fffefe;
-        }
-
         .stTable {
             color: #fffefe;
         }
 
-        /* Suggested questions styling */
-        .suggested-box {
-            background-color: #1a1a1a;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 16px;
-        }
-
-        .suggested-box h3 {
-            font-size: 14px;
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #00b366;
-        }
-
-        .suggested-btn {
-            display: block;
-            width: 100%;
-            text-align: left;
-            padding: 8px 12px;
-            margin: 4px 0;
-            background-color: #ffffff;
-            color: #000000;
-            border: none;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .suggested-btn:hover {
-            background-color: #e6e6e6;
-            transform: translateX(4px);
-        }
-
-        /* Input styling */
-        .chat-input-container {
+        /* Clean chat styling */
+        .chat-container {
             display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            align-items: flex-end;
-        }
-
-        .chat-input-container input {
-            flex: 1;
-            padding: 8px 12px;
-            background-color: #1a1a1a;
-            color: #fffefe;
-            border: 1px solid #333333;
-            border-radius: 4px;
-            font-size: 13px;
-        }
-
-        .chat-input-container button {
-            padding: 8px 16px;
-            background-color: #0066cc;
-            color: #ffffff;
-            border: none;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .chat-input-container button:hover {
-            background-color: #0052a3;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 1200px) {
-            .suggested-btn {
-                font-size: 11px;
-                padding: 6px 10px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .suggested-box {
-                padding: 8px;
-            }
-
-            .suggested-box h3 {
-                font-size: 12px;
-            }
+            flex-direction: column-reverse;
         }
     </style>
 """, unsafe_allow_html=True)
-
-# Page title
-st.title("Dentsu Intelligence Assistant")
-st.markdown("*AI-powered media insights for executive decision-making*")
 
 # Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-if "suggested_question" not in st.session_state:
-    st.session_state.suggested_question = None
-
 # ============================================
-# TOP SECTION: SUGGESTED QUESTIONS & INPUT
+# HEADER
 # ============================================
-
-# Define suggested questions
-QUESTIONS = [
-    "Analyze diminishing returns by channel and spend curve.",
-    "Identify top-performing publishers by audience segment.",
-    "Recommend optimal channel mixes for $100M, $200M, and $300M investment levels.",
-    "Determine which formats delivered the highest ROI and CPA.",
-    "Evaluate channels & publishers with the strongest click-to-conversion rates.",
-    "Highlight months with the highest churn and distinguish internal vs. external drivers.",
-    "Advise what to scale, pause, or optimize for maximum efficiency.",
-    "Provide creative testing recommendations with specific format and messaging approaches."
-]
-
-# Left column: Suggested questions
-# Right column: Chat input
-col_left, col_right = st.columns([1, 2.5], gap="medium")
-
-with col_left:
-    st.markdown("""
-    <div class="suggested-box">
-        <h3>Suggested Questions</h3>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    for i, question in enumerate(QUESTIONS):
-        if st.button(question, key=f"suggested_{i}", use_container_width=True):
-            st.session_state.suggested_question = question
-            st.rerun()
-
-with col_right:
-    st.markdown("**Ask a Question**")
-    user_input = st.chat_input("Type your question here...", key="main_input")
-
-# ============================================
-# USE SUGGESTED QUESTION IF SELECTED
-# ============================================
-if st.session_state.suggested_question:
-    user_input = st.session_state.suggested_question
-    st.session_state.suggested_question = None
+st.title("Dentsu Intelligence Assistant")
+st.markdown("*AI-powered media insights for executive decisions*")
+st.divider()
 
 # ============================================
 # API & SYSTEM PROMPT
@@ -470,11 +333,47 @@ def render_chart_for_question(question, df):
         st.error(f"Error rendering chart: {str(e)}")
 
 # ============================================
-# DISPLAY CHAT & PROCESS INPUT
+# SUGGESTED QUESTIONS
 # ============================================
 
-# Display chat history
-for msg in st.session_state.messages:
+st.markdown("**Quick Start**")
+col1, col2, col3, col4 = st.columns(4)
+
+QUICK_QUESTIONS = [
+    "Analyze diminishing returns by channel and spend curve.",
+    "Identify top-performing publishers by audience segment.",
+    "Determine which formats delivered the highest ROI and CPA.",
+    "Advise what to scale, pause, or optimize for maximum efficiency."
+]
+
+with col1:
+    if st.button(QUICK_QUESTIONS[0], use_container_width=True):
+        st.session_state.messages.append({"role": "user", "content": QUICK_QUESTIONS[0]})
+        st.rerun()
+
+with col2:
+    if st.button(QUICK_QUESTIONS[1], use_container_width=True):
+        st.session_state.messages.append({"role": "user", "content": QUICK_QUESTIONS[1]})
+        st.rerun()
+
+with col3:
+    if st.button(QUICK_QUESTIONS[2], use_container_width=True):
+        st.session_state.messages.append({"role": "user", "content": QUICK_QUESTIONS[2]})
+        st.rerun()
+
+with col4:
+    if st.button(QUICK_QUESTIONS[3], use_container_width=True):
+        st.session_state.messages.append({"role": "user", "content": QUICK_QUESTIONS[3]})
+        st.rerun()
+
+st.divider()
+
+# ============================================
+# DISPLAY CHAT (LATEST FIRST)
+# ============================================
+
+# Display chat history in reverse order (latest at top)
+for msg in reversed(st.session_state.messages):
     if msg["role"] == "user":
         with st.chat_message("user", avatar="👤"):
             st.markdown(msg["content"])
@@ -484,7 +383,13 @@ for msg in st.session_state.messages:
             if "chart_data" in msg:
                 render_chart_for_question(msg["question"], df)
 
-# Process user input
+# ============================================
+# CHAT INPUT
+# ============================================
+
+st.divider()
+user_input = st.chat_input("Ask your question...")
+
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
     
@@ -492,7 +397,7 @@ if user_input:
         st.markdown(user_input)
     
     with st.chat_message("assistant", avatar="🤖"):
-        with st.spinner("Analyzing data..."):
+        with st.spinner("Analyzing..."):
             response = client.chat.completions.create(
                 model="llama-3.1-8b-instant",
                 messages=[
@@ -513,5 +418,5 @@ if user_input:
             
             render_chart_for_question(user_input, df)
 
-st.markdown("---")
-st.caption("Legal Disclaimer - Insights generated by this tool are for informational purposes only and should not be considered financial, legal, or business advice.")
+st.divider()
+st.caption("Legal Disclaimer - Insights generated are for informational purposes only.")
