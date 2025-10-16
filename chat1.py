@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 import altair as alt
 from groq import Groq 
-import time
 
 # -------------------------------
 # CONFIG & BRANDING
@@ -779,22 +778,6 @@ with st.container():
 
         st.caption(f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y at %H:%M')}")
 
-# -------------------------------
-# FALLBACK FOR RATE LIMITS
-# -------------------------------
-
-def safe_chat_completion(client, model, messages, max_retries=5):
-    for attempt in range(max_retries):
-        try:
-            return client.chat.completions.create(
-                model=model,
-                messages=messages
-            )
-        except groq.RateLimitError:
-            wait_time = 2 ** attempt  # exponential backoff
-            print(f"Rate limit hit. Retrying in {wait_time} seconds...")
-            time.sleep(wait_time)
-    raise Exception("Exceeded maximum retries due to rate limits.")
 
 # -------------------------------
 # LEGAL DISCLAIMER
