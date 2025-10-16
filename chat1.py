@@ -8,10 +8,9 @@ from groq import Groq
 # -------------------------------
 # CONFIG & BRANDING
 # -------------------------------
-# Using st (streamlit) library as below:
-
 st.set_page_config(
     page_title="Dentsu Intelligence Assistant",
+    page_icon="https://img.icons8.com/ios11/16/000000/dashboard-gauge.png",
     layout="wide"
 )
 
@@ -91,10 +90,6 @@ if not api_key:
     st.stop()
 
 client = Groq(api_key=api_key)
-
-# -------------------------------
-# SYSTEM PROMPT
-# -------------------------------
 
 system_prompt = """
 You are an AI Insights Assistant for C-suite executives across Marketing, Media, Creative, CRM, Finance, and Loyalty/Product. Your mandate is to analyze enterprise-scale performance data and deliver clear, strategic, executive-ready insights supported by interactive visualizations.
@@ -189,8 +184,10 @@ Goal:
 Transform complex performance data into specific, quantified insights, valid strategic actions, and rigorously grounded recommendations that drive executive confidence and measurable results with clear ROI projections.
 """
 
+
+
 # -------------------------------
-# SAMPLE DATA 
+# SAMPLE DATA WITH REAL DIMINISHING RETURNS
 # -------------------------------
 @st.cache_data
 def generate_data():
@@ -406,14 +403,14 @@ with st.sidebar:
     )
 
     QUESTIONS = [
-        "Analyze diminishing returns by channel and spend curve.",
-        "Identify top-performing publishers by audience segment.",
-        "Recommend optimal channel mixes for $100M, $200M, and $300M investment levels. Advise on the allocation for each option across awareness, consideration, and conversion layers?",
-        "Determine which formats delivered the highest ROI and CPA.",
-         "Evaluate channels & publishers with the strongest click-to-conversion rates.",
-         "Highlight months with the highest churn and distinguish internal vs. external drivers.",
-        "Advise what to scale, pause, or optimize for maximum efficiency.",
-        "Provide creative testing recommendations with specific format and messaging approaches."   
+        "Analyze diminishing returns by publisher and identify exact saturation point where ROAS declines.",
+        "Evaluate performance by funnel layer (Awareness, Consideration, Conversion) and recommend budget allocation.",
+        "Identify top-performing placements and formats. What should we scale and what should we pause?",
+        "Assess underperforming placements. Which have viewability issues or high CPCV?",
+        "Recommend format strategy: Video vs. Carousel vs. Static. Which drives best ROAS and lowest CPA?",
+        "Analyze CTR and CPC by publisher. Where are we getting strongest engagement efficiency?",
+        "Provide creative testing recommendations with specific format and messaging approaches.",
+        "What is the optimal budget allocation across awareness, consideration, and conversion layers?"
     ]
 
     selected = st.selectbox("Select a predefined question:", options=QUESTIONS, index=0)
@@ -434,7 +431,7 @@ with st.sidebar:
             st.session_state.recent_questions = []
 
 # -------------------------------
-# CHART RENDERING 
+# CHART RENDERING WITH REAL DIMINISHING RETURNS
 # -------------------------------
 def render_chart_for_question(question, df):
     question = question.lower()
@@ -711,7 +708,7 @@ def render_chart_for_question(question, df):
 
 
 # -------------------------------
-# RESULTS
+# Render Structured Answer
 # -------------------------------
 with st.container():
     st.subheader("Detailed Analysis")
@@ -777,7 +774,6 @@ with st.container():
                 st.write("Generating next steps...")
 
         st.caption(f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y at %H:%M')}")
-
 
 # -------------------------------
 # LEGAL DISCLAIMER
