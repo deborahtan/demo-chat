@@ -37,6 +37,16 @@ with st.sidebar:
         st.experimental_rerun()
 
 # -------------------------------
+# HEADER
+# -------------------------------
+st.markdown("""
+<div style="margin-bottom: 2rem;">
+    <h1 style="margin-bottom: 0.5rem;">📊 Dentsu Intelligence</h1>
+    <p style="color: #9ca3af; font-size: 1.1rem; margin: 0;">Enterprise-Level Marketing Performance Analysis</p>
+</div>
+""", unsafe_allow_html=True)
+
+# -------------------------------
 # GROQ SETUP
 # -------------------------------
 api_key = os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY")
