@@ -13,35 +13,14 @@ url="app/static/StabilGrotesk-Bold.otf"
 style="normal"
 weight=700
 
-[[theme.fontFaces]]
-family="StabilGrotesk"
-url="app/static/StabilGrotesk-Light.otf"
-style="normal"
-weight=400
-
-[[theme.fontFaces]]
-family="StabilGrotesk"
-url="app/static/StabilGrotesk-Black.otf"
-style="normal"
-weight=700
-
 [theme]
-font = "StabilGrotesk"
-
-backgroundColor = "#000000"
-
-secondaryBackgroundColor = "#333333"
-
-textColor = "#FFFFFF"
-
-baseFontSize = "16px"
-
-baseFontWeight = "400"
-
-headingFontSizes = "28px"
-
-headingFontWeights = "700"
-
-baseRadius = "8px"
-
-borderColor = "#FAFAFA"
+font="StabilGrotesk"
+backgroundColor="#000000"
+secondaryBackgroundColor="#333333"
+textColor="#FFFFFF"
+baseFontSize="16px"
+baseFontWeight="400"
+headingFontSizes="28px"
+headingFontWeights="700"
+baseRadius="8px"
+borderColor="#FAFAFA"
