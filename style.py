@@ -206,39 +206,3 @@ hr {
 }
 </style>
 """, unsafe_allow_html=True)
-
-# -------------------------------
-# SIDEBAR
-# -------------------------------
-with st.sidebar:
-    st.markdown('<div class="sidebar-section">', unsafe_allow_html=True)
-    st.image("https://www.dentsu.com/assets/images/main-logo-alt.png", width=140)
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown('<div class="sidebar-section">', unsafe_allow_html=True)
-    st.markdown('<h3 style="margin-top: 0; margin-bottom: 12px;">Executive Chat</h3>', unsafe_allow_html=True)
-    st.markdown("""
-    <div style="font-size: 0.9rem; color: #9ca3af; line-height: 1.6;">
-    📊 Ask questions about campaign performance, ROI, and strategic recommendations<br><br>
-    💡 The assistant delivers data-driven insights across all channels and metrics<br><br>
-    📈 Conversation context is preserved for deeper analysis
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown('<div class="sidebar-section">', unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🧹 Clear Chat", use_container_width=True):
-            st.session_state.chat_history = []
-            st.rerun()
-    with col2:
-        if st.button("📊 Data", use_container_width=True):
-            st.session_state.show_data = True
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown('<div class="sidebar-section">', unsafe_allow_html=True)
-    st.markdown('<p class="sidebar-title">Quick Info</p>', unsafe_allow_html=True)
-    st.markdown(f"**Session Time:** {datetime.now().strftime('%H:%M')}")
-    st.markdown(f"**FY Year:** 2025")
-    st.markdown('</div>', unsafe_allow_html=True)
