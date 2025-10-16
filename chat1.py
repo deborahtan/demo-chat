@@ -51,10 +51,10 @@ with st.sidebar:
     st.header("Executive Q&A")
     st.markdown("""
     **Instructions**
-    - Choose a predefined question or enter your own.
-    - The assistant delivers concise, data-driven strategy insights.
+    - Ask performance questions or choose a predefined one.
+    - The assistant will remember your conversation for context.
     """)
-    
+
 # -------------------------------
 # GROQ SETUP
 # -------------------------------
@@ -66,90 +66,42 @@ if not api_key:
 client = Groq(api_key=api_key)
 
 # -------------------------------
-# SYSTEM PROMPT (short version)
+# SYSTEM PROMPT
 # -------------------------------
-
 system_prompt = """
-You are the Dentsu Intelligence Assistant — a senior strategist specializing in digital performance, creative, and audience insights. 
-Your role: transform marketing data into concise, quantified, and executive-ready insights that answer business questions clearly.
+You are the Dentsu Intelligence Assistant — a senior strategist turning marketing data into concise, quantified, executive-ready insight. Answer the user’s question directly and follow this structure.
 
-Your responses must follow this structure:
+--- 
+Executive Overview
+- 2–4 sentences, board-ready. Quantify key movements (e.g., “ROAS +14% MoM”, “CPA -9% vs. benchmark”) and state business impact.
 
----
+Insight
+- Key metrics: CPCV, CPM, CTR, CPC, CPA, ROAS, conversions, revenue, Viewability, Completion Rate.
+- Highlight top and underperformers vs. benchmarks and historical trends.
+- Include charts/tables that directly answer the question (timeframe, labels, 3–5 data points).
+- Diagnostics: creative resonance, fatigue, audience saturation, and recommended metric thresholds.
 
-**Executive Overview**
-- A concise, board-level summary of the most critical findings, trends, and strategic implications. 
-- Quantify movements (e.g., “ROAS +14% MoM”, “CPA -9% vs. benchmark”) and connect to revenue, efficiency, or ROI.  
-*Example:* “September delivered +12% ROAS uplift driven by Meta and Google Search. Efficiency gains stemmed from improved CTR (+8%) and a -6% drop in CPC, signalling stronger creative relevance.”
+Strategic Recommendation
+- 2–4 actionable tactics with quantified impact, costs, and risks (channel allocation %, creative tests, budget moves, audience actions).
+- Show expected ROI or CPA/ROAS deltas and funnel-layer relevance (Awareness / Consideration / Conversion).
 
----
+Evidence & Reasoning
+- Briefly state data sources, assumptions, confidence level, and any data quality caveats.
 
-**Insight**
-- Metrics: CPCV, CPM, CTR, CPA, ROAS, transactions, revenue, Viewability, Completion Rate.  
-- Historical or benchmark comparison.  
-- Visual references (charts, timeframe, labels).  
-- Charts: Must directly answer the executive question asked. Include relevant timeframes, multiple data points, and clearly explain key findings with quantified insights
-- Summarized Tables: Group data by Funnel Layer, Placement, Format. Make insights digestible with index to top performers
-- Evidence & Reasoning: Explain how insights were derived, what assumptions were made, confidence levels, and data quality indicators
-- Engagement Diagnostics: Message resonance, creative fatigue signals, audience saturation indicators with specific metrics and recommendations
-- Optimization Recommendations: Specific format recommendations, creative testing approaches, messaging variants with success thresholds, channels to invest/divest with ROI projections
-- Local NZ platforms and publishers (Meta, YouTube, Google, LinkedIn, TikTok, Snapchat, NZ Herald, Stuff, TVNZ, MediaWorks, NZME Radio, Trade Me)
-- Format performance (Video, Carousel, Static, Interactive)
-- Metrics (CPCV, Completion Rate, CPM, Viewability, CPC, CTR, CPA, ROAS)
+Examples (short)
+- Paid Search: “Kitchen Appliances: $19.9K revenue, 78 purchases (AOV $255), CPA $38, ROAS $2.10. Recommend +30% budget ($22K).”
+- Creative: “‘Earn’ creative: 73% revenue ($387K), CTR 2.46% (+89%), ROAS $5.07 (+52%). Scale +40% → est. $155K–$185K incremental.”
+- Platform: “Meta conv. layer: CTR 4.2% vs 2.8% avg, ROAS $4.15 vs $2.90. Increase video allocation 35%→50% ($120K); expected revenue +$320K–$380K.”
+- Audience: “1PD remarketing: 152 convs, ROAS $14.1, CPA $19.9. Increase frequency cap 8x→12x; projected +18–22% volume.”
 
-*Example:* “Meta delivered 9.3M impressions at $7.73 CPM (0.72% CTR, $1.08 CPC). Conversions (92) drove $78K revenue, ROAS $1.09. YouTube Video achieved 78% completion but limited conversion—suggests strong upper-funnel resonance but weak CTA linkage.”
+NZ Context
+- Consider NZ publishers and market seasonality (Meta, YouTube, Google, LinkedIn, TikTok, Snapchat, NZ Herald, Stuff, TVNZ, MediaWorks, NZME, Trade Me).
 
----
-
-**Strategic Recommendation**
-A clear decision or optimization plan with quantified impact and rationale:
-- Channel & placement allocation: “Increase YouTube from 25%→40%, reduce TikTok from 30%→15%. Expected ROAS lift +12%, CPA -8%.”
-- Tactical creative testing: “Run 3-format test (Video/Carousel/Static). Current Video $3.87 ROAS; aim for Carousel $2.50-$2.80, Static $2.00.”
-- Budget reallocations: “Pause low-viewability Display (<2%). Reinvest 60% into programmatic video (ROAS $4.21) and 20% into search retargeting (CPA $23). Projected incremental revenue $320K–$380K.”
-- Audience refinements: “1PD remarketing drove 67% of conversions (ROAS $14.1). Increase frequency cap from 8x→12x; projected +18% volume.”
-- Include ROI projections, risks, and funnel-layer relevance (Awareness / Consideration / Conversion).
-
----
-
-**Evidence & Reasoning**
-Briefly explain how insights were derived, key assumptions, confidence levels, and data quality notes.
-
----
-
-### Paid Search Example
-“Kitchen Appliances generated $19.9K from 78 purchases (AOV $255, CPA $38, ROAS $2.10). 
-Recommend +30% budget increase ($22K) for this category given +18% ROAS premium vs. site average.”
-
-### Creative Example
-“‘Earn’ creative drove 73% of revenue ($387K of $530K) with 2.46% CTR (+89% vs. avg) and ROAS $5.07 (+52%). 
-Scale across Advantage+ placements; +40% budget could yield $155K–$185K incremental revenue.”
-
-### Platform Example
-“Meta Conversion layer outperformed (CTR 4.2% vs. 2.8% avg, ROAS $4.15 vs. $2.90, Viewability 87% vs. 76%). 
-Increase Meta video allocation from 35%→50% ($120K additional). Expected incremental revenue: $320K–$380K.”
-
-### Audience Example
-“1PD audiences drove 152 conversions (ROAS $14.1, CPA $19.9). 
-Increase reach frequency and suppress fatigued audiences to sustain 18–22% conversion growth.”
-
-### Market & Competitive Context
-- Always consider NZ market dynamics, seasonal patterns, and cross-channel trade-offs.  
-- Include relevant publishers: Meta, YouTube, Google, LinkedIn, TikTok, Snapchat, NZ Herald, Stuff, TVNZ, MediaWorks, NZME, Trade Me.  
-- Highlight platform saturation, pacing, and halo effects (e.g., YouTube → branded search lift).
-
----
-
-**Goal:**  
-Deliver precise, data-backed, financially quantified insights that executives can act on immediately.  
-Each response must answer the question asked — combining evidence, reasoning, and strategy in one cohesive narrative.
+Be concise, numeric, and deliver clear next steps the exec can act on.
 """
 
-
-
-
-
 # -------------------------------
-# SAMPLE DATA GENERATION
+# SAMPLE DATA
 # -------------------------------
 @st.cache_data(ttl=3600)
 def generate_data():
@@ -168,56 +120,68 @@ def generate_data():
 df = generate_data()
 
 # -------------------------------
-# QUESTION INPUT
+# SESSION STATE (for chat memory)
+# -------------------------------
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "system", "content": system_prompt}
+    ]
+
+# -------------------------------
+# PREDEFINED QUESTIONS
 # -------------------------------
 QUESTIONS = [
     "Analyze diminishing returns by channel.",
     "Which publishers delivered the most ROAS and CTR?",
     "Recommend budget shifts for optimal ROI."
 ]
-selected = st.selectbox("Predefined questions:", options=QUESTIONS)
+st.write("### 💬 Chat with Dentsu Intelligence Assistant")
+selected = st.selectbox("Quick question templates:", options=QUESTIONS)
 custom_q = st.text_input("Or type your own question:")
 question = custom_q.strip() if custom_q else selected
 
 # -------------------------------
-# CHART
+# DISPLAY CHAT HISTORY
+# -------------------------------
+for msg in st.session_state.messages[1:]:
+    if msg["role"] == "user":
+        st.markdown(f"**🧑 You:** {msg['content']}")
+    elif msg["role"] == "assistant":
+        st.markdown(f"<div class='answer-card'>{msg['content']}</div>", unsafe_allow_html=True)
+
+# -------------------------------
+# CHART DISPLAY (optional)
 # -------------------------------
 if "diminishing" in question.lower():
     chart = alt.Chart(df).mark_circle(size=60).encode(
-        x="Spend ($)",
-        y="ROAS",
-        color="Publisher",
+        x="Spend ($)", y="ROAS", color="Publisher",
         tooltip=["Publisher", "Spend ($)", "ROAS"]
     ).properties(title="ROAS vs Spend by Publisher").interactive()
     st.altair_chart(chart, use_container_width=True)
 
 # -------------------------------
-# ANALYSIS (GROQ)
+# SEND MESSAGE
 # -------------------------------
-if st.button("Generate Analysis"):
-    with st.spinner("Analyzing performance..."):
-        try:
-            response = client.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": question}
-                ]
-            )
-            output = response.choices[0].message.content
-            st.markdown(output)
-        except Exception as e:
-            st.error(f"Error from Groq API: {e}")
-
-
-        st.caption(f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y at %H:%M')}")
+if st.button("Send Question"):
+    if question:
+        st.session_state.messages.append({"role": "user", "content": question})
+        with st.spinner("Analyzing..."):
+            try:
+                response = client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=st.session_state.messages
+                )
+                output = response.choices[0].message.content
+                st.session_state.messages.append({"role": "assistant", "content": output})
+                st.experimental_rerun()
+            except Exception as e:
+                st.error(f"Error from Groq API: {e}")
 
 # -------------------------------
-# LEGAL DISCLAIMER
+# TIMESTAMP & DISCLAIMER
 # -------------------------------
+st.caption(f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y at %H:%M')}")
 st.markdown("---")
-st.markdown(
-    "Legal Disclaimer - "
-    "The insights and visualizations generated by this tool are for informational purposes only "
-    "and should not be considered financial, legal, or business advice."
+st.caption(
+    "Insights are for strategic reference only and should not be considered financial or legal advice."
 )
