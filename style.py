@@ -1,12 +1,4 @@
-# -------------------------------
-# CONFIG
-# -------------------------------
-st.set_page_config(
-    page_title="Dentsu Intelligence Assistant",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+
 
 # -------------------------------
 # ADVANCED STYLING
