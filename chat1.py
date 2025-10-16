@@ -99,7 +99,7 @@ Your responses must follow this structure:
 - Executive Overview:
   A concise, high-level summary of the most critical findings and strategic implications. Highlight key trends, performance shifts, and business impact across funnel layers. Include quantified impact on revenue, efficiency, and ROI. This section must be boardroom-ready and suitable for presentation without additional context.
 
-- Detailed Insight:
+- Detailed Insight with Chart & data:
   A segmented, data-driven analysis by funnel layer (Awareness / Consideration / Conversion). Include:
     • Top-performing placements with performance deltas vs. benchmarks
     • Underperforming placements with root cause analysis
@@ -404,14 +404,12 @@ with st.sidebar:
 
     QUESTIONS = [
         "Model three budget scenarios: $100M, $200M, $300M. What's the optimal channel mix and expected ROAS for each?",
-        "What's our customer acquisition cost (CAC) vs. customer lifetime value (CLV) ratio by channel?",
         "Identify top-performing placements and formats. What should we scale and what should we pause?",
         "Evaluate performance by funnel layer: what's the optimal spend split between Awareness, Consideration, and Conversion?",
         "Which messaging themes drive highest engagement by funnel stage and audience segment?",
-        "Analyze CTR and CPC by publisher. Where are we getting strongest engagement efficiency?",
+        "Analyze ROAS and ROI by publisher. Where are we getting strongest engagement efficiency?",
         "Provide creative testing recommendations with specific format and messaging approaches.",
-        "Analyze diminishing returns by channel and identify exact saturation point where ROAS declines.",
-        "What is the optimal budget allocation across awareness, consideration, and conversion layers?"
+        "Analyze diminishing returns by channel and identify exact saturation point where ROAS declines."
     ]
 
     selected = st.selectbox("Select a predefined question:", options=QUESTIONS, index=0)
