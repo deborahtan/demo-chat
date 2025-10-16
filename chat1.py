@@ -51,8 +51,8 @@ with st.sidebar:
     st.header("Executive Q&A")
     st.markdown("""
     **Instructions**
-    - Ask performance questions or choose a predefined one.
-    - The assistant will remember your conversation for context.
+    - Choose a predefined question or enter your own.
+    - The assistant delivers concise, data-driven strategy insights.
     """)
 
 # -------------------------------
@@ -66,39 +66,37 @@ if not api_key:
 client = Groq(api_key=api_key)
 
 # -------------------------------
-# SYSTEM PROMPT
+# SYSTEM PROMPT (concise version)
 # -------------------------------
 system_prompt = """
-You are the Dentsu Intelligence Assistant — a senior strategist turning marketing data into concise, quantified, executive-ready insight. Answer the user’s question directly and follow this structure.
+You are the Dentsu Intelligence Assistant — a senior strategist turning marketing data into concise, quantified, executive-ready insight.
 
---- 
-Executive Overview
-- 2–4 sentences, board-ready. Quantify key movements (e.g., “ROAS +14% MoM”, “CPA -9% vs. benchmark”) and state business impact.
+**Executive Overview**
+- 2–4 sentences. Quantify performance (e.g., ROAS +14% MoM, CPA -9% vs. benchmark). Focus on revenue and efficiency impact.
 
-Insight
-- Key metrics: CPCV, CPM, CTR, CPC, CPA, ROAS, conversions, revenue, Viewability, Completion Rate.
-- Highlight top and underperformers vs. benchmarks and historical trends.
-- Include charts/tables that directly answer the question (timeframe, labels, 3–5 data points).
-- Diagnostics: creative resonance, fatigue, audience saturation, and recommended metric thresholds.
+**Insight**
+- Include metrics (CPCV, CPM, CTR, CPA, ROAS, etc.), top performers, and underperformers.
+- Explain key drivers, trends, and audience/creative learnings.
+- Use NZ-relevant context when applicable.
 
-Strategic Recommendation
-- 2–4 actionable tactics with quantified impact, costs, and risks (channel allocation %, creative tests, budget moves, audience actions).
-- Show expected ROI or CPA/ROAS deltas and funnel-layer relevance (Awareness / Consideration / Conversion).
+**Strategic Recommendation**
+- 2–4 actionable tactics with quantified impact and ROI or CPA/ROAS deltas.
+- Cover channel shifts, creative tests, or audience optimizations.
 
-Evidence & Reasoning
-- Briefly state data sources, assumptions, confidence level, and any data quality caveats.
+**Examples**
+- Meta: 9.3M impressions, $7.73 CPM, 0.72% CTR, $1.08 CPC → $78K revenue, ROAS $1.09.
+- Audience: 1PD remarketing drove 67% of conversions (ROAS $14.1). Raise frequency 8x→12x (+18% volume expected).
 
-Examples (short)
-- Paid Search: “Kitchen Appliances: $19.9K revenue, 78 purchases (AOV $255), CPA $38, ROAS $2.10. Recommend +30% budget ($22K).”
-- Creative: “‘Earn’ creative: 73% revenue ($387K), CTR 2.46% (+89%), ROAS $5.07 (+52%). Scale +40% → est. $155K–$185K incremental.”
-- Platform: “Meta conv. layer: CTR 4.2% vs 2.8% avg, ROAS $4.15 vs $2.90. Increase video allocation 35%→50% ($120K); expected revenue +$320K–$380K.”
-- Audience: “1PD remarketing: 152 convs, ROAS $14.1, CPA $19.9. Increase frequency cap 8x→12x; projected +18–22% volume.”
-
-NZ Context
-- Consider NZ publishers and market seasonality (Meta, YouTube, Google, LinkedIn, TikTok, Snapchat, NZ Herald, Stuff, TVNZ, MediaWorks, NZME, Trade Me).
-
-Be concise, numeric, and deliver clear next steps the exec can act on.
+Be concise, data-driven, and provide clear next steps.
 """
+
+# -------------------------------
+# MEMORY INITIALIZATION
+# -------------------------------
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [
+        {"role": "system", "content": system_prompt}
+    ]
 
 # -------------------------------
 # SAMPLE DATA
@@ -120,68 +118,68 @@ def generate_data():
 df = generate_data()
 
 # -------------------------------
-# SESSION STATE (for chat memory)
-# -------------------------------
-if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "system", "content": system_prompt}
-    ]
-
-# -------------------------------
-# PREDEFINED QUESTIONS
+# USER INPUT
 # -------------------------------
 QUESTIONS = [
     "Analyze diminishing returns by channel.",
     "Which publishers delivered the most ROAS and CTR?",
     "Recommend budget shifts for optimal ROI."
 ]
-st.write("### 💬 Chat with Dentsu Intelligence Assistant")
-selected = st.selectbox("Quick question templates:", options=QUESTIONS)
+
+selected = st.selectbox("Predefined questions:", options=QUESTIONS)
 custom_q = st.text_input("Or type your own question:")
 question = custom_q.strip() if custom_q else selected
 
 # -------------------------------
 # DISPLAY CHAT HISTORY
 # -------------------------------
-for msg in st.session_state.messages[1:]:
+st.markdown("### 💬 Conversation")
+for msg in st.session_state.chat_history[1:]:
     if msg["role"] == "user":
-        st.markdown(f"**🧑 You:** {msg['content']}")
-    elif msg["role"] == "assistant":
-        st.markdown(f"<div class='answer-card'>{msg['content']}</div>", unsafe_allow_html=True)
+        st.markdown(f"**You:** {msg['content']}")
+    else:
+        st.markdown(f"**Assistant:** {msg['content']}")
 
 # -------------------------------
-# CHART DISPLAY (optional)
+# CHART
 # -------------------------------
 if "diminishing" in question.lower():
     chart = alt.Chart(df).mark_circle(size=60).encode(
-        x="Spend ($)", y="ROAS", color="Publisher",
+        x="Spend ($)",
+        y="ROAS",
+        color="Publisher",
         tooltip=["Publisher", "Spend ($)", "ROAS"]
     ).properties(title="ROAS vs Spend by Publisher").interactive()
     st.altair_chart(chart, use_container_width=True)
 
 # -------------------------------
-# SEND MESSAGE
+# ANALYSIS (GROQ)
 # -------------------------------
-if st.button("Send Question"):
-    if question:
-        st.session_state.messages.append({"role": "user", "content": question})
-        with st.spinner("Analyzing..."):
-            try:
-                response = client.chat.completions.create(
-                    model="llama-3.1-8b-instant",
-                    messages=st.session_state.messages
-                )
-                output = response.choices[0].message.content
-                st.session_state.messages.append({"role": "assistant", "content": output})
-                st.experimental_rerun()
-            except Exception as e:
-                st.error(f"Error from Groq API: {e}")
+if st.button("Generate Analysis"):
+    with st.spinner("Analyzing performance..."):
+        try:
+            # Add user input to chat memory
+            st.session_state.chat_history.append({"role": "user", "content": question})
+
+            response = client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=st.session_state.chat_history
+            )
+
+            output = response.choices[0].message.content
+            st.session_state.chat_history.append({"role": "assistant", "content": output})
+            st.markdown(output)
+
+        except Exception as e:
+            st.error(f"Error from Groq API: {e}")
+
+    st.caption(f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y at %H:%M')}")
 
 # -------------------------------
-# TIMESTAMP & DISCLAIMER
+# LEGAL DISCLAIMER
 # -------------------------------
-st.caption(f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y at %H:%M')}")
 st.markdown("---")
-st.caption(
-    "Insights are for strategic reference only and should not be considered financial or legal advice."
+st.markdown(
+    "Legal Disclaimer — The insights and visualizations generated by this tool are for informational purposes only "
+    "and should not be considered financial, legal, or business advice."
 )
