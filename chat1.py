@@ -103,7 +103,7 @@ Your responses must follow this structure:
   A segmented, data-driven analysis by funnel layer (Awareness / Consideration / Conversion). Include:
     • Top-performing placements with performance deltas vs. benchmarks
     • Underperforming placements with root cause analysis
-    • Messaging and creative performance patterns
+    • Messaging and creative performance patterns - segment answers by format for instance if comparing CTR, as naturally videos will have fewer than display for that type of action.
     • Audience engagement trends and saturation signals
     • Format-channel conversion dynamics
     • Specific metrics: CPCV, Completion Rate, CPM, Viewability, CPC, CTR, CPA, ROAS, transactions, revenue
@@ -113,7 +113,7 @@ Your responses must follow this structure:
 - Strategic Recommendation:
   A set of prioritized, quantified strategic actions with rationale and expected financial impact. Include:
     • Channel & placement allocation shifts with projected ROI
-    • Format rotation strategies with performance targets
+    • Format rotation strategies with performance target
     • Creative testing frameworks with success thresholds
     • Audience targeting refinements with ROI uplift projections
     • Budget reallocation logic with opportunity cost analysis
@@ -403,14 +403,14 @@ with st.sidebar:
     )
 
     QUESTIONS = [
-        "Analyze diminishing returns by publisher and identify exact saturation point where ROAS declines.",
-        "Evaluate performance by funnel layer (Awareness, Consideration, Conversion) and recommend budget allocation.",
-        "Identify top-performing placements and formats. What should we scale and what should we pause?",
-        "Assess underperforming placements. Which have viewability issues or high CPCV?",
-        "Recommend format strategy: Video vs. Carousel vs. Static. Which drives best ROAS and lowest CPA?",
-        "Analyze CTR and CPC by publisher. Where are we getting strongest engagement efficiency?",
-        "Provide creative testing recommendations with specific format and messaging approaches.",
-        "What is the optimal budget allocation across awareness, consideration, and conversion layers?"
+        "Analyze diminishing returns by channel and spend curve.",
+        "Identify top-performing publishers by audience segment.",
+        "Recommend optimal channel mixes for $100M, $200M, and $300M investment levels.",
+        "Highlight months with the highest churn and distinguish internal vs. external drivers.",
+        "Assess external market and economic factors influencing churn or performance shifts.",
+        "Determine which formats delivered the highest ROI and CPA.",
+        "Evaluate channels with the strongest click-to-conversion rates.",
+        "Advise what to scale, pause, or optimize for maximum efficiency."
     ]
 
     selected = st.selectbox("Select a predefined question:", options=QUESTIONS, index=0)
