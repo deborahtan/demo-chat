@@ -34,8 +34,8 @@ html, body, [class*="css"] {
     color: #e8eef5;
 }
 
-[data-testid="stMainBlockContainer"] {
-    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+.block-container.stMainBlockContainer {
+    background-color: #000000;
     padding-top: 2rem;
 }
 
