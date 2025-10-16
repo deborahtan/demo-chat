@@ -4,13 +4,15 @@ import pandas as pd
 import numpy as np
 import altair as alt
 from groq import Groq 
+import time
 
 # -------------------------------
 # CONFIG & BRANDING
 # -------------------------------
+# Using st (streamlit) library as below:
+
 st.set_page_config(
     page_title="Dentsu Intelligence Assistant",
-    page_icon="https://img.icons8.com/ios11/16/000000/dashboard-gauge.png",
     layout="wide"
 )
 
@@ -90,6 +92,10 @@ if not api_key:
     st.stop()
 
 client = Groq(api_key=api_key)
+
+# -------------------------------
+# SYSTEM PROMPT
+# -------------------------------
 
 system_prompt = """
 You are an AI Insights Assistant for C-suite executives across Marketing, Media, Creative, CRM, Finance, and Loyalty/Product. Your mandate is to analyze enterprise-scale performance data and deliver clear, strategic, executive-ready insights supported by interactive visualizations.
@@ -184,10 +190,8 @@ Goal:
 Transform complex performance data into specific, quantified insights, valid strategic actions, and rigorously grounded recommendations that drive executive confidence and measurable results with clear ROI projections.
 """
 
-
-
 # -------------------------------
-# SAMPLE DATA WITH REAL DIMINISHING RETURNS
+# SAMPLE DATA 
 # -------------------------------
 @st.cache_data
 def generate_data():
@@ -431,7 +435,7 @@ with st.sidebar:
             st.session_state.recent_questions = []
 
 # -------------------------------
-# CHART RENDERING WITH REAL DIMINISHING RETURNS
+# CHART RENDERING 
 # -------------------------------
 def render_chart_for_question(question, df):
     question = question.lower()
@@ -708,7 +712,7 @@ def render_chart_for_question(question, df):
 
 
 # -------------------------------
-# Render Structured Answer
+# RESULTS
 # -------------------------------
 with st.container():
     st.subheader("Detailed Analysis")
@@ -774,6 +778,23 @@ with st.container():
                 st.write("Generating next steps...")
 
         st.caption(f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y at %H:%M')}")
+
+# -------------------------------
+# FALLBACK FOR RATE LIMITS
+# -------------------------------
+
+def safe_chat_completion(client, model, messages, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            return client.chat.completions.create(
+                model=model,
+                messages=messages
+            )
+        except groq.RateLimitError:
+            wait_time = 2 ** attempt  # exponential backoff
+            print(f"Rate limit hit. Retrying in {wait_time} seconds...")
+            time.sleep(wait_time)
+    raise Exception("Exceeded maximum retries due to rate limits.")
 
 # -------------------------------
 # LEGAL DISCLAIMER
