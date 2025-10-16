@@ -73,25 +73,49 @@ client = Groq(api_key=api_key)
 # SYSTEM PROMPT (your version)
 # -------------------------------
 system_prompt = """
-You are the Dentsu Intelligence Assistant — a senior strategist turning marketing data into concise, quantified, executive-ready insight.
+You are the Dentsu Intelligence Assistant — a senior strategist delivering enterprise-level marketing intelligence to C-suite stakeholders across Media, Marketing, CRM, Loyalty, and Finance.
+
+Your role is to synthesize performance across all channels, formats, funnel layers, and audience segments — not just individual campaigns — and deliver quantified, executive-ready insights that reflect fiscal year context and strategic impact.
 
 **Executive Overview**
-- 2–4 sentences. Quantify performance (e.g., ROAS +14% MoM, CPA -9% vs. benchmark). Focus on revenue and efficiency impact.
+- Summarize performance across the latest fiscal month or week (e.g., FY Month 4, Week 17).
+- Quantify key shifts in ROAS, CPA, CTR, spend, and revenue.
+- Highlight top-performing funnel layers, formats, and publishers.
+- Frame commentary in terms of business impact, efficiency, and momentum.
 
 **Insight**
-- Include metrics (CPCV, CPM, CTR, CPA, ROAS, etc.), top performers, and underperformers, always with a chart/graph/appropriate data visualisation.
-- Explain key drivers, trends, and audience/creative learnings/'so what'. All data to be cited from real sources: Google Trends, Shopify, Stats nz, World Bank Open Data, International Monetary Fund (IMF), Reserve Bank of New Zealand (RBNZ), Gartner, Forrester, NielsenIQ (where accessible), McKinsey Global Institute, Bloomberg Terminal, ABS (Australian Bureau of Statistics).
-- Use NZ-relevant, media-specific context, e.g. looking at CTR video typically has lower CTR than display so group and visualise as such. Think like a media expert.
+- Use charts and graphs to visualize topline metrics (e.g., spend, revenue, ROAS, CTR, CPA).
+- Segment by:
+  - Funnel Layer: Awareness, Consideration, Conversion
+  - Format: Video, Static, Carousel, Interactive, Radio
+  - Strategy: Retargeting, Brand Lift, Product Launch, Offer Promotion
+  - Publisher: Meta, YouTube, NZ Herald, NZME Radio, etc.
+  - Audience Segment (Demographic): e.g., Millennials, Boomers, Parents with Kids
+  - Audience Segment (Behavioral): e.g., High Intent Shoppers, Cart Abandoners, Loyalty Members
+- Always compare like-for-like when evaluating performance — e.g., Video vs Video, Carousel vs Static, Awareness vs Awareness — to ensure recommendations are contextually valid.
+- Use schema fields to explain performance drivers — e.g., “CPA improved due to Loyalty Members in Conversion layer via Meta Carousel.”
+- Reference fiscal trends (MoM, WoW, FY-to-date) and NZ-specific media norms (e.g., radio TARPs, seasonal shifts).
+- Always include at least one visualisation to support your insight.
 
 **Strategic Recommendation**
-- 2–4 actionable tactics with quantified impact and ROI or CPA/ROAS deltas.
-- Cover channel shifts, creative tests, or audience optimizations.
+- Provide 2–4 actionable tactics with quantified impact (e.g., “Shift 12% of spend from Static to Video to improve ROAS by +0.8”).
+- Recommend optimisations across:
+  - Channel mix
+  - Creative format
+  - Audience targeting (both demographic and behavioral)
+  - Budget allocation
+- Avoid simplistic budget cuts based on surface metrics. Instead, assess whether performance is driven by creative, audience, or placement.
+- Prioritise changes that improve CPA, ROAS, or conversion volume.
+- Reference platform learning, seasonal trends, and scalability potential.
 
 **Examples**
-- Meta: 9.3M impressions, $7.73 CPM, 0.72% CTR, $1.08 CPC → $78K revenue, ROAS $1.09.
-- Audience: 1PD remarketing drove 67% of conversions (ROAS $14.1). Raise frequency 8x→12x (+18% volume expected).
+- FY Month 4: Meta contributed 38% of total conversions with ROAS 4.1 and CPA $32. Remarketing drove +22% MoM uplift.
+- FY Week 17: Consideration layer delivered 57% of conversions and 52% of revenue. Carousel formats outperformed Static by +1.3 ROAS.
+- Strategic: Raise frequency on Loyalty Members from 8x to 12x to lift conversion volume by +18%.
+- Audience: Boomers in Awareness layer via Radio (NZME) delivered strong reach (320 TARPs) but low conversion. Recommend shifting 15% to Consideration layer with Static formats.
+- Format: Carousel in Conversion layer with High Intent Shoppers delivered ROAS 4.8 vs Static at 3.2. Recommend scaling Carousel with new creative variants.
 
-Be concise, data-driven, and provide clear next steps.
+Be concise, visual, and data-driven. Always speak to overarching performance, not isolated campaigns. Use the full schema to reason and recommend.
 """
 
 # -------------------------------
@@ -105,19 +129,121 @@ if "chat_history" not in st.session_state:
 # -------------------------------
 @st.cache_data(ttl=3600)
 def generate_data():
-    np.random.seed(42)
-    publishers = ["YouTube", "Meta", "TikTok", "Search"]
-    df = pd.DataFrame({
-        "Publisher": np.random.choice(publishers, 500),
-        "Spend ($)": np.random.uniform(1e3, 2e5, 500),
-        "ROAS": np.random.uniform(1.2, 6.0, 500),
-        "CTR (%)": np.random.uniform(0.5, 3.5, 500),
-        "CPA ($)": np.random.uniform(10, 60, 500)
-    })
-    df["Revenue ($)"] = df["Spend ($)"] * df["ROAS"]
+    import pandas as pd
+
+    fy_year = 2025
+    weeks = list(range(1, 53)) * 20  # 1040 rows
+
+    publishers = [
+        "Meta", "YouTube", "TikTok", "Search", "Stuff", "NZ Herald", "NZME Radio",
+        "TVNZ OnDemand", "MetService", "Neighbourly", "Spotify", "We Are Frank",
+        "GrabOne", "Go Media", "LUMO", "LinkedIn", "Quantcast", "The Trade Desk",
+        "MediaWorks Radio"
+    ]
+    strategies = ["Retargeting", "Brand Lift", "Product Launch", "Offer Promotion"]
+    funnel_layers = ["Awareness", "Consideration", "Conversion"]
+    formats = ["Video", "Static", "Carousel", "Interactive", "Radio"]
+    creative_messaging = ["Value-led", "Urgency-led", "Emotional", "Informational"]
+    demo_segments = ["Millennials", "Boomers", "Parents with Kids"]
+    behav_segments = ["High Intent Shoppers", "Cart Abandoners", "Loyalty Members"]
+
+    rows = []
+    for i in range(len(weeks)):
+        week = weeks[i]
+        funnel = funnel_layers[i % 3]
+        format = formats[i % 5]
+        strategy = strategies[i % 4]
+        publisher = publishers[i % len(publishers)]
+        creative = creative_messaging[i % 4]
+        demo = demo_segments[i % 3]
+        behav = behav_segments[i % 3]
+
+        base_spend = {
+            "Awareness": 100_000,
+            "Consideration": 250_000,
+            "Conversion": 500_000
+        }[funnel]
+
+        seasonal_multiplier = 1.25 if week >= 40 else 1.0
+        spend = base_spend * seasonal_multiplier
+
+        ctr_lookup = {
+            "Video": 2.8,
+            "Carousel": 3.2,
+            "Static": 1.2,
+            "Interactive": 2.5,
+            "Radio": 0.6
+        }
+        ctr = ctr_lookup[format]
+
+        cpa_lookup = {
+            "High Intent Shoppers": 35,
+            "Cart Abandoners": 28,
+            "Loyalty Members": 22
+        }
+        cpa = cpa_lookup[behav]
+
+        roas_base = {
+            "Awareness": 2.0,
+            "Consideration": 3.5,
+            "Conversion": 5.0
+        }[funnel]
+        roas = max(1.2, roas_base - (spend / 1_000_000))
+
+        cpm_adjust = {
+            "Video": 6,
+            "Carousel": 5,
+            "Static": 4,
+            "Interactive": 6,
+            "Radio": 3
+        }
+        impressions = int(spend / cpm_adjust[format] * 1000)
+        clicks = int(impressions * (ctr / 100))
+        revenue = spend * roas
+
+        # Radio-specific metrics
+        if format == "Radio" and publisher in ["NZME Radio", "MediaWorks Radio"]:
+            tarps = round(min(100, 30 + (week % 20)), 1)
+            reach = round(tarps / 1.5, 1)
+            frequency = round(tarps / reach, 1)
+            spot_count = int(spend / 500)
+            station = ["ZM", "The Edge", "Newstalk ZB", "Hauraki", "Coast"][i % 5]
+        else:
+            tarps = None
+            reach = None
+            frequency = None
+            spot_count = None
+            station = None
+
+        rows.append({
+            "FY Year": fy_year,
+            "Week": week,
+            "Publisher": publisher,
+            "Strategy": strategy,
+            "Funnel Layer": funnel,
+            "Format": format,
+            "Creative Messaging": creative,
+            "Audience Segment (Demographic)": demo,
+            "Audience Segment (Behavioral)": behav,
+            "Spend ($)": spend,
+            "ROAS": roas,
+            "CTR (%)": ctr,
+            "CPA ($)": cpa,
+            "Impressions": impressions,
+            "Clicks": clicks,
+            "Revenue ($)": revenue,
+            "TARPs": tarps,
+            "Reach (%)": reach,
+            "Frequency": frequency,
+            "Spot Count": spot_count,
+            "Station": station
+        })
+
+    df = pd.DataFrame(rows)
     return df
 
 df = generate_data()
+
 
 # -------------------------------
 # DISPLAY PREVIOUS MESSAGES
