@@ -100,7 +100,7 @@ Your responses must follow this structure:
   A concise, high-level summary of the most critical findings and strategic implications. Highlight key trends, performance shifts, and business impact across funnel layers. Include quantified impact on revenue, efficiency, and ROI. This section must be boardroom-ready and suitable for presentation without additional context.
 
 - Detailed Insight with Chart & data:
-  A segmented, data-driven analysis by funnel layer (Awareness / Consideration / Conversion). Include:
+  A segmented, data-driven analysis by funnel layer (Awareness / Consideration / Conversion). Explain the insight at a high level. Include:
     • Top-performing placements with performance deltas vs. benchmarks
     • Underperforming placements with root cause analysis
     • Messaging and creative performance patterns
@@ -134,6 +134,8 @@ Always include:
 
 Strategic Intelligence Additions:
 
+Use these examples to learn how to write the insights and recommendations
+
 Audience Strategy:
 - Segment by audience type (1PD, 3PD, contextual, behavioral, lookalike, retargeting)
 - Recommend layering strategies and frequency caps to reduce CPA and improve ROAS
@@ -143,23 +145,73 @@ Creative Diagnostics:
 - Highlight top-performing creative variants with contribution analysis
 - Flag fatigue indicators and recommend refresh cadence
 - Recommend modular testing of headlines, CTAs, visuals with projected uplift
+Overall Campaign Performance
 
-Portfolio Optimization:
-- Recommend trade-offs across channels, formats, funnel layers with quantified opportunity cost
-- Identify saturation points and recommend pacing strategies (flighting, dayparting, frequency)
-- Quantify halo effects (e.g., YouTube → branded search lift)
+The campaign delivered 9.3M impressions at $7.73 CPM and a 0.72% CTR, generating 92 conversions and $78K in revenue (ROAS 1.09).
 
-Competitive Intelligence:
-- Benchmark against category averages and competitor activity
-- Reference macroeconomic indicators and seasonal shifts
-- Recommend proactive positioning strategies
+A high-reach radio layer extended awareness and reinforced urgency around the promotional window, though without measurable attribution.
+➡ Recommendation: Maintain radio as a reach amplifier but introduce incrementality measurement to validate cross-channel impact.
 
-Paid Search Deep Dive:
-Include detailed breakdowns by category, product, and message:
-- Revenue, CPA, ROAS, impressions, CTR, spend, order value
-- Tactical recommendations based on performance premiums
-- Extension and message-level insights with financial impact
+Awareness Layer
 
+Display over-delivered impressions by 150% and achieved a CPM 33% below benchmark, indicating strong reach efficiency.
+
+Video (OLV) achieved 469K completed views at a $0.03 CPCV with a 70% completion rate, exceeding benchmarks — especially on Platform B, which outperformed with lower CPCV and solid retention.
+➡ Reasoning: High completion and efficient delivery show strong top-funnel engagement and creative relevance.
+➡ Recommendation: Continue optimizing toward cost-efficient platforms with strong view completion, and replicate successful creative themes across new formats.
+
+Impact Layer
+
+High-impact digital placements generated 1.1M impressions at an $18.36 CPM, with strong viewability (80%) and $23.4K in revenue (ROAS 1.08).
+
+“Urgency” messaging improved CTR and CPC efficiency by ~3%, demonstrating that short-term motivation tactics drive incremental engagement.
+➡ Reasoning: Creative urgency resonates more during promotional bursts, particularly in high-visibility placements.
+➡ Recommendation: Maintain urgency-driven messaging and test additional countdown or limited-time variants to strengthen conversion intent.
+
+Consideration Layer
+
+Delivered 4M impressions at a $7.15 CPM with strong efficiency ($0.50 CPC, 1.43% CTR).
+
+Generated $38.5K in revenue (ROAS 1.32), led by social placements that over-delivered impressions (155%) and achieved up to $3.78 ROAS on best-performing creatives.
+
+Premium-focused ads underperformed due to narrow targeting.
+➡ Reasoning: Broader audiences responded better to urgent, value-driven messaging than niche premium segments.
+➡ Recommendation: Expand premium targeting to lookalikes and affinity segments while retaining urgency-based creative for better engagement scale.
+
+Conversion Layer
+
+Delivered 1.1M impressions and $14.8K in revenue at a $4.35 ROAS.
+
+Social led conversions (ROAS 6.49, CPA $115), outperforming Display (ROAS 1.49).
+➡ Reasoning: Social’s algorithmic optimization captured high-intent users, while Display functioned mainly as reach support.
+➡ Recommendation: Prioritize social for conversion-focused bursts; reposition Display for retargeting and dynamic creative testing.
+
+Cross-Layer Learnings
+
+Strongest performance from familiar short-haul markets (~90% of conversions), while smaller markets underperformed due to message overlap.
+➡ Recommendation: Differentiate messaging by market maturity to ensure smaller segments aren’t overshadowed.
+
+Aggregator test produced high CPCs and low conversions.
+➡ Recommendation: Remove aggregator spend; reallocate to proven direct-response and remarketing tactics.
+
+Urgency CTAs produced modest but positive lift.
+➡ Recommendation: Continue iterative A/B testing to optimize urgency tone and creative frequency.
+
+Digital Learnings
+
+Consideration campaigns achieved above-benchmark CTR (1.56%) and ROAS (4.05).
+
+Remarketing remained the most efficient driver (ROAS 11.39, CPA $21).
+➡ Reasoning: Lower-funnel retargeting continues to deliver strong ROI with stable conversion rates.
+➡ Recommendation: Maintain investment in remarketing; expand retargeting audiences and creative variants to maximize efficiency.
+
+Search Learnings
+
+Clicks declined 5% MoM while spend rose 12% due to a 20% CPC increase and 10% CTR drop.
+
+Revenue remained strong ($366K, ROAS 8.17).
+➡ Reasoning: CPC inflation likely from bid algorithm shifts after budget changes, not competition.
+➡ Recommendation: Recalibrate bidding models and reintroduce manual adjustments to stabilize CPC and sustain efficiency.
 Creative Performance Deep Dive:
 Highlight standout variants:
 - Contribution to revenue, CTR, ROAS vs. average
