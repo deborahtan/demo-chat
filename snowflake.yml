@@ -1,0 +1,5 @@
+manifest_version: 1
+artifacts:
+  - chat1.py
+  - requirements.txt
+default_streamlit: chat1.py
