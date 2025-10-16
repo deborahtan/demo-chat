@@ -1,3 +1,26 @@
-[theme]
+[server]
+enableStaticServing = true
 
-font = "monospace"
+[[theme.fontFaces]]
+family="StabilGrotesk"
+url="app/static/StabilGrotesk-Regular.ttf"
+style="normal"
+weight=400
+[[theme.fontFaces]]
+family="StabilGrotesk"
+url="app/static/StabilGrotesk-Bold.ttf"
+style="normal"
+weight=700
+[[theme.fontFaces]]
+family="StabilGrotesk"
+url="app/static/StabilGrotesk-Light.ttf"
+style="normal"
+weight=400
+[[theme.fontFaces]]
+family="StabilGrotesk"
+url="app/static/StabilGrotesk-Black.ttf"
+style="normal"
+weight=700
+
+[theme]
+font="StabilGrotesk"
