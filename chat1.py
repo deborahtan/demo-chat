@@ -45,98 +45,8 @@ st.markdown("""
         .stTable {
             color: #fffefe;
         }
-
-        /* Sidebar styling */
-        [data-testid="stSidebar"] {
-            background-color: #000000;
-            color: #fffefe;
-        }
-
-        [data-testid="stSidebar"] .stMarkdown,
-        [data-testid="stSidebar"] .stTextInput,
-        [data-testid="stSidebar"] .stSelectbox,
-        [data-testid="stSidebar"] label,
-        [data-testid="stSidebar"] .stButton,
-        [data-testid="stSidebar"] .stHeader {
-            color: #fffefe !important;
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* Chat message styling */
-        .user-message {
-            background-color: #1a1a1a;
-            border-left: 3px solid #0066cc;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 6px;
-        }
-
-        .assistant-message {
-            background-color: #2e2e2e;
-            border-left: 3px solid #00b366;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 6px;
-        }
     </style>
 """, unsafe_allow_html=True)
-
-# Initialize recent questions
-if "recent_questions" not in st.session_state:
-    st.session_state.recent_questions = []
-
-# Sidebar logo and controls
-with st.sidebar:
-    st.image("https://www.dentsu.com/assets/images/main-logo-alt.png", width=160)
-    st.markdown("---")
-    
-    st.markdown("""
-    **Instructions**
-    - Type your own question in the text box below.
-    - Or select from suggested questions on the right.
-    - Your recent questions will appear below for quick re-selection.
-    """)
-    
-    custom_question = st.text_area("Ask your question:")
-    
-    if st.button("Submit Question", use_container_width=True):
-        if custom_question.strip():
-            st.session_state.suggested_question = custom_question.strip()
-            st.rerun()
-    
-    if st.session_state.recent_questions:
-        st.markdown("---")
-        st.markdown("**Recent Questions**")
-        for q in st.session_state.recent_questions:
-            if st.button(q, key=f"recent_{q}", use_container_width=True):
-                st.session_state.suggested_question = q
-                st.rerun()
-    
-    st.markdown("---")
-    if st.button("Clear Chat History", use_container_width=True):
-        st.session_state.messages = []
-        st.rerun()
-
-# Right sidebar with suggested questions
-QUESTIONS = [
-    "Analyze diminishing returns by channel and spend curve.",
-    "Identify top-performing publishers by audience segment.",
-    "Recommend optimal channel mixes for $100M, $200M, and $300M investment levels. Advise on the allocation for each option across awareness, consideration, and conversion layers?",
-    "Determine which formats delivered the highest ROI and CPA.",
-    "Evaluate channels & publishers with the strongest click-to-conversion rates.",
-    "Highlight months with the highest churn and distinguish internal vs. external drivers.",
-    "Advise what to scale, pause, or optimize for maximum efficiency.",
-    "Provide creative testing recommendations with specific format and messaging approaches."
-]
-
-with st.sidebar:
-    st.markdown("---")
-    st.markdown("**📊 Suggested Questions**")
-    
-    for i, question in enumerate(QUESTIONS):
-        if st.button(question, key=f"suggested_{i}", use_container_width=True):
-            st.session_state.suggested_question = question
-            st.rerun()
 
 # Page title
 st.title("Dentsu Intelligence Assistant")
@@ -173,31 +83,52 @@ Your responses must follow this structure:
     • Charts that directly answer the executive question with clear labeling, timeframe relevance, and annotated insights
 
 - Strategic Recommendation:
-  A set of prioritized, quantified strategic actions with rationale and expected financial impact. Include:
-    • Channel & placement allocation shifts with projected ROI
-    • Format rotation strategies with performance targets
-    • Creative testing frameworks with success thresholds
-    • Audience targeting refinements with ROI uplift projections
-    • Budget reallocation logic with opportunity cost analysis
-    • Competitive positioning adjustments based on market trends
-    • Funnel-layer specific tactics with expected conversion impact
+  A strategic decision with rationale, financial impact, and risk/benefit trade-offs. Specific, operationalized format recommendations and optimization tactics:
+    • Channel & placement allocation decisions with percentage shifts and expected impact (e.g., "increase YouTube from 25% to 40% of video budget; decrease TikTok from 30% to 15%. Expected ROAS lift: +12%, CPA reduction: -8%")
+    • Specific tactical actions: "Increase allocation to YouTube Skippable Mid-roll (Consideration layer): achieved 8.2% CTR vs. 3.1% benchmark. Test product-focused creative variant with 15-second hook. Expected CTR improvement: 10-12%, estimated additional revenue: $45K-$65K per month"
+    • Budget reallocation rationale: "Pause Display Network placements with <2% viewability. Redirect 40% budget ($180K) to programmatic video (ROAS $4.21) and allocate 20% ($90K) to search retargeting (CPA $23). Projected incremental revenue: $320K-$380K"
+    • Creative testing frameworks with detailed success metrics and rollout timelines
+    • "Test 3-format creative rotation (Video vs. Carousel vs. Static) on Meta Conversion layer. Current Video driving $3.87 ROAS; rotate non-performing formats weekly. Expected performance: Video maintains $3.87, Carousel targets $2.50-$2.80, Static targets $1.80-$2.20"
+    • Audience targeting refinements with quantified ROI lift expectations
+    • Competitive positioning and market context including seasonal trends and economic factors
+    • Consider funnel layer (Awareness, Consideration, Conversion)
 
 Always include:
-- Performance by Funnel Layer: Breakdown of all metrics (impressions, clicks, conversions, spend, ROAS, CPA, CPCV, Completion Rate, CPM, Viewability, CTR, CPC) by Awareness → Consideration → Conversion with trend analysis and comparative insights
-- Top Performing Placements: Name 3–5 placements with strongest performance, quantify performance delta vs. average, include spend contribution and revenue impact
-- Underperforming Placements: Identify placements with viewability <50%, CPCV >$2.50, completion rates <25%, or ROAS <$1.50. Detail reasons for underperformance and recommend pause/optimize/test actions
-- Format Analysis: Compare Video, Carousel, Static Image, Interactive by CTR, CPA, ROAS, Completion Rate. Identify winner with rollout plan and expected uplift percentages. Include commentary on format-channel fit and conversion type suitability
-- Charts: Must directly answer the executive question asked. Include relevant timeframes, multiple data points, and clearly explain key findings with quantified insights
-- Summarized Tables: Group data by Funnel Layer, Placement, Format. Make insights digestible with index to top performers
-- Evidence & Reasoning: Explain how insights were derived, what assumptions were made, confidence levels, and data quality indicators
-- Engagement Diagnostics: Message resonance, creative fatigue signals, audience saturation indicators with specific metrics and recommendations
-- Optimization Recommendations: Specific format recommendations, creative testing approaches, messaging variants with success thresholds, channels to invest/divest with ROI projections
-- Competitive Context: Market trends, economic factors, seasonal shifts influencing performance, competitive activity relevant to NZ market
+- **Performance by Funnel Layer**: Comprehensive breakdown of all metrics (impressions, clicks, conversions, spend, ROAS, CPA, CPCV, Completion Rate, CPM, Viewability, CTR, CPC) by Awareness → Consideration → Conversion with trend analysis and comparative insights
+- **Top Performing Placements**: Name 3-5 placements with strongest performance, quantify performance delta vs. average (e.g., "ROAS 42% above average"), include spend contribution and revenue impact
+- **Underperforming Placements**: Identify placements with viewability <50%, CPCV >$2.50, completion rates <25%, or ROAS <$1.50. Detail specific reasons for underperformance and recommend pause/optimize/test with expected outcomes
+- **Format Analysis**: Detailed comparison of Video, Carousel, Static Image, Interactive by CTR, CPA, ROAS, Completion Rate. Identify winner with rollout plan and expected uplift percentages
+- **Charts**: Reflect the question asked with relevant timeframes. Include multiple data points and explain key findings with quantified insights
+- **Summarized Tables**: Group data by Funnel Layer, Placement, Format. Make insights digestible with index to top performers
+- **Evidence & Reasoning**: Dedicated section explaining how insights were derived, what assumptions were made, confidence levels, and data quality indicators
+- **Engagement Diagnostics**: Message resonance, creative fatigue signals, audience saturation indicators with specific metrics and recommendations
+- **Optimization Recommendations**: Specific format recommendations, creative testing approaches, messaging variants with success thresholds, channels to invest/divest with ROI projections
+- **Competitive Context**: Market trends, economic factors, seasonal shifts influencing performance, competitive activity where relevant for NZ market
 
-Strategic Intelligence Additions:
+Paid Search Analysis:
+When analyzing paid search, include detailed performance breakdowns by category, product, and message with concrete examples:
+- Revenue, CPA, ROAS, impressions, CTR, spend, order value
+- "Kitchen Appliances category generated $19.9K revenue from 78 purchases (avg order value $255) with CPA of $38 and ROAS of $2.10. Recommend increasing budget allocation by 30% ($22K) based on 18% ROAS premium vs. category average"
+- Tactical recommendations based on performance premiums
+- Extension and message-level insights with financial impact
+
+Creative Performance Evaluation:
+When evaluating creative performance, highlight standout variants with detailed contribution analysis:
+- "The 'Earn' creative drove 73% of total revenue ($387K of $530K) with CTR of 2.46% (+89% vs. average) and ROAS of $5.07 (+52% vs. average). Scale across Advantage+ placements. Estimated incremental revenue at 40% budget increase: $155K-$185K"
+- Contribution to revenue, CTR, ROAS vs. average
+- Audience impact and placement efficiency
+- Scaling recommendations with budget impact and projected revenue
+
+Platform-Level Insights:
+When referencing platform performance, include channel-level insights with strategic implications:
+- Meta, YouTube, Google Search/Display, LinkedIn, TikTok, Snapchat, NZ Herald, Stuff, TVNZ, MediaWorks, NZME Radio, Trade Me
+- "Meta continues to outperform benchmarks: Conversion layer showing 4.2% CTR vs. 2.8% average, ROAS of $4.15 vs. $2.90 average, Viewability at 87% vs. 76% average. Recommend increasing video budget allocation from 35% to 50% ($120K additional). Expected incremental revenue: $320K-$380K"
+- Viewability, CTR, ROAS, CPM benchmarks
+- Budget allocation recommendations with financial projections
 
 Audience Strategy:
 - Segment by audience type (1PD, 3PD, contextual, behavioral, lookalike, retargeting)
+- "High Touch 1PD audiences delivered 152 remarketing transactions (67% of total conversions) with ROAS of $14.14 and CPA of $19.99, well below $100 benchmark. Increase frequency capping from 8x to 12x daily. Expected volume increase: 18-22%, ROAS maintenance: $13.50-$14.50"
 - Recommend layering strategies and frequency caps to reduce CPA and improve ROAS
 - Identify overexposed audiences and recommend rotation/suppression
 
@@ -215,24 +146,6 @@ Competitive Intelligence:
 - Benchmark against category averages and competitor activity
 - Reference macroeconomic indicators and seasonal shifts
 - Recommend proactive positioning strategies
-
-Paid Search Deep Dive:
-Include detailed breakdowns by category, product, and message:
-- Revenue, CPA, ROAS, impressions, CTR, spend, order value
-- Tactical recommendations based on performance premiums
-- Extension and message-level insights with financial impact
-
-Creative Performance Deep Dive:
-Highlight standout variants:
-- Contribution to revenue, CTR, ROAS vs. average
-- Audience impact and placement efficiency
-- Scaling recommendations with budget impact and projected revenue
-
-Platform-Level Insights:
-Include channel-level strategic implications:
-- Meta, YouTube, Google Search/Display, LinkedIn, TikTok, Snapchat
-- Viewability, CTR, ROAS, CPM benchmarks
-- Budget allocation recommendations with financial projections
 
 NZ Market Context:
 Always account for:
@@ -440,57 +353,6 @@ if "messages" not in st.session_state:
 if "suggested_question" not in st.session_state:
     st.session_state.suggested_question = None
 
-# Display chat history
-for msg in st.session_state.messages:
-    if msg["role"] == "user":
-        with st.chat_message("user", avatar="👤"):
-            st.markdown(msg["content"])
-    else:
-        with st.chat_message("assistant", avatar="🤖"):
-            st.markdown(msg["content"])
-            if "chart_data" in msg:
-                render_chart_for_question(msg["question"], df)
-
-# Chat input
-user_input = st.chat_input("Ask me anything about your media performance...")
-
-# Use suggested question if one was selected from recent questions
-if st.session_state.suggested_question:
-    user_input = st.session_state.suggested_question
-    st.session_state.suggested_question = None
-
-if user_input:
-    # Add user message to history
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    
-    with st.chat_message("user", avatar="👤"):
-        st.markdown(user_input)
-    
-    # Generate response
-    with st.chat_message("assistant", avatar="🤖"):
-        with st.spinner("Analyzing data..."):
-            response = client.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    *[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages if "chart_data" not in m]
-                ]
-            )
-            
-            detailed = response.choices[0].message.content
-            st.markdown(detailed)
-            
-            # Add assistant response to history
-            st.session_state.messages.append({
-                "role": "assistant", 
-                "content": detailed,
-                "question": user_input,
-                "chart_data": True
-            })
-            
-            # Render chart
-            render_chart_for_question(user_input, df)
-
 # Helper function to render charts
 def render_chart_for_question(question, df):
     question = question.lower()
@@ -595,6 +457,74 @@ def render_chart_for_question(question, df):
     except Exception as e:
         st.error(f"Error rendering chart: {str(e)}")
 
+# Display chat history
+for msg in st.session_state.messages:
+    if msg["role"] == "user":
+        with st.chat_message("user", avatar="👤"):
+            st.markdown(msg["content"])
+    else:
+        with st.chat_message("assistant", avatar="🤖"):
+            st.markdown(msg["content"])
+            if "chart_data" in msg:
+                render_chart_for_question(msg["question"], df)
+
+# Chat input
+col1, col2 = st.columns([3, 1])
+
+with col1:
+    user_input = st.chat_input("Ask me anything about your media performance...")
+
+with col2:
+    st.markdown("**Suggested Questions:**")
+    
+    QUESTIONS = [
+        "Analyze diminishing returns by channel and spend curve.",
+        "Identify top-performing publishers by audience segment.",
+        "Recommend optimal channel mixes for $100M, $200M, and $300M investment levels.",
+        "Determine which formats delivered the highest ROI and CPA.",
+        "Evaluate channels & publishers with the strongest click-to-conversion rates.",
+        "Highlight months with the highest churn and distinguish internal vs. external drivers.",
+        "Advise what to scale, pause, or optimize for maximum efficiency.",
+        "Provide creative testing recommendations with specific format and messaging approaches."
+    ]
+    
+    for question in QUESTIONS:
+        if st.button(question, use_container_width=True):
+            user_input = question
+            st.session_state.suggested_question = question
+            st.rerun()
+
+if user_input:
+    # Add user message to history
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    
+    with st.chat_message("user", avatar="👤"):
+        st.markdown(user_input)
+    
+    # Generate response
+    with st.chat_message("assistant", avatar="🤖"):
+        with st.spinner("Analyzing data..."):
+            response = client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    *[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages if "chart_data" not in m]
+                ]
+            )
+            
+            detailed = response.choices[0].message.content
+            st.markdown(detailed)
+            
+            # Add assistant response to history
+            st.session_state.messages.append({
+                "role": "assistant", 
+                "content": detailed,
+                "question": user_input,
+                "chart_data": True
+            })
+            
+            # Render chart
+            render_chart_for_question(user_input, df)
 
 # Legal disclaimer at bottom
 st.markdown("---")
