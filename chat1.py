@@ -125,12 +125,38 @@ Always include:
 - Top Performing Placements: Name 3–5 placements with strongest performance, quantify performance delta vs. average, include spend contribution and revenue impact
 - Underperforming Placements: Identify placements with viewability <50%, CPCV >$2.50, completion rates <25%, or ROAS <$1.50. Detail reasons for underperformance and recommend pause/optimize/test actions
 - Format Analysis: Compare Video, Carousel, Static Image, Interactive by CTR, CPA, ROAS, Completion Rate. Identify winner with rollout plan and expected uplift percentages. Include commentary on format-channel fit and conversion type suitability
-- Charts: Must directly answer the executive question asked. Include relevant timeframes, multiple data points, and clearly explain key findings with quantified insights
+- Charts: Must directly answer the executive question asked. Every answer has a visual chart inside the response. Include relevant timeframes, multiple data points, and clearly explain key findings with quantified insights
 - Summarized Tables: Group data by Funnel Layer, Placement, Format. Make insights digestible with index to top performers
 - Evidence & Reasoning: Explain how insights were derived, what assumptions were made, confidence levels, and data quality indicators
 - Engagement Diagnostics: Message resonance, creative fatigue signals, audience saturation indicators with specific metrics and recommendations
 - Optimization Recommendations: Specific format recommendations, creative testing approaches, messaging variants with success thresholds, channels to invest/divest with ROI projections
 - Competitive Context: Market trends, economic factors, seasonal shifts influencing performance, competitive activity relevant to NZ market
+
+- "For Analyze our media budget and recommend optimal reallocation for maximum [revenue/ROAS/efficiency].
+BUSINESS CONTEXT:
+- Current budget: $[X]M allocated across: [Channel breakdown with % and $]
+- Objective: [e.g., increase revenue 25% YoY while maintaining CPA <$45]
+- Industry/vertical: [e.g., fitness/wellness in AU/NZ]
+- Time horizon: [e.g., Q2-Q4]
+- Key constraints: [e.g., YouTube minimum 25%, Q1 peak seasonality, brand safety requirements]
+- Risk tolerance: [conservative/moderate/aggressive] and ability to test new channels
+
+DECISION REQUIRED:
+- Recommend budget reallocation that optimizes for [metric]
+- Model three scenarios: conservative, baseline, aggressive with different risk profiles
+- Specify which channels increase/decrease and by how much (in % and $)
+- Recommend phased or immediate implementation timeline
+
+EVIDENCE & ANALYSIS REQUIRED:
+For each channel, provide:
+- Last 12-month performance: ROAS, CPA, CTR, completion rates, viewability
+- Performance vs. category benchmarks (quantify the delta)
+- Saturation point analysis (at what spend level does efficiency degrade?)
+- Show all calculations and assumptions
+- Opportunity cost of reallocation (revenue foregone vs. gained)
+- Confidence level and data quality notes for each recommendation
+- Sensitivity analysis (what if key assumptions are wrong?)
+- Implementation roadmap with success metrics and escalation triggers"
 
 Strategic Intelligence Additions:
 
@@ -150,7 +176,7 @@ Portfolio Optimization:
 - Quantify halo effects (e.g., YouTube → branded search lift)
 
 Competitive Intelligence:
-- Benchmark against category averages and competitor activity
+- Benchmark against category averages and competitor activity with research based in new zealand
 - Reference macroeconomic indicators and seasonal shifts
 - Recommend proactive positioning strategies
 
@@ -161,7 +187,7 @@ Include detailed breakdowns by category, product, and message:
 - Extension and message-level insights with financial impact
 
 Creative Performance Deep Dive:
-Highlight standout variants:
+Highlight standout variants and strategy/messaging/creative themes:
 - Contribution to revenue, CTR, ROAS vs. average
 - Audience impact and placement efficiency
 - Scaling recommendations with budget impact and projected revenue
@@ -213,7 +239,6 @@ def generate_data():
         "NZ Herald": ["Homepage", "Article Embed", "Sidebar", "Native"],
         "Stuff": ["Homepage", "News Feed", "Sponsored", "Content Recommendation"],
         "TVNZ": ["Pre-roll", "Mid-roll", "Post-roll", "Bumper"],
-        "MediaWorks": ["Pre-roll Video", "Display", "Native", "Sponsorship"],
         "NZME Radio": ["Audio Ad", "Podcast", "Streaming", "Display"],
         "Trade Me": ["Sponsored Results", "Homepage", "Category Pages", "Email"],
         "We Are Frank": ["Native Content", "Sponsored Articles", "Video", "Sponsored Feeds"],
@@ -231,7 +256,6 @@ def generate_data():
         "NZ Herald": {"base_roas": 2.8, "saturation_point": 180000, "decay": 1.4},
         "Stuff": {"base_roas": 2.5, "saturation_point": 160000, "decay": 1.5},
         "TVNZ": {"base_roas": 3.9, "saturation_point": 350000, "decay": 1.0},
-        "MediaWorks": {"base_roas": 2.9, "saturation_point": 200000, "decay": 1.3},
         "NZME Radio": {"base_roas": 1.8, "saturation_point": 120000, "decay": 1.6},
         "Trade Me": {"base_roas": 4.5, "saturation_point": 450000, "decay": 0.85},
         "We Are Frank": {"base_roas": 3.2, "saturation_point": 220000, "decay": 1.2},
@@ -253,17 +277,17 @@ def generate_data():
                     if layer == "Awareness":
                         ctr_base = {"YouTube": 1.5, "Meta": 1.2, "TikTok": 2.0, "Google Display": 0.8, 
                                    "Programmatic Video": 1.0, "Search": 2.5, "NZ Herald": 0.6, "Stuff": 0.5,
-                                   "TVNZ": 1.8, "MediaWorks": 1.0, "NZME Radio": 0.3, "Trade Me": 1.2,
+                                   "TVNZ": 1.8, "NZME Radio": 0.3, "Trade Me": 1.2,
                                    "We Are Frank": 1.5, "Taboola": 2.2}
                     elif layer == "Consideration":
                         ctr_base = {"YouTube": 4.0, "Meta": 3.5, "TikTok": 5.5, "Google Display": 2.0, 
                                    "Programmatic Video": 3.2, "Search": 8.0, "NZ Herald": 2.5, "Stuff": 2.2,
-                                   "TVNZ": 5.0, "MediaWorks": 3.5, "NZME Radio": 1.5, "Trade Me": 6.5,
+                                   "TVNZ": 5.0, "NZME Radio": 1.5, "Trade Me": 6.5,
                                    "We Are Frank": 4.0, "Taboola": 5.8}
                     else:  # Conversion
                         ctr_base = {"YouTube": 8.0, "Meta": 7.0, "TikTok": 9.0, "Google Display": 3.5, 
                                    "Programmatic Video": 6.5, "Search": 12.0, "NZ Herald": 5.5, "Stuff": 4.8,
-                                   "TVNZ": 9.5, "MediaWorks": 6.5, "NZME Radio": 3.0, "Trade Me": 11.0,
+                                   "TVNZ": 9.5, "NZME Radio": 3.0, "Trade Me": 11.0,
                                    "We Are Frank": 7.5, "Taboola": 8.5}
                     
                     ctr = (ctr_base.get(pub, 2.0) / 100) * np.random.uniform(0.8, 1.2)
@@ -291,7 +315,6 @@ def generate_data():
                         "TVNZ": (0.40, 1.5),
                         "NZ Herald": (0.35, 1.2),
                         "Stuff": (0.30, 1.0),
-                        "MediaWorks": (0.25, 0.95),
                         "NZME Radio": (0.15, 0.60),
                         "We Are Frank": (0.20, 0.80),
                         "Taboola": (0.25, 0.90)
@@ -334,7 +357,6 @@ def generate_data():
                         "TVNZ": (8, 18),
                         "NZ Herald": (5, 12),
                         "Stuff": (4, 10),
-                        "MediaWorks": (5, 11),
                         "NZME Radio": (2, 6),
                         "We Are Frank": (3, 8),
                         "Taboola": (2, 6)
@@ -354,7 +376,6 @@ def generate_data():
                         "TVNZ": (75, 88),
                         "NZ Herald": (55, 75),
                         "Stuff": (50, 70),
-                        "MediaWorks": (60, 80),
                         "NZME Radio": (65, 85),
                         "We Are Frank": (62, 82),
                         "Taboola": (45, 65)
