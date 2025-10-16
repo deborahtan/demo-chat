@@ -18,29 +18,6 @@ st.set_page_config(
 # STYLING
 # -------------------------------
 st.markdown("""
-<style>
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
-    background-color: #000;
-    color: #fff;
-}
-h1,h2,h3,h4,h5,h6 {font-weight:600;color:#fff;}
-[data-testid="stSidebar"] {
-    background-color:#000;
-    color:#fff;
-}
-[data-testid="stSidebar"] button {
-    background-color:#fff !important;
-    color:#000 !important;
-    border-radius:6px;
-    font-weight:600;
-}
-.answer-card {
-    background-color:#2e2e2e;
-    border-radius:12px;
-    padding:20px;
-}
-</style>
 """, unsafe_allow_html=True)
 
 # -------------------------------
