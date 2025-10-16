@@ -403,13 +403,14 @@ with st.sidebar:
     )
 
     QUESTIONS = [
-        "Analyze diminishing returns by publisher and identify exact saturation point where ROAS declines.",
-        "Evaluate performance by funnel layer (Awareness, Consideration, Conversion) and recommend budget allocation.",
+        "Model three budget scenarios: $100M, $200M, $300M. What's the optimal channel mix and expected ROAS for each?",
+        "What's our customer acquisition cost (CAC) vs. customer lifetime value (CLV) ratio by channel?",
         "Identify top-performing placements and formats. What should we scale and what should we pause?",
-        "Assess underperforming placements. Which have viewability issues or high CPCV?",
-        "Recommend format strategy: Video vs. Carousel vs. Static. Which drives best ROAS and lowest CPA?",
+        "Evaluate performance by funnel layer: what's the optimal spend split between Awareness, Consideration, and Conversion?",
+        "Which messaging themes drive highest engagement by funnel stage and audience segment?",
         "Analyze CTR and CPC by publisher. Where are we getting strongest engagement efficiency?",
         "Provide creative testing recommendations with specific format and messaging approaches.",
+        "Analyze diminishing returns by channel and identify exact saturation point where ROAS declines.",
         "What is the optimal budget allocation across awareness, consideration, and conversion layers?"
     ]
 
