@@ -6,7 +6,7 @@ import altair as alt
 from groq import Groq
 from datetime import datetime
 
-# Import theme styling
+# Import theme styling AFTER st.set_page_config()
 from style import load_theme
 
 # -------------------------------
@@ -19,7 +19,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Load custom theme
+# Load theme
 load_theme()
 
 # -------------------------------
@@ -191,9 +191,10 @@ def generate_data():
 
 df = generate_data()
 
-# ===================== LEFT SIDEBAR =====================
+# ===================== MAIN LAYOUT =====================
 left_col, right_col = st.columns([1, 2.5], gap="large")
 
+# ===================== LEFT SIDEBAR =====================
 with left_col:
     st.markdown("""
     <div style="margin-bottom: 2rem;">
