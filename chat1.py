@@ -81,9 +81,51 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Sidebar logo
+# Initialize recent questions
+if "recent_questions" not in st.session_state:
+    st.session_state.recent_questions = []
+
+# Sidebar logo and controls
 with st.sidebar:
     st.image("https://www.dentsu.com/assets/images/main-logo-alt.png", width=160)
+    st.markdown("---")
+    
+    st.markdown("""
+    **Instructions**
+    - Select one of the predefined strategic questions from the dropdown.
+    - Or type your own custom question in the text box below.
+    - The assistant will generate comprehensive, data-driven insights with detailed analysis.
+    - Your recent questions will appear below for quick re-selection.
+    """)
+    
+    QUESTIONS = [
+        "Analyze diminishing returns by channel and spend curve.",
+        "Identify top-performing publishers by audience segment.",
+        "Recommend optimal channel mixes for $100M, $200M, and $300M investment levels. Advise on the allocation for each option across awareness, consideration, and conversion layers?",
+        "Determine which formats delivered the highest ROI and CPA.",
+        "Evaluate channels & publishers with the strongest click-to-conversion rates.",
+        "Highlight months with the highest churn and distinguish internal vs. external drivers.",
+        "Advise what to scale, pause, or optimize for maximum efficiency.",
+        "Provide creative testing recommendations with specific format and messaging approaches."
+    ]
+    
+    selected = st.selectbox("Select a predefined question:", options=QUESTIONS, index=0)
+    custom_question = st.text_area("Or type your own question:")
+    
+    suggested_question = custom_question.strip() if custom_question.strip() else selected
+    
+    if suggested_question and suggested_question not in st.session_state.recent_questions:
+        st.session_state.recent_questions.insert(0, suggested_question)
+        st.session_state.recent_questions = st.session_state.recent_questions[:5]
+    
+    if st.session_state.recent_questions:
+        st.markdown("---")
+        st.markdown("**Recent Questions**")
+        for q in st.session_state.recent_questions:
+            if st.button(q, key=f"recent_{q}", use_container_width=True):
+                st.session_state.suggested_question = q
+                st.rerun()
+    
     st.markdown("---")
     if st.button("Clear Chat History", use_container_width=True):
         st.session_state.messages = []
@@ -388,6 +430,9 @@ df = generate_data()
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+if "suggested_question" not in st.session_state:
+    st.session_state.suggested_question = None
+
 # Display chat history
 for msg in st.session_state.messages:
     if msg["role"] == "user":
@@ -401,6 +446,11 @@ for msg in st.session_state.messages:
 
 # Chat input
 user_input = st.chat_input("Ask me anything about your media performance...")
+
+# Use suggested question if one was selected from recent questions
+if st.session_state.suggested_question:
+    user_input = st.session_state.suggested_question
+    st.session_state.suggested_question = None
 
 if user_input:
     # Add user message to history
