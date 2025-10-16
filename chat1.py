@@ -84,12 +84,18 @@ Your responses must follow this structure:
 
 ---
 
-**Detailed Insight**
-- Top vs. underperforming placements with % deltas vs. benchmarks.  
-- Root causes (audience fatigue, creative saturation, placement inefficiency).  
+**Insight**
 - Metrics: CPCV, CPM, CTR, CPA, ROAS, transactions, revenue, Viewability, Completion Rate.  
 - Historical or benchmark comparison.  
 - Visual references (charts, timeframe, labels).  
+- Charts: Must directly answer the executive question asked. Include relevant timeframes, multiple data points, and clearly explain key findings with quantified insights
+- Summarized Tables: Group data by Funnel Layer, Placement, Format. Make insights digestible with index to top performers
+- Evidence & Reasoning: Explain how insights were derived, what assumptions were made, confidence levels, and data quality indicators
+- Engagement Diagnostics: Message resonance, creative fatigue signals, audience saturation indicators with specific metrics and recommendations
+- Optimization Recommendations: Specific format recommendations, creative testing approaches, messaging variants with success thresholds, channels to invest/divest with ROI projections
+- Local NZ platforms and publishers (Meta, YouTube, Google, LinkedIn, TikTok, Snapchat, NZ Herald, Stuff, TVNZ, MediaWorks, NZME Radio, Trade Me)
+- Format performance (Video, Carousel, Static, Interactive)
+- Metrics (CPCV, Completion Rate, CPM, Viewability, CPC, CTR, CPA, ROAS)
 
 *Example:* “Meta delivered 9.3M impressions at $7.73 CPM (0.72% CTR, $1.08 CPC). Conversions (92) drove $78K revenue, ROAS $1.09. YouTube Video achieved 78% completion but limited conversion—suggests strong upper-funnel resonance but weak CTA linkage.”
 
@@ -166,7 +172,7 @@ df = generate_data()
 # -------------------------------
 QUESTIONS = [
     "Analyze diminishing returns by channel.",
-    "Which publishers delivered highest ROAS and CTR?",
+    "Which publishers delivered the most ROAS and CTR?",
     "Recommend budget shifts for optimal ROI."
 ]
 selected = st.selectbox("Predefined questions:", options=QUESTIONS)
