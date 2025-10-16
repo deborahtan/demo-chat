@@ -92,7 +92,7 @@ if not api_key:
 client = Groq(api_key=api_key)
 
 system_prompt = """
-You are an AI Insights Assistant for C-suite executives across Marketing, Media, Creative, CRM, Finance, and Loyalty/Product. Your mandate is to analyze enterprise-scale performance data and deliver clear, strategic, executive-ready insights supported by interactive visualizations.
+You are an AI Insights Assistant for C-suite executives across Marketing, Media, Creative, CRM, Finance, and Loyalty/Product. Offline should be included. Your mandate is to analyze enterprise-scale performance data and deliver clear, strategic, executive-ready insights supported by interactive visualizations.
 
 Your responses must follow this structure:
 
@@ -175,7 +175,7 @@ Include channel-level strategic implications:
 NZ Market Context:
 Always account for:
 - Funnel layers (Awareness, Consideration, Conversion)
-- Local NZ platforms and publishers (Meta, YouTube, Google, LinkedIn, TikTok, Snapchat, NZ Herald, Stuff, TVNZ, MediaWorks, NZME Radio, Trade Me)
+- Local NZ platforms and publishers (Meta, YouTube, Google, LinkedIn, TikTok, Snapchat, NZ Herald, Stuff, TVNZ, NZME Radio, Trade Me)
 - Format performance (Video, Carousel, Static, Interactive)
 - Metrics (CPCV, Completion Rate, CPM, Viewability, CPC, CTR, CPA, ROAS)
 - Portfolio trade-offs and opportunity costs
@@ -200,7 +200,7 @@ def generate_data():
     months = pd.date_range(end="2025-09-30", periods=12, freq="MS")
     
     publishers = ["YouTube", "Meta", "TikTok", "Google Display", "Programmatic Video", "Search", 
-                  "NZ Herald", "Stuff", "TVNZ", "MediaWorks", "NZME Radio", "Trade Me", "We Are Frank", "Taboola"]
+                  "NZ Herald", "Stuff", "TVNZ", "NZME Radio", "Trade Me", "We Are Frank", "Taboola"]
     funnel_layers = ["Awareness", "Consideration", "Conversion"]
     formats = ["Video", "Carousel", "Static Image", "Interactive"]
     placements = {
@@ -403,14 +403,14 @@ with st.sidebar:
     )
 
     QUESTIONS = [
-        "Analyze diminishing returns by channel and spend curve.",
-        "Identify top-performing publishers by audience segment.",
-        "Recommend optimal channel mixes for $100M, $200M, and $300M investment levels.",
-        "Highlight months with the highest churn and distinguish internal vs. external drivers.",
-        "Assess external market and economic factors influencing churn or performance shifts.",
-        "Determine which formats delivered the highest ROI and CPA.",
+        "What's the optimal media mix for $100M, $200M, and $300M budgets across awareness, consideration, and conversion.",
+        "Where should we reallocate budget to maximise ROI across our current spend levels.",
+        "Which channels deliver the best efficiency gain per incremental dollar invested.",
+        "What are our top-performing channels and placements, and why are they outperforming the rest.",
+        "Which formats and channels have the strongest conversion efficiency.",
+        "Which placements and channels should we pause or reduce immediately and what's the financial impact.",
         "Evaluate channels with the strongest click-to-conversion rates.",
-        "Advise what to scale, pause, or optimize for maximum efficiency."
+        "Where are we experiencing diminishing returns, and at what spend threshold does each channel saturate."
     ]
 
     selected = st.selectbox("Select a predefined question:", options=QUESTIONS, index=0)
