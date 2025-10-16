@@ -25,6 +25,9 @@ st.markdown("""
     .stSidebar .stHeading {
         color: #FAFAFA;
     }
+    .stSidebar .stElementContainer {
+        width: auto;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -33,7 +36,7 @@ st.markdown("""
 # -------------------------------
 with st.sidebar:
     st.image("https://www.dentsu.com/assets/images/main-logo-alt.png", width=160)
-    if st.button("✎ Start New Chat"):
+    if st.button("✎   Start New Chat"):
         st.session_state.chat_history = []
         st.experimental_rerun()
     st.header("Executive Chat")
