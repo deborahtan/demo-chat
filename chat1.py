@@ -32,18 +32,13 @@ st.markdown("""
     .stAppHeader {
         display: none;
     }
-    .question-container {
-        text-align: center;
-    }
-    .question-container button {
-        color: #FAFAFA;
+    div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] button {
         border: 1px solid #FAFAFA99;
         transition: all 0.3s ease;
         background-color: #0E1117;
-        width: 100%;
-        margin-bottom: 12px;
+        width: fit-content;
     }
-    .question-container button:hover {
+    div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] button:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
