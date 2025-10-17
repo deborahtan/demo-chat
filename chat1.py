@@ -32,13 +32,18 @@ st.markdown("""
     .stAppHeader {
         display: none;
     }
-    div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] button {
+    .question-container {
+        text-align: center;
+    }
+    .question-container button {
+        color: #FAFAFA;
         border: 1px solid #FAFAFA99;
         transition: all 0.3s ease;
         background-color: #0E1117;
-        width: fit-content;
+        width: 100%;
+        margin-bottom: 12px;
     }
-    div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] button:hover {
+    .question-container button:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
@@ -607,12 +612,14 @@ if not st.session_state.chat_started:
     ]
 
     # Create centered container for questions
+    st.markdown('<div class="question-container">', unsafe_allow_html=True)
     for question in preset_questions:
         col = st.container()
         with col:
             if st.button(question, use_container_width=True, key=f"preset_{question}"):
                 preset_input = question
                 st.session_state.chat_started = True
+    st.markdown('</div>', unsafe_allow_html=True)
 else:
     # Show questions in bottom left when chat has started
     with st.sidebar:
