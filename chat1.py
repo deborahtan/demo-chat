@@ -597,7 +597,7 @@ if not st.session_state.chat_started:
     ]
 
     # Create centered container for questions
-    st.markdown("<div class='quick-questions'>", unsafe_allow_html=True)
+    st.markdown("<div class='questions'>", unsafe_allow_html=True)
     for question in preset_questions:
         if st.button(question, use_container_width=True, key=f"preset_{question}"):
             preset_input = question
