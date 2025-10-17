@@ -123,7 +123,7 @@ st.markdown("""
 # -------------------------------
 # GROQ SETUP
 # -------------------------------
-api_key = os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY")
+api_key = os.getenv("GROQ_API_KEY")
 if not api_key:
     st.error("Missing GROQ_API_KEY. Add it to your environment or Streamlit secrets.")
     st.stop()
