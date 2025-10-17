@@ -597,12 +597,10 @@ if not st.session_state.chat_started:
     ]
 
     # Create centered container for questions
-    col1, col2, col3 = st.columns([1, 3, 1])
-    with col2:
-        for question in preset_questions:
-            if st.button(question, use_container_width=True, key=f"preset_{question}"):
-                preset_input = question
-                st.session_state.chat_started = True
+    for question in preset_questions:
+        if st.button(question, use_container_width=True, key=f"preset_{question}"):
+            preset_input = question
+            st.session_state.chat_started = True
 else:
     # Show questions in bottom left when chat has started
     with st.sidebar:
