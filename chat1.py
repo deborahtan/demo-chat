@@ -32,17 +32,17 @@ st.markdown("""
     .stAppHeader {
         display: none;
     }
-    div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] {
+    .stMainBlockContainer div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] {
         text-align: center;
     }
-    div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] button {
+    .stMainBlockContainer div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] button {
         color: #FAFAFA;
         border: 1px solid #FAFAFA33;
         transition: all 0.3s ease;
         background-color: #0E1117;
         width: fit-content;
     }
-    div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] button:hover {
+    .stMainBlockContainer div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] button:hover {
         transform: translateY(-2px);
     }
 </style>
