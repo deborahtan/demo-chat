@@ -586,6 +586,7 @@ if "chat_started" not in st.session_state:
 # Only show if chat hasn't started
 if not st.session_state.chat_started:
     st.markdown("### 💡 Quick Questions")
+    st.markdown("<div class='questions'>", unsafe_allow_html=True)
     preset_questions = [
         "💰 Recommend optimal channel mixes for $100M, $200M, and $300M investment levels.",
         "📊 Determine which formats delivered the highest ROI and CPA.",
@@ -597,11 +598,11 @@ if not st.session_state.chat_started:
     ]
 
     # Create centered container for questions
-    st.markdown("<div class='questions'>", unsafe_allow_html=True)
     for question in preset_questions:
         if st.button(question, use_container_width=True, key=f"preset_{question}"):
             preset_input = question
             st.session_state.chat_started = True
+
     st.markdown("</div>", unsafe_allow_html=True)
 else:
     # Show questions in bottom left when chat has started
@@ -622,7 +623,7 @@ else:
             if st.button(question, use_container_width=True, key=f"sidebar_preset_{question}"):
                 preset_input = question
 
-st.markdown("---")
+# st.markdown("---")
 
 # CHAT INPUT
 user_input = st.chat_input("Select a prompt above or type your custom prompt here")
