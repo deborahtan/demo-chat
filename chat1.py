@@ -598,11 +598,11 @@ if not st.session_state.chat_started:
 
     # Create centered container for questions
     for question in preset_questions:
+        st.markdown('<div class="question">', unsafe_allow_html=True)
         if st.button(question, use_container_width=True, key=f"preset_{question}"):
-            st.markdown("<div class='question'>", unsafe_allow_html=True)
             preset_input = question
             st.session_state.chat_started = True
-            st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 else:
     # Show questions in bottom left when chat has started
     with st.sidebar:
