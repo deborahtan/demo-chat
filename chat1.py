@@ -29,11 +29,9 @@ st.markdown("""
     .stSidebar .stElementContainer {
         width: auto;
     }
-    #MainMenu { visibility: hidden; }
-    footer { visibility: hidden; }
-    [data-testid="stDecoration"] { visibility: hidden; }
-    [data-testid="stStatusWidget"] { visibility: hidden; }
-    .viewerBadge_container { visibility: hidden; }
+    .stAppHeader {
+        display: none;
+    }
 </style>
 """, unsafe_allow_html=True)
 
