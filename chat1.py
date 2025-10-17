@@ -33,6 +33,7 @@ st.markdown("""
         display: none;
     }
     div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] button {
+        color: #FAFAFA;
         border: 1px solid #FAFAFA99;
         transition: all 0.3s ease;
         background-color: #0E1117;
