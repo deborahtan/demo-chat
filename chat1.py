@@ -15,6 +15,15 @@ st.set_page_config(
     layout="wide"
 )
 
+# Hide Streamlit branding and menu
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {visibility: hidden;}
+    </style>
+""", unsafe_allow_html=True)
+
 # -------------------------------
 # STYLING
 # -------------------------------
