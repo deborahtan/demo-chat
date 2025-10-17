@@ -1,26 +1,37 @@
 [server]
 enableStaticServing = true
+enableXsrfProtection = false
+headless = true
+port = $PORT
+address = "0.0.0.0"
+
+[browser]
+gatherUsageStats = false
+
+[client]
+showSidebarNavigation = false
+toolbarMode = "minimal"
 
 [[theme.fontFaces]]
-family="StabilGrotesk"
-url="app/static/StabilGrotesk-Regular.otf"
-style="normal"
-weight=400
+family = "StabilGrotesk"
+url = "app/static/StabilGrotesk-Regular.otf"
+style = "normal"
+weight = 400
 
 [[theme.fontFaces]]
-family="StabilGrotesk"
-url="app/static/StabilGrotesk-Bold.otf"
-style="normal"
-weight=700
+family = "StabilGrotesk"
+url = "app/static/StabilGrotesk-Bold.otf"
+style = "normal"
+weight = 700
 
 [theme]
-font="StabilGrotesk"
-backgroundColor="#000000"
-secondaryBackgroundColor="#333333"
-textColor="#FFFFFF"
-baseRadius="8px"
-borderColor="#FAFAFA99"
+font = "StabilGrotesk"
+backgroundColor = "#000000"
+secondaryBackgroundColor = "#333333"
+textColor = "#FFFFFF"
+baseRadius = "8px"
+borderColor = "#FAFAFA99"
 
 [theme.sidebar]
-backgroundColor="#333333"
-textColor="#FAFAFA99"
+backgroundColor = "#333333"
+textColor = "#FAFAFA99"
