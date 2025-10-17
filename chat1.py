@@ -4,12 +4,13 @@ import pandas as pd
 import numpy as np
 import altair as alt
 from groq import Groq
+from datetime import datetime, timedelta
 
 # -------------------------------
 # CONFIG
 # -------------------------------
 st.set_page_config(
-    page_title="Dentsu Intelligence Assistant",
+    page_title="Dentsu Conversational Analytics",
     page_icon="https://img.icons8.com/ios11/16/000000/dashboard-gauge.png",
     layout="wide"
 )
@@ -28,8 +29,79 @@ st.markdown("""
     .stSidebar .stElementContainer {
         width: auto;
     }
+    .history-section {
+        margin-top: 24px;
+        margin-bottom: 12px;
+    }
+    .history-section h4 {
+        font-size: 12px;
+        color: #A0A0A0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        margin-top: 0;
+    }
+    .history-item {
+        padding: 8px 12px;
+        margin-bottom: 6px;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #E0E0E0;
+        transition: background-color 0.2s;
+        border-left: 3px solid transparent;
+    }
+    .history-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-left-color: #80D5FF;
+    }
 </style>
 """, unsafe_allow_html=True)
+
+# Initialize session state
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+if "question_history" not in st.session_state:
+    st.session_state.question_history = {}
+
+# Helper function to get date key (YYYY-MM-DD)
+def get_date_key():
+    return datetime.now().strftime("%Y-%m-%d")
+
+# Helper function to format time
+def format_time(dt):
+    return dt.strftime("%H:%M")
+
+# Helper function to add question to history
+def add_to_history(question):
+    date_key = get_date_key()
+    if date_key not in st.session_state.question_history:
+        st.session_state.question_history[date_key] = []
+    st.session_state.question_history[date_key].append({
+        "question": question,
+        "timestamp": datetime.now()
+    })
+
+# Helper function to get yesterday's date key
+def get_yesterday_key():
+    yesterday = datetime.now() - timedelta(days=1)
+    return yesterday.strftime("%Y-%m-%d")
+
+# Helper function to categorize questions by date
+def get_history_sections():
+    today_key = get_date_key()
+    yesterday_key = get_yesterday_key()
+    
+    sections = []
+    
+    if today_key in st.session_state.question_history and st.session_state.question_history[today_key]:
+        sections.append(("Today", today_key))
+    
+    if yesterday_key in st.session_state.question_history and st.session_state.question_history[yesterday_key]:
+        sections.append(("Yesterday", yesterday_key))
+    
+    return sections
 
 # -------------------------------
 # SIDEBAR
@@ -38,7 +110,8 @@ with st.sidebar:
     st.image("https://www.dentsu.com/assets/images/main-logo-alt.png", width=160)
     if st.button("✎   Start New Chat"):
         st.session_state.chat_history = []
-        st.experimental_rerun()
+        st.rerun()
+    
     st.header("Executive Chat")
     st.markdown("""
     **How to use**
@@ -46,6 +119,25 @@ with st.sidebar:
     - The assistant responds with quantified, data-driven insight.
     - Conversation context is remembered.
     """)
+    
+    # Display question history
+    history_sections = get_history_sections()
+    if history_sections:
+        st.markdown("---")
+        st.markdown("**Recent Questions**")
+        
+        for section_label, date_key in history_sections:
+            st.markdown(f"<div class='history-section'><h4>{section_label}</h4></div>", unsafe_allow_html=True)
+            
+            questions = st.session_state.question_history[date_key]
+            for q_item in reversed(questions):
+                question = q_item["question"]
+                time_str = format_time(q_item["timestamp"])
+                display_text = f"{time_str} • {question[:40]}..." if len(question) > 40 else f"{time_str} • {question}"
+                
+                if st.button(display_text, key=f"hist_{date_key}_{time_str}_{len(st.session_state.chat_history)}", use_container_width=True):
+                    st.session_state.chat_input_value = question
+                    st.rerun()
 
 # -------------------------------
 # HEADER
@@ -70,7 +162,7 @@ if not api_key:
 client = Groq(api_key=api_key)
 
 # -------------------------------
-# SYSTEM PROMPT (your version)
+# SYSTEM PROMPT
 # -------------------------------
 system_prompt = """
 You are the Dentsu Intelligence Assistant — a senior strategist delivering enterprise-level marketing intelligence to C-suite stakeholders across Media, Marketing, CRM, Loyalty, and Finance.
@@ -83,28 +175,35 @@ Your role is to synthesize performance across all channels, formats, funnel laye
 - Highlight top-performing funnel layers, formats, and publishers.
 - Frame commentary in terms of business impact, efficiency, and momentum.
 
-**Insight**
-- Use charts and graphs to visualize topline metrics (e.g., spend, revenue, ROAS, CTR, CPA).
-- Segment by:
+**Insight & Visualisation**
+- Generate charts and graphs ONLY when directly relevant to answering the user's question.
+- Never generate generic visualisations that don't serve the analysis.
+- Only include visualisation if the question explicitly asks for performance comparison, trends, breakdowns, or channel/format/audience analysis.
+- Recommended chart types:
+  - Spend/Revenue by Publisher, Format, Funnel Layer: Bar chart or horizontal bar chart
+  - ROAS, CPA, CTR trends: Line chart or area chart
+  - Performance by Audience Segment: Grouped bar chart
+  - Channel Mix or Attribution: Pie chart or stacked bar chart
+- Always embed Altair/Vega-Lite syntax in your response when visualisation is needed. Use markdown code blocks with language `altair` for charts.
+- Segment analysis by:
   - Funnel Layer: Awareness, Consideration, Conversion
   - Format: Video, Static, Carousel, Interactive, Radio
   - Strategy: Retargeting, Brand Lift, Product Launch, Offer Promotion
   - Publisher: Meta, YouTube, NZ Herald, NZME Radio, etc.
-  - Audience Segment (Demographic): e.g., Millennials, Boomers, Parents with Kids
-  - Audience Segment (Behavioral): e.g., High Intent Shoppers, Cart Abandoners, Loyalty Members
-- Always compare like-for-like when evaluating performance — e.g., Video vs Video, Carousel vs Static, Awareness vs Awareness — to ensure recommendations are contextually valid.
-- Use schema fields to explain performance drivers — e.g., “CPA improved due to Loyalty Members in Conversion layer via Meta Carousel.”
-- Reference fiscal trends (MoM, WoW, FY-to-date) and NZ-specific media norms (e.g., radio TARPs, seasonal shifts).
-- Always include at least one visualisation to support your insight.
+  - Audience Segment (Demographic): Millennials, Boomers, Parents with Kids
+  - Audience Segment (Behavioral): High Intent Shoppers, Cart Abandoners, Loyalty Members
+- Always compare like-for-like when evaluating performance.
+- Use schema fields to explain performance drivers.
+- Reference fiscal trends (MoM, WoW, FY-to-date) and NZ-specific media norms.
 
 **Strategic Recommendation**
-- Provide 2–4 actionable tactics with quantified impact (e.g., “Shift 12% of spend from Static to Video to improve ROAS by +0.8”).
+- Provide 2–4 actionable tactics with quantified impact (e.g., "Shift 12% of spend from Static to Video to improve ROAS by +0.8").
 - Recommend optimisations across:
-  - Channel mix
-  - Creative format
-  - Audience targeting (both demographic and behavioral)
+  - Channel mix based on their respective objectives
+  - Creative format and testing approaches
+  - Audience targeting (demographic, behavioral, or data combinations)
   - Budget allocation
-- Avoid simplistic budget cuts based on surface metrics. Instead, assess whether performance is driven by creative, audience, or placement.
+- Avoid simplistic budget cuts; assess whether performance is driven by creative, audience, or channel.
 - Prioritise changes that improve CPA, ROAS, or conversion volume.
 - Reference platform learning, seasonal trends, and scalability potential.
 
@@ -115,22 +214,18 @@ Your role is to synthesize performance across all channels, formats, funnel laye
 - Audience: Boomers in Awareness layer via Radio (NZME) delivered strong reach (320 TARPs) but low conversion. Recommend shifting 15% to Consideration layer with Static formats.
 - Format: Carousel in Conversion layer with High Intent Shoppers delivered ROAS 4.8 vs Static at 3.2. Recommend scaling Carousel with new creative variants.
 
-Be concise, visual, and data-driven. Always speak to overarching performance, not isolated campaigns. Use the full schema to reason and recommend.
+Be concise, visual (only when relevant), and data-driven. Always speak to overarching performance, not isolated campaigns. Use the full schema to reason and recommend.
 """
 
-# -------------------------------
-# CHAT MEMORY
-# -------------------------------
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "system", "content": system_prompt}]
+# Initialize chat history with system prompt
+if "groq_messages" not in st.session_state:
+    st.session_state.groq_messages = [{"role": "system", "content": system_prompt}]
 
 # -------------------------------
 # SAMPLE DATA
 # -------------------------------
 @st.cache_data(ttl=3600)
 def generate_data():
-    import pandas as pd
-
     fy_year = 2025
     weeks = list(range(1, 53)) * 20  # 1040 rows
 
@@ -151,7 +246,7 @@ def generate_data():
     for i in range(len(weeks)):
         week = weeks[i]
         funnel = funnel_layers[i % 3]
-        format = formats[i % 5]
+        fmt = formats[i % 5]
         strategy = strategies[i % 4]
         publisher = publishers[i % len(publishers)]
         creative = creative_messaging[i % 4]
@@ -174,7 +269,7 @@ def generate_data():
             "Interactive": 2.5,
             "Radio": 0.6
         }
-        ctr = ctr_lookup[format]
+        ctr = ctr_lookup[fmt]
 
         cpa_lookup = {
             "High Intent Shoppers": 35,
@@ -197,12 +292,12 @@ def generate_data():
             "Interactive": 6,
             "Radio": 3
         }
-        impressions = int(spend / cpm_adjust[format] * 1000)
+        impressions = int(spend / cpm_adjust[fmt] * 1000)
         clicks = int(impressions * (ctr / 100))
         revenue = spend * roas
 
         # Radio-specific metrics
-        if format == "Radio" and publisher in ["NZME Radio", "MediaWorks Radio"]:
+        if fmt == "Radio" and publisher in ["NZME Radio", "MediaWorks Radio"]:
             tarps = round(min(100, 30 + (week % 20)), 1)
             reach = round(tarps / 1.5, 1)
             frequency = round(tarps / reach, 1)
@@ -221,7 +316,7 @@ def generate_data():
             "Publisher": publisher,
             "Strategy": strategy,
             "Funnel Layer": funnel,
-            "Format": format,
+            "Format": fmt,
             "Creative Messaging": creative,
             "Audience Segment (Demographic)": demo,
             "Audience Segment (Behavioral)": behav,
@@ -239,17 +334,35 @@ def generate_data():
             "Station": station
         })
 
-    df = pd.DataFrame(rows)
-    return df
+    return pd.DataFrame(rows)
 
 df = generate_data()
 
+# Store df in session state for context window availability
+if "df" not in st.session_state:
+    st.session_state.df = df
+
+# Inject data summary into system context (one-time)
+if len(st.session_state.groq_messages) == 1:
+    data_summary = f"""
+[Dataset Context]
+You have access to marketing performance data for FY 2025 with {len(df)} records.
+Schema: FY Year, Week, Publisher, Strategy, Funnel Layer, Format, Creative Messaging, Audience Segment (Demographic), Audience Segment (Behavioral), Spend ($), ROAS, CTR (%), CPA ($), Impressions, Clicks, Revenue ($), TARPs (radio), Reach (%), Frequency, Spot Count, Station.
+Top Publishers: {', '.join(df['Publisher'].unique()[:5])}.
+Funnel Layers: Awareness, Consideration, Conversion.
+Formats: Video, Static, Carousel, Interactive, Radio.
+Behavioral Segments: High Intent Shoppers, Cart Abandoners, Loyalty Members.
+Demographic Segments: Millennials, Boomers, Parents with Kids.
+
+Synthesise this data to answer user questions. Always reference actual trends and segments. Generate visualisations ONLY when directly answering performance/comparison questions.
+"""
+    st.session_state.groq_messages.append({"role": "assistant", "content": data_summary})
 
 # -------------------------------
 # DISPLAY PREVIOUS MESSAGES
 # -------------------------------
-for msg in st.session_state.chat_history:
-    if msg["role"] == "assistant":
+for msg in st.session_state.groq_messages:
+    if msg["role"] == "assistant" and msg != st.session_state.groq_messages[1]:
         with st.chat_message("assistant"):
             st.markdown(msg["content"])
     elif msg["role"] == "user":
@@ -262,7 +375,9 @@ for msg in st.session_state.chat_history:
 user_input = st.chat_input("Ask about performance, ROI, or recommendations...")
 
 if user_input:
-    st.session_state.chat_history.append({"role": "user", "content": user_input})
+    add_to_history(user_input)
+    st.session_state.groq_messages.append({"role": "user", "content": user_input})
+    
     with st.chat_message("user"):
         st.markdown(user_input)
 
@@ -271,11 +386,11 @@ if user_input:
             try:
                 response = client.chat.completions.create(
                     model="llama-3.1-8b-instant",
-                    messages=st.session_state.chat_history
+                    messages=st.session_state.groq_messages
                 )
                 output = response.choices[0].message.content
                 st.markdown(output)
-                st.session_state.chat_history.append({"role": "assistant", "content": output})
+                st.session_state.groq_messages.append({"role": "assistant", "content": output})
             except Exception as e:
                 st.error(f"Error from Groq API: {e}")
 
