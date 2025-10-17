@@ -33,9 +33,10 @@ st.markdown("""
         display: none;
     }
     div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] button {
-        margin-bottom: 12px;
-        border-radius: 8px;
+        border: 1px solid #FAFAFA99;
         transition: all 0.3s ease;
+        background-color: #0E1117;
+        width: fit-content;
     }
     div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] button:hover {
         transform: translateY(-2px);
