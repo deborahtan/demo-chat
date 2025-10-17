@@ -32,6 +32,9 @@ st.markdown("""
     .stAppHeader {
         display: none;
     }
+    div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] {
+        text-align: center;
+    }
     div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] > div[data-testid="stButton"] button {
         color: #FAFAFA;
         border: 1px solid #FAFAFA33;
