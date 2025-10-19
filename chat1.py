@@ -135,7 +135,11 @@ client = Groq(api_key=api_key)
 # -------------------------------
 system_prompt = """
 You are the ANZ Conversational Analytics tool — a senior strategist delivering enterprise-level marketing intelligence to C-suite stakeholders.Your role is to synthesize performance across all channels, formats, funnel layers, and audience segments and deliver quantified, executive-ready insights that reflect fiscal year context and strategic impact.
-Use new zealand spelling and context.
+Use new zealand spelling and context. 
+**CRITICAL: You have access to real data. Do NOT invent hypothetical data.**
+- The dataframe `df` contains actual campaign performance across all 6 campaigns, 7 publishers, and 52 weeks
+- Every claim MUST reference real metrics from this data
+- If asked about something the data doesn't contain, say "Data insufficient" — do NOT generate hypothetical examples
 
 **Current Dataset Context**
 - FY2025: April 2024 - March 2025 (Week 1 = Early April, Week 52 = Late March)
@@ -526,10 +530,10 @@ def generate_dynamic_chart(user_query, df):
         }).reset_index().sort_values('ROAS', ascending=False).head(10)
         
         chart = alt.Chart(data).mark_bar(color='#8b5cf6').encode(
-            x=alt.X('Publisher:N', sort='-y'),
+            x=alt.X('Channel:N', sort='-y'),
             y=alt.Y('ROAS:Q', title='Average ROAS'),
-            tooltip=['Publisher', alt.Tooltip('ROAS:Q', format='.2f'), alt.Tooltip('Spend ($):Q', format='$,.0f')]
-        ).properties(width=800, height=400, title='Publisher Performance by ROAS').interactive()
+            tooltip=['Channel', alt.Tooltip('ROAS:Q', format='.2f'), alt.Tooltip('Spend ($):Q', format='$,.0f')]
+        ).properties(width=800, height=400, title='Channel Performance by ROAS').interactive()
         
         return chart
     
@@ -573,17 +577,16 @@ def generate_dynamic_chart(user_query, df):
         
         return chart
     
-    # Churn analysis by month
+   # Churn analysis by month
     elif any(word in query_lower for word in ['churn', 'month', 'highest churn', 'internal', 'external', 'driver']):
-        # Group by month (convert week to month approximation)
-        df['Month'] = ((df['Week'] - 1) // 4) + 1
+        df_copy = df.copy()
+        df_copy['Month'] = ((df_copy['Week'] - 1) // 4) + 1
         data = df_copy.groupby('Month').agg({
             'Conversions': 'sum',
             'Spend ($)': 'sum',
             'ROAS': 'mean',
             'CPA ($)': 'mean'
         }).reset_index()
-
         
         # Calculate churn proxy (inverse of conversions normalized)
         data['Churn Index'] = 100 - (data['Conversions'] / data['Conversions'].max() * 100)
@@ -616,38 +619,38 @@ def generate_dynamic_chart(user_query, df):
     
     # Audience segment performance
     elif any(word in query_lower for word in ['audience', 'segment', 'underperforming', 'demographic', 'behavioral']):
-        data = df.groupby('Audience Segment (Demographic)').agg({
-            'ROAS': 'mean',
-            'CPA ($)': 'mean',
-            'Conversion Rate (%)': 'mean'
-        }).reset_index()
-        
-        roas_chart = alt.Chart(data).mark_bar(point=True, color='#00d4ff', size=3).encode(
-            x='Audience Segment (Demographic):N',
-            y=alt.Y('ROAS:Q', title='ROAS'),
-            tooltip=['Audience Segment (Demographic)', alt.Tooltip('ROAS:Q', format='.2f')]
-        )
-        
-        cpa_chart = alt.Chart(data).mark_bar(point=True, color='#ef4444', size=3).encode(
-            x='Audience Segment (Demographic):N',
-            y=alt.Y('CPA ($):Q', title='CPA ($)', axis=alt.Axis(orient='right')),
-            tooltip=['Audience Segment (Demographic)', alt.Tooltip('CPA ($):Q', format='$,.2f')]
-        )
-        
-        return alt.layer(roas_chart, cpa_chart).resolve_scale(y='independent').properties(
-            width=800, height=400, title='Audience Segment Performance'
-        ).interactive()
+    data = df.groupby('Audience Segment (Demographic)').agg({
+        'ROAS': 'mean',
+        'CPA ($)': 'mean'
+    }).reset_index()
     
-    # Social vs Display ROAS drivers
+    base = alt.Chart(data).encode(x='Audience Segment (Demographic):N')
+    
+    roas_chart = base.mark_bar(color='#00d4ff').encode(
+        y=alt.Y('ROAS:Q', title='ROAS'),
+        tooltip=['Audience Segment (Demographic)', alt.Tooltip('ROAS:Q', format='.2f')]
+    )
+    
+    cpa_line = base.mark_line(point=True, color='#ef4444', size=3).encode(
+        y=alt.Y('CPA ($):Q', title='CPA ($)', axis=alt.Axis(orient='right')),
+        tooltip=['Audience Segment (Demographic)', alt.Tooltip('CPA ($):Q', format='$,.2f')]
+    )
+    
+    return alt.layer(roas_chart, cpa_line).resolve_scale(y='independent').properties(
+        width=800, height=400, title='Audience Segment Performance'
+    ).interactive()
+    
+# Social vs Display ROAS drivers
     elif any(word in query_lower for word in ['social', 'display', 'roas', 'driving']):
         social_publishers = ['Meta', 'TikTok', 'LinkedIn']
         display_publishers = ['NZ Herald', 'TVNZ']
         
-        df['Channel Type'] = df['Publisher'].apply(
+        df_copy = df.copy()
+        df_copy['Channel Type'] = df_copy['Publisher'].apply(
             lambda x: 'Social' if x in social_publishers else ('Display' if x in display_publishers else 'Other')
         )
         
-        data = df[df['Channel Type'].isin(['Social', 'Display'])].groupby('Channel Type').agg({
+        data = df_copy[df_copy['Channel Type'].isin(['Social', 'Display'])].groupby('Channel Type').agg({
             'ROAS': 'mean',
             'CTR (%)': 'mean',
             'Conversion Rate (%)': 'mean',
@@ -665,25 +668,16 @@ def generate_dynamic_chart(user_query, df):
     # Default fallback
     else:
         data = df.groupby('Publisher').agg({
-            'ROAS': 'mean',
-            'CPA ($)': 'mean'
+            'ROAS': 'mean'
         }).reset_index().sort_values('ROAS', ascending=False).head(10)
         
-        roas_chart = alt.Chart(data).mark_bar(point=True, color='#00d4ff', size=3).encode(
+        chart = alt.Chart(data).mark_bar(color='#00d4ff').encode(
             x=alt.X('Publisher:N', sort='-y'),
-            y=alt.Y('ROAS:Q', title='ROAS'),
+            y=alt.Y('ROAS:Q', title='Average ROAS'),
             tooltip=['Publisher', alt.Tooltip('ROAS:Q', format='.2f')]
-        )
+        ).properties(width=800, height=400, title='Publisher Performance by ROAS').interactive()
         
-        cpa_chart = alt.Chart(data).mark_line(point=True, color='#ef4444', size=3).encode(
-            x='Publisher:N',
-            y=alt.Y('CPA ($):Q', title='CPA ($)', axis=alt.Axis(orient='right')),
-            tooltip=['Publisher', alt.Tooltip('CPA ($):Q', format='$,.0f')]
-        )
-        
-        return alt.layer(roas_chart, cpa_chart).resolve_scale(y='independent').properties(
-            width=800, height=400, title='Publisher Performance Overview'
-        ).interactive()
+        return chart
 
 # -------------------------------
 # MAIN LAYOUT
@@ -724,7 +718,7 @@ if not st.session_state.chat_started:
     st.markdown("### 💡 Quick Questions")
     preset_questions = [
         "💰 Recommend optimal channel mixes for $100M, $200M, and $300M investment levels.",
-        "📊 Determine which formats delivered the highest ROI and CPA.",
+        "📊 Determine which formats delivered the highest ROI.",
         "🎯 Evaluate channels & publishers with the strongest click-to-conversion rates.",
         "📉 Highlight months with the highest churn and distinguish internal vs. external drivers.",
         "🎥 Is Video or Static driving higher engagement?",
@@ -748,7 +742,7 @@ else:
         st.subheader("💡 Quick Questions")
         preset_questions = [
             "💰 Recommend optimal channel mixes for $100M, $200M, and $300M investment levels.",
-            "📊 Determine which formats delivered the highest ROI and CPA.",
+            "📊 Determine which formats delivered the highest ROI.",
             "🎯 Evaluate channels & publishers with the strongest click-to-conversion rates.",
             "📉 Highlight months with the highest churn and distinguish internal vs. external drivers.",
             "🎥 Is Video or Static driving higher engagement?",
