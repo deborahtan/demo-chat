@@ -1,10 +1,10 @@
 import os
 import streamlit as st
 import pandas as pd
+from datetime import datetime, timedelta
 import numpy as np
 import altair as alt
 from groq import Groq
-from datetime import datetime, timedelta
 
 # -------------------------------
 # CONFIG
@@ -113,7 +113,7 @@ with st.sidebar:
 # -------------------------------
 st.markdown("""
 <div>
-    <h1 style="text-align: center; font-size: 64px;>
+    <h1 style="text-align: center; font-size: 64px;">
         <span style="color: #FAFAFA; text-shadow: 0 0 4px rgba(216, 237, 255, 0.16), 0 2px 20px rgba(164, 214, 255, 0.36);">dentsu</span>
         <span style="background: radial-gradient(909.23% 218.25% at -4.5% 144.64%, #80D5FF 0%, #79AAFA 44.5%, #C4ADFF 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Conversational Analytics</span>
     </h1>
@@ -496,6 +496,20 @@ def generate_data():
 
 df = generate_data()
 
+# Add Channel Type mapping
+def map_channel_type(publisher):
+    if publisher in ['Meta', 'TikTok', 'LinkedIn']:
+        return 'Social'
+    elif publisher in ['NZ Herald', 'TVNZ']:
+        return 'Display'
+    elif publisher == 'Search':
+        return 'Search'
+    elif publisher == 'YouTube':
+        return 'Video'
+    else:
+        return 'Other'
+
+df['Channel'] = df['Publisher'].apply(map_channel_type)
 
 # -------------------------------
 # DYNAMIC CHART GENERATION
@@ -523,7 +537,7 @@ def generate_dynamic_chart(user_query, df):
     
     # Channel mix / investment / budget allocation questions
     if any(word in query_lower for word in ['channel mix', 'investment', '$100m', '$200m', '$300m', 'optimal', 'allocation']):
-        data = df.groupby('Publisher').agg({
+        data = df.groupby('Channel').agg({
             'ROAS': 'mean',
             'Spend ($)': 'sum',
             'Revenue ($)': 'sum'
@@ -552,7 +566,7 @@ def generate_dynamic_chart(user_query, df):
             tooltip=['Format', alt.Tooltip('ROAS:Q', format='.2f'), alt.Tooltip('CPA ($):Q', format='$,.2f')]
         )
         
-        cpa_line = base.mark_bar(point=True, color='#ef4444', size=3).encode(
+        cpa_line = base.mark_line(point=True, color='#ef4444', size=3).encode(
             y=alt.Y('CPA ($):Q', title='CPA ($)', axis=alt.Axis(orient='right')),
             tooltip=['Format', alt.Tooltip('CPA ($):Q', format='$,.2f')]
         )
@@ -563,21 +577,21 @@ def generate_dynamic_chart(user_query, df):
     
     # Click-to-conversion rates by channel/publisher
     elif any(word in query_lower for word in ['click', 'conversion rate', 'click-to-conversion', 'strongest']):
-        data = df.groupby('Publisher').agg({
+        data = df.groupby('Channel').agg({
             'Conversion Rate (%)': 'mean',
             'CTR (%)': 'mean',
             'Conversions': 'sum'
         }).reset_index().sort_values('Conversion Rate (%)', ascending=False).head(10)
         
         chart = alt.Chart(data).mark_bar(color='#3b82f6').encode(
-            x=alt.X('Publisher:N', sort='-y'),
+            x=alt.X('Channel:N', sort='-y'),
             y=alt.Y('Conversion Rate (%):Q', title='Conversion Rate (%)'),
-            tooltip=['Publisher', alt.Tooltip('Conversion Rate (%):Q', format='.2f'), alt.Tooltip('CTR (%):Q', format='.2f')]
-        ).properties(width=800, height=400, title='Publishers by Conversion Rate').interactive()
+            tooltip=['Channel', alt.Tooltip('Conversion Rate (%):Q', format='.2f'), alt.Tooltip('CTR (%):Q', format='.2f')]
+        ).properties(width=800, height=400, title='Channels by Conversion Rate').interactive()
         
         return chart
     
-   # Churn analysis by month
+    # Churn analysis by month
     elif any(word in query_lower for word in ['churn', 'month', 'highest churn', 'internal', 'external', 'driver']):
         df_copy = df.copy()
         df_copy['Month'] = ((df_copy['Week'] - 1) // 4) + 1
@@ -619,28 +633,28 @@ def generate_dynamic_chart(user_query, df):
     
     # Audience segment performance
     elif any(word in query_lower for word in ['audience', 'segment', 'underperforming', 'demographic', 'behavioral']):
-    data = df.groupby('Audience Segment (Demographic)').agg({
-        'ROAS': 'mean',
-        'CPA ($)': 'mean'
-    }).reset_index()
+        data = df.groupby('Audience Segment (Demographic)').agg({
+            'ROAS': 'mean',
+            'CPA ($)': 'mean'
+        }).reset_index()
+        
+        base = alt.Chart(data).encode(x='Audience Segment (Demographic):N')
+        
+        roas_chart = base.mark_bar(color='#00d4ff').encode(
+            y=alt.Y('ROAS:Q', title='ROAS'),
+            tooltip=['Audience Segment (Demographic)', alt.Tooltip('ROAS:Q', format='.2f')]
+        )
+        
+        cpa_line = base.mark_line(point=True, color='#ef4444', size=3).encode(
+            y=alt.Y('CPA ($):Q', title='CPA ($)', axis=alt.Axis(orient='right')),
+            tooltip=['Audience Segment (Demographic)', alt.Tooltip('CPA ($):Q', format='$,.2f')]
+        )
+        
+        return alt.layer(roas_chart, cpa_line).resolve_scale(y='independent').properties(
+            width=800, height=400, title='Audience Segment Performance'
+        ).interactive()
     
-    base = alt.Chart(data).encode(x='Audience Segment (Demographic):N')
-    
-    roas_chart = base.mark_bar(color='#00d4ff').encode(
-        y=alt.Y('ROAS:Q', title='ROAS'),
-        tooltip=['Audience Segment (Demographic)', alt.Tooltip('ROAS:Q', format='.2f')]
-    )
-    
-    cpa_line = base.mark_line(point=True, color='#ef4444', size=3).encode(
-        y=alt.Y('CPA ($):Q', title='CPA ($)', axis=alt.Axis(orient='right')),
-        tooltip=['Audience Segment (Demographic)', alt.Tooltip('CPA ($):Q', format='$,.2f')]
-    )
-    
-    return alt.layer(roas_chart, cpa_line).resolve_scale(y='independent').properties(
-        width=800, height=400, title='Audience Segment Performance'
-    ).interactive()
-    
-# Social vs Display ROAS drivers
+    # Social vs Display ROAS drivers
     elif any(word in query_lower for word in ['social', 'display', 'roas', 'driving']):
         social_publishers = ['Meta', 'TikTok', 'LinkedIn']
         display_publishers = ['NZ Herald', 'TVNZ']
@@ -667,15 +681,15 @@ def generate_dynamic_chart(user_query, df):
     
     # Default fallback
     else:
-        data = df.groupby('Publisher').agg({
+        data = df.groupby('Channel').agg({
             'ROAS': 'mean'
         }).reset_index().sort_values('ROAS', ascending=False).head(10)
         
         chart = alt.Chart(data).mark_bar(color='#00d4ff').encode(
-            x=alt.X('Publisher:N', sort='-y'),
+            x=alt.X('Channel:N', sort='-y'),
             y=alt.Y('ROAS:Q', title='Average ROAS'),
-            tooltip=['Publisher', alt.Tooltip('ROAS:Q', format='.2f')]
-        ).properties(width=800, height=400, title='Publisher Performance by ROAS').interactive()
+            tooltip=['Channel', alt.Tooltip('ROAS:Q', format='.2f')]
+        ).properties(width=800, height=400, title='Channel Performance by ROAS').interactive()
         
         return chart
 
@@ -754,8 +768,6 @@ else:
             if st.button(question, use_container_width=True, key=f"sidebar_preset_{question}"):
                 preset_input = question
 
-# st.markdown("---")
-
 # CHAT INPUT
 user_input = st.chat_input("Select a prompt above or type your custom prompt here")
 
@@ -779,7 +791,7 @@ if user_input:
         st.markdown(user_input)
 
     with st.chat_message("assistant"):
-        with st.spinner("Analyzing performance..."):
+        with st.spinner("Analysing performance..."):
             try:
                 response = client.chat.completions.create(
                     model="llama-3.1-8b-instant",
