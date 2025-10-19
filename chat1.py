@@ -137,6 +137,7 @@ system_prompt = """
 You are the ANZ Conversational Analytics tool — a senior strategist delivering enterprise-level marketing intelligence to C-suite stakeholders across Media, Marketing, CRM, Loyalty, and Finance.
 
 Your role is to synthesize performance across all channels, formats, funnel layers, and audience segments and deliver quantified, executive-ready insights that reflect fiscal year context and strategic impact.
+Always refer to 1 or more campaigns in your answer, or ask for clarification if this wasn't clear. Use new zealand spelling and context.
 
 **Current Dataset Context**
 - FY2025: April 2024 - March 2025 (Week 1 = Early April, Week 52 = Late March)
@@ -297,172 +298,286 @@ if "chat_history" not in st.session_state:
 @st.cache_data(ttl=3600)
 def generate_data():
     fy_year = 2025
-    weeks = list(range(1, 53)) * 20
-
-    publishers = [
-        "Meta", "YouTube", "TikTok", "Search", "Stuff", "NZ Herald", "NZME Radio",
-        "TVNZ OnDemand", "MetService", "Neighbourly", "Spotify", "We Are Frank",
-        "GrabOne", "Go Media", "LUMO", "LinkedIn", "Quantcast", "The Trade Desk",
-        "MediaWorks Radio"
-    ]
+    
+    # Campaign specifications
+    campaigns = {
+        "ANZ Home Loans": {
+            "spend_annual": 80_000_000,
+            "channels": ["TVNZ", "YouTube", "Meta", "Search", "NZ Herald"],
+            "funnel": "Consideration",
+            "demo": ["First Home Buyers (25-34)", "Mortgage Refinancers (35-44)"],
+            "weeks": list(range(1, 27))  # Feb-Jun (weeks 1-26 roughly)
+        },
+        "ANZ Business Banking": {
+            "spend_annual": 65_000_000,
+            "channels": ["LinkedIn", "Search", "NZ Herald", "YouTube"],
+            "funnel": "Consideration",
+            "demo": ["Wealth Builders (45-54)"],
+            "weeks": list(range(1, 53))  # Year-round
+        },
+        "ANZ KiwiSaver": {
+            "spend_annual": 55_000_000,
+            "channels": ["TVNZ", "YouTube", "Meta", "Search", "NZ Herald"],
+            "funnel": "Consideration",
+            "demo": ["First Home Buyers (25-34)", "Mortgage Refinancers (35-44)", "Wealth Builders (45-54)", "Pre-retirees (55+)"],
+            "weeks": list(range(1, 27))  # Feb-Jun
+        },
+        "ANZ Personal Banking": {
+            "spend_annual": 45_000_000,
+            "channels": ["Meta", "Search", "YouTube", "NZ Herald"],
+            "funnel": "Conversion",
+            "demo": ["First Home Buyers (25-34)", "Mortgage Refinancers (35-44)", "Wealth Builders (45-54)"],
+            "weeks": list(range(1, 53))  # Year-round
+        },
+        "ANZ Airpoints Visa": {
+            "spend_annual": 25_000_000,
+            "channels": ["Meta", "Search", "TikTok", "NZ Herald"],
+            "funnel": "Conversion",
+            "demo": ["Young Professionals (25-34)"],
+            "weeks": list(range(35, 41))  # Sep-Oct (weeks 35-40 roughly)
+        },
+        "ANZ goMoney App": {
+            "spend_annual": 15_000_000,
+            "channels": ["Meta", "Search", "TikTok", "YouTube", "TVNZ"],
+            "funnel": "Conversion",
+            "demo": ["Young Professionals (25-34)"],
+            "weeks": list(range(1, 27))  # Apr-Jun (weeks 1-26)
+        }
+    }
+    
     strategies = ["Retargeting", "Brand Lift", "Product Launch", "Offer Promotion"]
-    funnel_layers = ["Awareness", "Consideration", "Conversion"]
     formats = ["Video", "Static", "Carousel", "Interactive", "Radio"]
     creative_messaging = ["Value-led", "Urgency-led", "Emotional", "Informational"]
-    demo_segments = ["Millennials", "Boomers", "Parents with Kids"]
-    behav_segments = ["High Intent Shoppers", "Cart Abandoners", "Loyalty Members"]
-
+    behav_segments = ["In-Market Researchers", "Decision-Ready", "Loyal Members"]
+    
+    # Publisher-specific ROAS multipliers
+    publisher_roas_adjust = {
+        "Search": 1.4,
+        "Meta": 1.0,
+        "YouTube": 1.05,
+        "TikTok": 0.95,
+        "LinkedIn": 0.9,
+        "TVNZ": 0.85,
+        "NZ Herald": 0.75
+    }
+    
+    # Format-specific ROAS multipliers
+    format_roas_adjust = {
+        "Video": 1.15,
+        "Carousel": 1.20,
+        "Static": 0.85,
+        "Interactive": 1.10,
+        "Radio": 0.75
+    }
+    
+    # Demographic ROAS multipliers
+    demo_roas_adjust = {
+        "First Home Buyers (25-34)": 1.05,
+        "Mortgage Refinancers (35-44)": 1.10,
+        "Wealth Builders (45-54)": 1.15,
+        "Young Professionals (25-34)": 1.08,
+        "Pre-retirees (55+)": 0.95
+    }
+    
+    # Publisher-specific CPA multipliers
+    publisher_cpa_adjust = {
+        "Search": 0.75,
+        "Meta": 1.0,
+        "YouTube": 1.1,
+        "TikTok": 1.05,
+        "LinkedIn": 1.25,
+        "TVNZ": 1.15,
+        "NZ Herald": 1.3
+    }
+    
+    # Format-specific CPA multipliers
+    format_cpa_adjust = {
+        "Video": 0.95,
+        "Carousel": 0.90,
+        "Static": 1.20,
+        "Interactive": 0.98,
+        "Radio": 1.45
+    }
+    
+    # Behavioral segment CPA base
+    cpa_base_lookup = {
+        "In-Market Researchers": 45,
+        "Decision-Ready": 28,
+        "Loyal Members": 18
+    }
+    
+    # CTR by format
+    ctr_lookup = {
+        "Video": 2.8,
+        "Carousel": 3.2,
+        "Static": 1.2,
+        "Interactive": 2.5,
+        "Radio": 0.6
+    }
+    
+    # CPM adjustments
+    cpm_adjust = {
+        "Video": 6,
+        "Carousel": 5,
+        "Static": 4,
+        "Interactive": 6,
+        "Radio": 3
+    }
+    
+    # ROAS base by funnel
+    roas_base_lookup = {
+        "Awareness": 2.0,
+        "Consideration": 3.5,
+        "Conversion": 5.0
+    }
+    
     rows = []
-    for i in range(len(weeks)):
-        week = weeks[i]
-        funnel = funnel_layers[i % 3]
-        format = formats[i % 5]
-        strategy = strategies[i % 4]
-        publisher = publishers[i % len(publishers)]
-        creative = creative_messaging[i % 4]
-        demo = demo_segments[i % 3]
-        behav = behav_segments[i % 3]
-
-        base_spend = {
-            "Awareness": 100_000,
-            "Consideration": 250_000,
-            "Conversion": 500_000
-        }[funnel]
-
-        seasonal_multiplier = 1.25 if week >= 40 else 1.0
-        spend = base_spend * seasonal_multiplier
-
-        ctr_lookup = {
-            "Video": 2.8,
-            "Carousel": 3.2,
-            "Static": 1.2,
-            "Interactive": 2.5,
-            "Radio": 0.6
-        }
-        ctr = ctr_lookup[format]
-
-        cpa_lookup = {
-            "High Intent Shoppers": 35,
-            "Cart Abandoners": 28,
-            "Loyalty Members": 22
-        }
-        cpa = cpa_lookup[behav]
-
-        roas_base = {
-            "Awareness": 2.0,
-            "Consideration": 3.5,
-            "Conversion": 5.0
-        }[funnel]
-        roas = max(1.2, roas_base - (spend / 1_000_000))
-
-        cpm_adjust = {
-            "Video": 6,
-            "Carousel": 5,
-            "Static": 4,
-            "Interactive": 6,
-            "Radio": 3
-        }
-        impressions = int(spend / cpm_adjust[format] * 1000)
-        clicks = int(impressions * (ctr / 100))
-        conversions = int(clicks * (0.03 + np.random.rand() * 0.05))  # 3-8% conversion rate
-        revenue = spend * roas
+    row_id = 0
+    
+    # Generate data per campaign
+    for campaign_name, campaign_spec in campaigns.items():
+        weekly_spend = campaign_spec["spend_annual"] / len(campaign_spec["weeks"])
         
-        # Viewability metrics
-        viewability_rate = round(np.random.uniform(0.55, 0.85), 3)  # 55-85% viewability
-        measurable_impressions = int(impressions * 0.95)  # 95% measurable
-        
-        # Traffic & Engagement Metrics
-        website_sessions = int(clicks * np.random.uniform(0.7, 0.95))
-        time_on_site = round(np.random.uniform(1.5, 8.5), 1)  # minutes
-        pages_per_session = round(np.random.uniform(1.2, 5.5), 2)
-        bounce_rate = round(np.random.uniform(0.25, 0.75), 3)  # 25-75%
-        
-        # Social Engagement (if social channel)
-        if publisher in ["Meta", "TikTok", "LinkedIn"]:
-            social_likes = int(impressions * np.random.uniform(0.001, 0.008))
-            social_shares = int(impressions * np.random.uniform(0.0002, 0.002))
-            social_comments = int(impressions * np.random.uniform(0.0001, 0.001))
-        else:
-            social_likes = 0
-            social_shares = 0
-            social_comments = 0
-        
-        # Digital Revenue breakdown
-        website_sales = int(revenue * 0.45)
-        ecommerce_sales = int(revenue * 0.35)
-        affiliate_revenue = int(revenue * 0.15)
-        other_revenue = int(revenue * 0.05)
-        
-        # CX Metrics
-        form_submissions = int(conversions * 0.6)
-        lead_generation = int(conversions * 0.3)
-        signups = int(conversions * 0.1)
-        
-        # CPA derivatives
-        cost_per_lead = round(spend / max(1, lead_generation), 2) if lead_generation > 0 else spend
-        cost_per_signup = round(spend / max(1, signups), 2) if signups > 0 else spend
-        conversion_rate_pct = round((conversions / max(1, clicks)) * 100, 2)
-
-        if format == "Radio" and publisher in ["NZME Radio", "MediaWorks Radio"]:
-            tarps = round(min(100, 30 + (week % 20)), 1)
-            reach = round(tarps / 1.5, 1)
-            frequency = round(tarps / reach, 1)
-            spot_count = int(spend / 500)
-            station = ["ZM", "The Edge", "Newstalk ZB", "Hauraki", "Coast"][i % 5]
-        else:
-            tarps = None
-            reach = None
-            frequency = None
-            spot_count = None
-            station = None
-
-        rows.append({
-            "FY Year": fy_year,
-            "Week": week,
-            "Publisher": publisher,
-            "Strategy": strategy,
-            "Funnel Layer": funnel,
-            "Format": format,
-            "Creative Messaging": creative,
-            "Audience Segment (Demographic)": demo,
-            "Audience Segment (Behavioral)": behav,
-            "Spend ($)": spend,
-            "ROAS": roas,
-            "CTR (%)": ctr,
-            "CPA ($)": cpa,
-            "Impressions": impressions,
-            "Clicks": clicks,
-            "Conversions": conversions,
-            "Conversion Rate (%)": conversion_rate_pct,
-            "Revenue ($)": revenue,
-            "Website Sales ($)": website_sales,
-            "E-Commerce Sales ($)": ecommerce_sales,
-            "Affiliate Revenue ($)": affiliate_revenue,
-            "Other Revenue ($)": other_revenue,
-            "Form Submissions": form_submissions,
-            "Leads Generated": lead_generation,
-            "Sign-Ups": signups,
-            "Cost Per Lead ($)": cost_per_lead,
-            "Cost Per Sign-Up ($)": cost_per_signup,
-            "Viewability (%)": viewability_rate,
-            "Measurable Impressions": measurable_impressions,
-            "Website Sessions": website_sessions,
-            "Time on Site (min)": time_on_site,
-            "Pages Per Session": pages_per_session,
-            "Bounce Rate (%)": bounce_rate,
-            "Social Likes": social_likes,
-            "Social Shares": social_shares,
-            "Social Comments": social_comments,
-            "TARPs": tarps,
-            "Reach (%)": reach,
-            "Frequency": frequency,
-            "Spot Count": spot_count,
-            "Station": station
-        })
-
+        for week in campaign_spec["weeks"]:
+            # Seasonal multiplier
+            if 1 <= week <= 12:
+                seasonal_mult = 1.25
+            elif 13 <= week <= 26:
+                seasonal_mult = 0.85
+            elif 27 <= week <= 39:
+                seasonal_mult = 1.15
+            else:
+                seasonal_mult = 1.05
+            
+            # Generate 4 rows per week (rotate through channels, formats, audiences)
+            for iteration in range(4):
+                channel = campaign_spec["channels"][iteration % len(campaign_spec["channels"])]
+                format = formats[iteration % len(formats)]
+                strategy = strategies[iteration % len(strategies)]
+                demo = campaign_spec["demo"][iteration % len(campaign_spec["demo"])]
+                behav = behav_segments[iteration % len(behav_segments)]
+                creative = creative_messaging[iteration % len(creative_messaging)]
+                
+                spend = (weekly_spend / 4) * seasonal_mult
+                
+                # Calculate metrics
+                ctr = ctr_lookup[format]
+                pub_mult = publisher_roas_adjust.get(channel, 1.0)
+                fmt_mult = format_roas_adjust.get(format, 1.0)
+                demo_mult = demo_roas_adjust.get(demo, 1.0)
+                roas_base = roas_base_lookup[campaign_spec["funnel"]]
+                roas = max(1.2, (roas_base * pub_mult * fmt_mult * demo_mult) - (spend / 2_000_000))
+                
+                cpa_base = cpa_base_lookup[behav]
+                pub_mult_cpa = publisher_cpa_adjust.get(channel, 1.0)
+                fmt_mult_cpa = format_cpa_adjust.get(format, 1.0)
+                cpa = round(cpa_base * pub_mult_cpa * fmt_mult_cpa, 2)
+                
+                impressions = int(spend / cpm_adjust[format] * 1000)
+                clicks = int(impressions * (ctr / 100))
+                conversions = int(clicks * (0.03 + np.random.rand() * 0.05))
+                revenue = spend * roas
+                
+                # Viewability
+                viewability_rate = round(np.random.uniform(0.55, 0.85), 3)
+                measurable_impressions = int(impressions * 0.95)
+                
+                # Traffic & Engagement
+                website_sessions = int(clicks * np.random.uniform(0.7, 0.95))
+                time_on_site = round(np.random.uniform(1.5, 8.5), 1)
+                pages_per_session = round(np.random.uniform(1.2, 5.5), 2)
+                bounce_rate = round(np.random.uniform(0.25, 0.75), 3)
+                
+                # Social Engagement
+                if channel in ["Meta", "TikTok", "LinkedIn"]:
+                    social_likes = int(impressions * np.random.uniform(0.001, 0.008))
+                    social_shares = int(impressions * np.random.uniform(0.0002, 0.002))
+                    social_comments = int(impressions * np.random.uniform(0.0001, 0.001))
+                else:
+                    social_likes = 0
+                    social_shares = 0
+                    social_comments = 0
+                
+                # Revenue breakdown
+                website_sales = int(revenue * 0.45)
+                ecommerce_sales = int(revenue * 0.35)
+                affiliate_revenue = int(revenue * 0.15)
+                other_revenue = int(revenue * 0.05)
+                
+                # CX Metrics
+                form_submissions = int(conversions * 0.6)
+                lead_generation = int(conversions * 0.3)
+                signups = int(conversions * 0.1)
+                
+                # CPA derivatives
+                cost_per_lead = round(spend / max(1, lead_generation), 2) if lead_generation > 0 else spend
+                cost_per_signup = round(spend / max(1, signups), 2) if signups > 0 else spend
+                conversion_rate_pct = round((conversions / max(1, clicks)) * 100, 2)
+                
+                # Radio specific
+                if format == "Radio" and channel in ["TVNZ", "NZ Herald"]:
+                    tarps = round(min(100, 30 + (week % 20)), 1)
+                    reach = round(tarps / 1.5, 1)
+                    frequency = round(tarps / reach, 1)
+                    spot_count = int(spend / 500)
+                    station = ["ZM", "The Edge", "Newstalk ZB", "Hauraki", "Coast"][row_id % 5]
+                else:
+                    tarps = None
+                    reach = None
+                    frequency = None
+                    spot_count = None
+                    station = None
+                
+                rows.append({
+                    "FY Year": fy_year,
+                    "Week": week,
+                    "Campaign": campaign_name,
+                    "Publisher": channel,
+                    "Strategy": strategy,
+                    "Funnel Layer": campaign_spec["funnel"],
+                    "Format": format,
+                    "Creative Messaging": creative,
+                    "Audience Segment (Demographic)": demo,
+                    "Audience Segment (Behavioral)": behav,
+                    "Spend ($)": spend,
+                    "ROAS": roas,
+                    "CTR (%)": ctr,
+                    "CPA ($)": cpa,
+                    "Impressions": impressions,
+                    "Clicks": clicks,
+                    "Conversions": conversions,
+                    "Conversion Rate (%)": conversion_rate_pct,
+                    "Revenue ($)": revenue,
+                    "Website Sales ($)": website_sales,
+                    "E-Commerce Sales ($)": ecommerce_sales,
+                    "Affiliate Revenue ($)": affiliate_revenue,
+                    "Other Revenue ($)": other_revenue,
+                    "Form Submissions": form_submissions,
+                    "Leads Generated": lead_generation,
+                    "Sign-Ups": signups,
+                    "Cost Per Lead ($)": cost_per_lead,
+                    "Cost Per Sign-Up ($)": cost_per_signup,
+                    "Viewability (%)": viewability_rate,
+                    "Measurable Impressions": measurable_impressions,
+                    "Website Sessions": website_sessions,
+                    "Time on Site (min)": time_on_site,
+                    "Pages Per Session": pages_per_session,
+                    "Bounce Rate (%)": bounce_rate,
+                    "Social Likes": social_likes,
+                    "Social Shares": social_shares,
+                    "Social Comments": social_comments,
+                    "TARPs": tarps,
+                    "Reach (%)": reach,
+                    "Frequency": frequency,
+                    "Spot Count": spot_count,
+                    "Station": station
+                })
+                row_id += 1
+    
     return pd.DataFrame(rows)
 
 df = generate_data()
+
 
 # -------------------------------
 # DYNAMIC CHART GENERATION
@@ -611,7 +726,7 @@ def generate_dynamic_chart(user_query, df):
     # Social vs Display ROAS drivers
     elif any(word in query_lower for word in ['social', 'display', 'roas', 'driving']):
         social_publishers = ['Meta', 'TikTok', 'LinkedIn']
-        display_publishers = ['Stuff', 'NZ Herald', 'TVNZ OnDemand', 'MetService']
+        display_publishers = ['NZ Herald', 'TVNZ']
         
         df['Channel Type'] = df['Publisher'].apply(
             lambda x: 'Social' if x in social_publishers else ('Display' if x in display_publishers else 'Other')
@@ -664,7 +779,7 @@ col_title, col_share = st.columns([6, 1])
 with col_title:
     st.title("")
 with col_share:
-    current_url = "https://dentsu-analytics.streamlit.app"  # Update with your actual deployed URL
+    current_url = "https://dentsusolutions.com/"  # Update with your actual deployed URL
     if st.button("🔗 Share", use_container_width=True):
         st.code(current_url, language=None)
         st.success("Link ready to share!")
