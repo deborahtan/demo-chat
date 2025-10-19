@@ -181,23 +181,12 @@ Always reference specific campaigns. If the query doesn't specify campaigns, pic
    - Format: a) Campaign(s), b) Change, c) Why (barrier + fit), d) Impact (quantified), e) Trade-off
    - Example: "Home Loans → Shift 15% TVNZ spend ($2.1M) to Search Carousel in Q1 (weeks 1-12). Rationale: First-home buyers in Consideration actively compare mortgages on Search (1.4x ROAS baseline vs TVNZ 0.85x); Carousel format drives 1.2x additional lift by showing 4 loan product angles. Impact: CPA improves $31→$24 (22% efficiency), ROAS +0.4x. Preserve $6.7M TVNZ for Mortgage Refinancers (35-44) who need trust-building environment. Result: Home Loans portfolio ROAS moves 3.2→3.6."
 
-**CRITICAL: Stay factual, never sweeping:**
-- DO NOT: "As the most efficient channel, allocate more budget for growth"
-- DO: "Search has 1.4x ROAS baseline. Home Loans already at 40% allocation. Marginal spend beyond inflection point shows CPA rise to $31. Instead, test Meta Carousel (1.2x format lift) with 35-44 demographic (1.1x responsive). Estimated +$400K without additional budget."
-
-- DO NOT: "This platform drives engagement"
-- DO: "Carousel format shows 3.2% CTR vs Static 1.2% because it presents 4 product angles, reducing decision friction for mortgage products."
-
-- DO NOT: "We recommend optimizing targeting"
-- DO: "[Campaign] underperforms [demographic] on [publisher] because [barrier]. Recommend testing [format/message] because [psychological driver]."
-
-Assume the reader is skeptical. Prove your case with data + reasoning, not persuasive language.
 **If query doesn't specify campaigns:**
 Pick 2-3 relevant ones. Example: "Home Loans and Business Banking both sit in Consideration. Home Loans underleverage Search because first-home buyers actively compare rates (intent signal). Business Banking underleverage LinkedIn because SME owners research on Google (vendor reviews) not LinkedIn—LinkedIn skews professional networking, not procurement research. KiwiSaver should maintain TVNZ because tax-time awareness (Feb-Jun) requires reach across older demographics (45-54) who trust premium TV environment."
 
 **Investment Scenario Planning:**
 - Current: $285M baseline
-- $100M: Focus Conversion (Personal Banking, Airpoints, goMoney) on Search + Meta. Home Loans → Search + YouTube only. Business Banking → Search only. Remove TVNZ, Herald, LinkedIn. Expected ROAS: 3.8-4.2 (portfolio squeeze, reach collapse).
+- $100M: Cut awareness. Focus Conversion (Personal Banking, Airpoints, goMoney) on Search + Meta. Home Loans → Search + YouTube only. Business Banking → Search only. Remove TVNZ, Herald, LinkedIn. Expected ROAS: 3.8-4.2 (portfolio squeeze, reach collapse).
 - $200M: Split Consideration/Conversion. Home Loans + KiwiSaver → Search + Meta (Q1 seasonality). Business Banking → Search + YouTube (year-round). Airpoints + goMoney → Meta + TikTok (high-ROI Conversion). Cut TVNZ, reduce LinkedIn. Expected ROAS: 3.4-3.6.
 - $300M: Full portfolio with Awareness. Scale Home Loans + KiwiSaver across all channels (TVNZ + Herald for reach). LinkedIn for Business Banking (SME targeting). Airpoints + goMoney → full channel mix. Expected ROAS: 2.8-3.2 (reach dilution, lower average ROAS but volume trade-off).
 
@@ -672,22 +661,6 @@ def generate_dynamic_chart(user_query, df):
         ).properties(width=800, height=400, title='Social vs Display: ROAS Comparison').interactive()
         
         return chart
-
-   # Budget allocation / campaign spend questions
-    elif any(word in query_lower for word in ['budget', 'allocation', 'spend', 'investment', 'campaign spend', 'how much', 'split']):
-        data = df.groupby('Campaign').agg({
-            'Spend ($)': 'sum',
-            'ROAS': 'mean',
-            'Revenue ($)': 'sum'
-        }).reset_index().sort_values('Spend ($)', ascending=False)
-        
-        chart = alt.Chart(data).mark_bar(color='#8b5cf6').encode(
-            x=alt.X('Campaign:N', sort='-y'),
-            y=alt.Y('Spend ($):Q', title='Annual Spend ($)', format='$,.0f'),
-            tooltip=['Campaign', alt.Tooltip('Spend ($):Q', format='$,.0f'), alt.Tooltip('ROAS:Q', format='.2f')]
-        ).properties(width=800, height=400, title='Campaign Budget Allocation by Spend').interactive()
-        
-        return chart
     
     # Default fallback
     else:
@@ -750,7 +723,7 @@ if "chat_started" not in st.session_state:
 if not st.session_state.chat_started:
     st.markdown("### 💡 Quick Questions")
     preset_questions = [
-        "💰 Recommend channel mixes for $100M, $200M, and $300M investment.",
+        "💰 Recommend optimal channel mixes for $100M, $200M, and $300M investment levels.",
         "📊 Determine which formats delivered the highest ROI and CPA.",
         "🎯 Evaluate channels & publishers with the strongest click-to-conversion rates.",
         "📉 Highlight months with the highest churn and distinguish internal vs. external drivers.",
@@ -774,7 +747,7 @@ else:
         st.divider()
         st.subheader("💡 Quick Questions")
         preset_questions = [
-            "💰 Recommend channel mixes for $100M, $200M, and $300M investment.",
+            "💰 Recommend optimal channel mixes for $100M, $200M, and $300M investment levels.",
             "📊 Determine which formats delivered the highest ROI and CPA.",
             "🎯 Evaluate channels & publishers with the strongest click-to-conversion rates.",
             "📉 Highlight months with the highest churn and distinguish internal vs. external drivers.",
